@@ -1,5 +1,4 @@
-const { app, BrowserWindow, screen, ipcMain, dialog } = require('electron');
-const { spawn } = require('child_process');
+const { app, BrowserWindow, screen, ipcMain } = require('electron');
 const http = require('http');
 const path = require('path');
 const fs = require('fs');
@@ -10,10 +9,9 @@ let currentPosition = 'center'; // 'center' | 'left' | 'right'
 
 const CONFIG_FILE = path.join(app.getPath('userData'), 'gravibuddy-config.json');
 const LEGACY_CONFIG_FILE = path.join(app.getPath('userData'), 'vibing-config.json');
-const AGY_SETTINGS_FILE = path.join(app.getPath('home'), '.gemini', 'antigravity-cli', 'settings.json');
 
 function loadConfig() {
-  let cfg = { position: 'center', sound: true, sleepMode: true, stealthMode: true, thinkingPreview: true, recentWorkspaces: [] };
+  let cfg = { position: 'center', sound: true, sleepMode: true, stealthMode: true, thinkingPreview: true };
   try {
     if (fs.existsSync(CONFIG_FILE)) {
       cfg = { ...cfg, ...JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8')) };
@@ -33,50 +31,6 @@ function saveConfig(cfg) {
 const userConfig = loadConfig();
 currentPosition = userConfig.position || 'center';
 
-function getWorkspaces() {
-  const list = new Set(userConfig.recentWorkspaces || []);
-  try {
-    if (fs.existsSync(AGY_SETTINGS_FILE)) {
-      const data = JSON.parse(fs.readFileSync(AGY_SETTINGS_FILE, 'utf8'));
-      (data.trustedWorkspaces || []).forEach(p => {
-        if (p && fs.existsSync(p) && p !== app.getPath('home')) list.add(p);
-      });
-    }
-  } catch (e) {}
-  return Array.from(list);
-}
-
-function launchAgyInWorkspace(projectDir) {
-  if (!projectDir || !fs.existsSync(projectDir)) return false;
-
-  userConfig.lastOpenedWorkspace = projectDir;
-  const recents = (userConfig.recentWorkspaces || []).filter(p => p !== projectDir);
-  userConfig.recentWorkspaces = [projectDir, ...recents].slice(0, 8);
-  saveConfig(userConfig);
-
-  try {
-    const wtProc = spawn('wt.exe', ['-d', projectDir, 'powershell.exe', '-NoExit', '-Command', 'agy'], {
-      detached: true,
-      stdio: 'ignore'
-    });
-    wtProc.on('error', () => {
-      const psProc = spawn('powershell.exe', ['-NoExit', '-Command', `Set-Location -LiteralPath '${projectDir}'; agy`], {
-        detached: true,
-        stdio: 'ignore'
-      });
-      psProc.unref();
-    });
-    wtProc.unref();
-    return true;
-  } catch (err) {
-    const psProc = spawn('powershell.exe', ['-NoExit', '-Command', `Set-Location -LiteralPath '${projectDir}'; agy`], {
-      detached: true,
-      stdio: 'ignore'
-    });
-    psProc.unref();
-    return true;
-  }
-}
 
 function getWindowBoundsForPosition(pos) {
   const primaryDisplay = screen.getPrimaryDisplay();
@@ -403,46 +357,6 @@ ipcMain.on('reset-to-idle', () => {
   }
 });
 
-ipcMain.handle('get-workspaces-data', () => {
-  return {
-    workspaces: getWorkspaces(),
-    lastOpened: userConfig.lastOpenedWorkspace || null
-  };
-});
-
-ipcMain.on('launch-workspace', (event, dirPath) => {
-  launchAgyInWorkspace(dirPath);
-  if (settingsWindow && !settingsWindow.isDestroyed()) {
-    settingsWindow.hide();
-  }
-  if (mainWindow && !mainWindow.isDestroyed()) {
-    mainWindow.webContents.send('workspaces-updated', {
-      workspaces: getWorkspaces(),
-      lastOpened: userConfig.lastOpenedWorkspace
-    });
-  }
-});
-
-ipcMain.on('browse-and-launch', async () => {
-  const targetWin = (settingsWindow && settingsWindow.isVisible()) ? settingsWindow : mainWindow;
-  const result = await dialog.showOpenDialog(targetWin, {
-    title: 'Select Project Folder for Antigravity',
-    properties: ['openDirectory']
-  });
-  if (!result.canceled && result.filePaths.length > 0) {
-    const selectedPath = result.filePaths[0];
-    launchAgyInWorkspace(selectedPath);
-    if (settingsWindow && !settingsWindow.isDestroyed()) {
-      settingsWindow.hide();
-    }
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.send('workspaces-updated', {
-        workspaces: getWorkspaces(),
-        lastOpened: userConfig.lastOpenedWorkspace
-      });
-    }
-  }
-});
 
 ipcMain.on('set-ignore-mouse-events', (event, ignore, options) => {
   const win = BrowserWindow.fromWebContents(event.sender);
