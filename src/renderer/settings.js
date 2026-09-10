@@ -52,9 +52,18 @@ function setActivePositionButton(pos) {
   });
 }
 
-if (btnPosLeft) btnPosLeft.addEventListener('click', () => api.setPosition('left'));
-if (btnPosCenter) btnPosCenter.addEventListener('click', () => api.setPosition('center'));
-if (btnPosRight) btnPosRight.addEventListener('click', () => api.setPosition('right'));
+if (btnPosLeft) btnPosLeft.addEventListener('click', () => {
+  setActivePositionButton('left');
+  api.setPosition('left');
+});
+if (btnPosCenter) btnPosCenter.addEventListener('click', () => {
+  setActivePositionButton('center');
+  api.setPosition('center');
+});
+if (btnPosRight) btnPosRight.addEventListener('click', () => {
+  setActivePositionButton('right');
+  api.setPosition('right');
+});
 
 if (api && api.onPositionChanged) {
   api.onPositionChanged((info) => {

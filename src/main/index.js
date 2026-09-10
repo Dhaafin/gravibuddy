@@ -74,10 +74,14 @@ function applyPosition(pos) {
     height: bounds.height
   }, false);
 
-  mainWindow.webContents.send('position-changed', {
+  const eventData = {
     position: pos,
     orientation: bounds.orientation
-  });
+  };
+  mainWindow.webContents.send('position-changed', eventData);
+  if (settingsWindow && !settingsWindow.isDestroyed()) {
+    settingsWindow.webContents.send('position-changed', eventData);
+  }
 }
 
 let settingsWindow = null;
@@ -270,16 +274,22 @@ ipcMain.on('get-initial-config', event => {
   const bounds = getWindowBoundsForPosition(currentPosition);
   event.reply('initial-config', {
     ...userConfig,
+    position: currentPosition,
     orientation: bounds.orientation
   });
 });
 
 function broadcastConfigChange() {
+  const cfgPayload = {
+    ...userConfig,
+    position: currentPosition,
+    orientation: getWindowBoundsForPosition(currentPosition).orientation
+  };
   if (mainWindow && !mainWindow.isDestroyed()) {
-    mainWindow.webContents.send('initial-config', {
-      ...userConfig,
-      orientation: getWindowBoundsForPosition(currentPosition).orientation
-    });
+    mainWindow.webContents.send('initial-config', cfgPayload);
+  }
+  if (settingsWindow && !settingsWindow.isDestroyed()) {
+    settingsWindow.webContents.send('initial-config', cfgPayload);
   }
 }
 
@@ -320,6 +330,11 @@ ipcMain.on('toggle-settings', () => {
       Math.round((screenWidth - 360) / 2),
       Math.round((screenHeight - 450) / 2)
     );
+    settingsWindow.webContents.send('initial-config', {
+      ...userConfig,
+      position: currentPosition,
+      orientation: getWindowBoundsForPosition(currentPosition).orientation
+    });
     settingsWindow.show();
     settingsWindow.focus();
   }
