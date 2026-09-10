@@ -93,7 +93,7 @@ node test-event.js waiting    # Simulate tool permission required
 node test-event.js idle       # Reset to idle standby
 ```
 
-Or open the in-app **Island Settings** (click the ⚙️ icon or right-click the pill) and use the **Test Animations** buttons.
+Or open the in-app **Control Center Settings** (click the ⚙️ icon or right-click the pill) and use the **Preview States** tactile tiles.
 
 ---
 
