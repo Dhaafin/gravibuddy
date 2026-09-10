@@ -13,8 +13,6 @@ const btnToggleStealth = document.getElementById('btnToggleStealth');
 const appleToggleStealth = document.getElementById('appleToggleStealth');
 const btnToggleThinkingPreview = document.getElementById('btnToggleThinkingPreview');
 const appleToggleThinkingPreview = document.getElementById('appleToggleThinkingPreview');
-const btnBrowseFolder = document.getElementById('btnBrowseFolder');
-const workspaceList = document.getElementById('workspaceList');
 
 const testThinking = document.getElementById('testThinking');
 const testDone = document.getElementById('testDone');
@@ -101,60 +99,6 @@ if (btnToggleThinkingPreview && appleToggleThinkingPreview) {
   });
 }
 
-// Workspaces
-async function loadWorkspaces() {
-  if (!api || !api.getWorkspacesData) return;
-  try {
-    const data = await api.getWorkspacesData();
-    renderWorkspaces(data);
-  } catch (e) {}
-}
-
-function renderWorkspaces(data) {
-  if (!workspaceList) return;
-  workspaceList.innerHTML = '';
-  const { workspaces = [], lastOpened = null } = data || {};
-
-  if (workspaces.length === 0) {
-    workspaceList.innerHTML = '<div class="workspace-empty">No projects detected. Click "+ Open Folder"</div>';
-    return;
-  }
-
-  workspaces.forEach(dirPath => {
-    const parts = dirPath.split(/[/\\]/);
-    const folderName = parts[parts.length - 1] || dirPath;
-    const isLast = dirPath === lastOpened;
-
-    const item = document.createElement('div');
-    item.className = `workspace-item${isLast ? ' is-last-opened' : ''}`;
-    item.title = `Launch agy in ${dirPath}`;
-    item.innerHTML = `
-      <div class="workspace-info">
-        <span class="workspace-name">${folderName}${isLast ? ' <span style="color:#10b981;font-size:8.5px;font-weight:700;">● Recent</span>' : ''}</span>
-        <span class="workspace-path">${dirPath}</span>
-      </div>
-      <div class="workspace-launch-badge">▶</div>
-    `;
-
-    item.addEventListener('click', () => {
-      api.launchWorkspace(dirPath);
-    });
-
-    workspaceList.appendChild(item);
-  });
-}
-
-if (btnBrowseFolder) {
-  btnBrowseFolder.addEventListener('click', () => {
-    api.browseAndLaunch();
-  });
-}
-
-if (api && api.onWorkspacesUpdated) {
-  api.onWorkspacesUpdated((data) => {
-    renderWorkspaces(data);
-  });
-}
 
 // Test State buttons
 if (testThinking) {
@@ -211,6 +155,5 @@ if (api && api.getInitialConfig) {
         appleToggleThinkingPreview.classList.toggle('active', thinkingPreviewEnabled);
       }
     }
-    loadWorkspaces();
   });
 }

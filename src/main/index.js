@@ -132,7 +132,7 @@ function createSettingsWindow() {
   const primaryDisplay = screen.getPrimaryDisplay();
   const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
   const width = 360;
-  const height = 570;
+  const height = 450;
 
   settingsWindow = new BrowserWindow({
     width,
@@ -364,7 +364,7 @@ ipcMain.on('toggle-settings', () => {
     const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
     settingsWindow.setPosition(
       Math.round((screenWidth - 360) / 2),
-      Math.round((screenHeight - 530) / 2)
+      Math.round((screenHeight - 450) / 2)
     );
     settingsWindow.show();
     settingsWindow.focus();
