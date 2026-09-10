@@ -1,6 +1,5 @@
 node_modules/
 last_payload.json
-**/last_payload.json
 userData/
 dist/
 *.log
