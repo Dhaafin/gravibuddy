@@ -24,6 +24,8 @@ const btnToggleStealth = document.getElementById('btnToggleStealth');
 const appleToggleStealth = document.getElementById('appleToggleStealth');
 const btnToggleThinkingPreview = document.getElementById('btnToggleThinkingPreview');
 const appleToggleThinkingPreview = document.getElementById('appleToggleThinkingPreview');
+const btnBrowseFolder = document.getElementById('btnBrowseFolder');
+const workspaceList = document.getElementById('workspaceList');
 
 const testThinking = document.getElementById('testThinking');
 const testDone = document.getElementById('testDone');
@@ -442,12 +444,77 @@ api.onAgentUpdate((data) => {
 });
 
 // ==========================================================
+// Workspaces Launcher
+// ==========================================================
+async function loadWorkspaces() {
+  if (!api || !api.getWorkspacesData) return;
+  try {
+    const data = await api.getWorkspacesData();
+    renderWorkspaces(data);
+  } catch (e) {}
+}
+
+function renderWorkspaces(data) {
+  if (!workspaceList) return;
+  workspaceList.innerHTML = '';
+  const { workspaces = [], lastOpened = null } = data || {};
+
+  if (workspaces.length === 0) {
+    workspaceList.innerHTML = '<div class="workspace-empty">No projects detected. Click "+ Open Folder"</div>';
+    return;
+  }
+
+  workspaces.forEach(dirPath => {
+    const parts = dirPath.split(/[/\\]/);
+    const folderName = parts[parts.length - 1] || dirPath;
+    const isLast = dirPath === lastOpened;
+
+    const item = document.createElement('div');
+    item.className = `workspace-item${isLast ? ' is-last-opened' : ''}`;
+    item.title = `Launch agy in ${dirPath}`;
+    item.innerHTML = `
+      <div class="workspace-info">
+        <span class="workspace-name">${folderName}${isLast ? ' <span style="color:#10b981;font-size:8.5px;font-weight:700;">● Recent</span>' : ''}</span>
+        <span class="workspace-path">${dirPath}</span>
+      </div>
+      <div class="workspace-launch-badge">▶</div>
+    `;
+
+    item.addEventListener('click', (e) => {
+      e.stopPropagation();
+      playPopSound('blossom');
+      api.launchWorkspace(dirPath);
+      settingsCard.classList.remove('visible');
+      scheduleSleep(3000);
+    });
+
+    workspaceList.appendChild(item);
+  });
+}
+
+if (btnBrowseFolder) {
+  btnBrowseFolder.addEventListener('click', (e) => {
+    e.stopPropagation();
+    api.browseAndLaunch();
+    settingsCard.classList.remove('visible');
+  });
+}
+
+if (api && api.onWorkspacesUpdated) {
+  api.onWorkspacesUpdated((data) => {
+    renderWorkspaces(data);
+  });
+}
+
+// ==========================================================
 // Settings UI Logic
 // ==========================================================
 function toggleSettings() {
   wakeUpIsland();
   settingsCard.classList.toggle('visible');
-  if (!settingsCard.classList.contains('visible')) {
+  if (settingsCard.classList.contains('visible')) {
+    loadWorkspaces();
+  } else {
     scheduleSleep(3500);
   }
 }
@@ -667,6 +734,7 @@ api.onInitialConfig((cfg) => {
       thinkingPreviewEnabled = cfg.thinkingPreview;
       appleToggleThinkingPreview.classList.toggle('active', thinkingPreviewEnabled);
     }
+    loadWorkspaces();
     scheduleSleep(4000);
   }
 });
