@@ -20,6 +20,8 @@ const btnToggleSound = document.getElementById('btnToggleSound');
 const appleToggleSound = document.getElementById('appleToggleSound');
 const btnToggleSleep = document.getElementById('btnToggleSleep');
 const appleToggleSleep = document.getElementById('appleToggleSleep');
+const btnToggleStealth = document.getElementById('btnToggleStealth');
+const appleToggleStealth = document.getElementById('appleToggleStealth');
 
 const testThinking = document.getElementById('testThinking');
 const testDone = document.getElementById('testDone');
@@ -30,10 +32,13 @@ const testIdle = document.getElementById('testIdle');
 // State Variables
 let soundEnabled = true;
 let sleepModeEnabled = true;
+let stealthCodingEnabled = true; // Zen Mode: Stay tucked during thinking, emerge only on alerts/done
 let currentPosition = 'center'; // 'center' | 'left' | 'right'
 let currentState = 'idle';
 let sleepTimer = null;
+let doneCelebrationTimer = null;
 let isSwitchingPosition = false;
+let isInteractiveArea = false;
 
 // Prevent Windows native context menu & toggle settings on right click
 window.addEventListener('contextmenu', e => {
@@ -119,7 +124,7 @@ function playPopSound(type = 'blossom') {
       osc.start(now);
       osc.stop(now + 0.12);
     } else if (type === 'implode') {
-      // Gentle droplet collapse / reverse suction: sweeps from 700Hz to 320Hz
+      // Gentle droplet collapse: sweeps from 700Hz to 320Hz
       osc.frequency.setValueAtTime(700, now);
       osc.frequency.exponentialRampToValueAtTime(320, now + 0.08);
       gain.gain.setValueAtTime(0.06, now);
@@ -145,7 +150,7 @@ function triggerWateryMorph() {
 }
 
 // ==========================================================
-// Sleep Mode (Option 1: Ultra-Thin Notch Tab)
+// Sleep Mode (Option 1: Ultra-Thin Notch Tab) & Wake Logic
 // ==========================================================
 function clearSleepTimer() {
   if (sleepTimer) {
@@ -154,7 +159,7 @@ function clearSleepTimer() {
   }
 }
 
-function wakeUpIsland() {
+function wakeUpIsland(reason = 'interaction') {
   clearSleepTimer();
   if (island.classList.contains('is-sleeping')) {
     island.classList.remove('is-sleeping');
@@ -165,18 +170,23 @@ function wakeUpIsland() {
 
 function enterSleepMode() {
   if (!sleepModeEnabled) return;
-  if (currentState !== 'idle') return;
   if (settingsCard.classList.contains('visible')) return;
   if (isSwitchingPosition) return;
-  if (isInteractiveArea) return;
+  if (isInteractiveArea) return; // Never sleep while user is hovering
+
+  // In waiting or done states, keep visible so user sees the alert/result
+  if (currentState === 'waiting') return;
+  if (currentState === 'done') return;
+
+  // In thinking state: sleep only if stealth coding mode is enabled
+  if (currentState === 'thinking' && !stealthCodingEnabled) return;
 
   island.classList.add('is-sleeping');
 }
 
-function scheduleSleep(delay = 4500) {
+function scheduleSleep(delay = 3500) {
   clearSleepTimer();
   if (!sleepModeEnabled) return;
-  if (currentState !== 'idle') return;
   if (settingsCard.classList.contains('visible')) return;
   if (isSwitchingPosition) return;
 
@@ -189,8 +199,6 @@ function scheduleSleep(delay = 4500) {
 // Intelligent Zero-Padding Click-Through Pass
 // (As long as mouse is not touching the pill/settings, clicks pass right through!)
 // ==========================================================
-let isInteractiveArea = false;
-
 function checkInteractiveHit(e) {
   const hit = document.elementFromPoint(e.clientX, e.clientY);
   const overIsland = Boolean(island && (island === hit || island.contains(hit)));
@@ -200,11 +208,23 @@ function checkInteractiveHit(e) {
   if (shouldBeInteractive !== isInteractiveArea) {
     isInteractiveArea = shouldBeInteractive;
     if (isInteractiveArea) {
+      // Mouse touched the island or settings card
       ipcRenderer.send('set-ignore-mouse-events', false);
-      wakeUpIsland();
+
+      // If it was sleeping, hover peeks it open
+      if (island.classList.contains('is-sleeping')) {
+        wakeUpIsland('hover');
+      }
     } else {
+      // Mouse left the interactive surfaces: clicks pass right through immediately!
       ipcRenderer.send('set-ignore-mouse-events', true, { forward: true });
-      scheduleSleep(3500);
+
+      // If in stealth coding mode and thinking: tuck back to sleep after short delay
+      if (currentState === 'thinking' && stealthCodingEnabled) {
+        scheduleSleep(1200);
+      } else if (currentState === 'idle') {
+        scheduleSleep(2500);
+      }
     }
   }
 }
@@ -216,7 +236,11 @@ window.addEventListener('mouseleave', () => {
     isInteractiveArea = false;
     ipcRenderer.send('set-ignore-mouse-events', true, { forward: true });
   }
-  scheduleSleep(3500);
+  if (currentState === 'thinking' && stealthCodingEnabled) {
+    scheduleSleep(1000);
+  } else if (currentState === 'idle') {
+    scheduleSleep(2500);
+  }
 });
 
 window.addEventListener('blur', () => {
@@ -227,70 +251,117 @@ window.addEventListener('blur', () => {
     isInteractiveArea = false;
     ipcRenderer.send('set-ignore-mouse-events', true, { forward: true });
   }
-  scheduleSleep(3500);
+  if (currentState === 'thinking' && stealthCodingEnabled) {
+    enterSleepMode();
+  } else if (currentState === 'idle') {
+    scheduleSleep(2000);
+  }
 });
 
 // ==========================================================
-// Agent State Updates & Dynamic Reactions
+// Content & Label Formatter
 // ==========================================================
-function updateIslandState(data) {
-  const modelLabel = formatModelName(data.model);
-
-  if (data.state !== currentState) {
-    triggerWateryMorph();
-    currentState = data.state;
+function updateIslandLabels(data, modelLabel) {
+  if (data.quotaPercent !== null && data.quotaPercent !== undefined) {
+    vQuota.textContent = `${data.quotaPercent}%`;
   }
 
-  // Activity immediately wakes the island from sleep
-  wakeUpIsland();
-
-  island.classList.remove('state-thinking', 'state-done', 'state-waiting');
-
   if (data.state === 'thinking') {
-    island.classList.add('state-thinking');
     primaryLabel.textContent = 'Antigravity Coding';
     secondaryLabel.textContent = data.message || `Processing with ${modelLabel}`;
     metricVal.textContent = 'ACTIVE';
     vState.textContent = 'BUSY';
   } else if (data.state === 'done') {
-    island.classList.add('state-done');
     primaryLabel.textContent = 'Task Completed';
     secondaryLabel.textContent = `Ready for next prompt • ${modelLabel}`;
     metricVal.textContent = 'DONE';
     vState.textContent = 'DONE';
-    playChime('success');
-
-    // Display celebration for 4.5s then return to idle
-    setTimeout(() => {
-      if (!island.classList.contains('state-thinking') && !island.classList.contains('state-waiting')) {
-        island.classList.remove('state-done');
-        triggerWateryMorph();
-        currentState = 'idle';
-        primaryLabel.textContent = 'Antigravity';
-        secondaryLabel.textContent = modelLabel;
-        metricVal.textContent = data.quotaPercent !== null ? `${data.quotaPercent}% QTA` : 'READY';
-        vState.textContent = 'IDLE';
-        scheduleSleep(4000);
-      }
-    }, 4500);
   } else if (data.state === 'waiting') {
-    island.classList.add('state-waiting');
     primaryLabel.textContent = 'Action Required';
     secondaryLabel.textContent = data.message || 'Waiting for tool approval in terminal';
     metricVal.textContent = 'WAIT';
     vState.textContent = 'WAIT';
-    playChime('alert');
   } else {
-    // Normal Idle
     primaryLabel.textContent = 'Antigravity';
     secondaryLabel.textContent = modelLabel;
     metricVal.textContent = data.quotaPercent !== null ? `${data.quotaPercent}% QTA` : (data.contextPercent !== null ? `${data.contextPercent}% CTX` : 'READY');
     vState.textContent = 'IDLE';
-    scheduleSleep(4500);
   }
+}
 
-  if (data.quotaPercent !== null && data.quotaPercent !== undefined) {
-    vQuota.textContent = `${data.quotaPercent}%`;
+// ==========================================================
+// Agent State Updates (Zen Coding & Terminal Bug Fix)
+// ==========================================================
+function updateIslandState(data) {
+  const modelLabel = formatModelName(data.model);
+  const previousState = currentState;
+  const targetState = data.state || 'idle';
+  const stateChanged = previousState !== targetState;
+  currentState = targetState;
+
+  // Always update text and metrics in DOM quietly
+  updateIslandLabels(data, modelLabel);
+
+  if (targetState === 'waiting') {
+    // 🚨 ACTION REQUIRED: Must bloom open immediately so user notices!
+    wakeUpIsland('alert');
+    island.classList.remove('state-thinking', 'state-done');
+    island.classList.add('state-waiting');
+    triggerWateryMorph();
+    playChime('alert');
+  } else if (targetState === 'done') {
+    // 🌟 CELEBRATION: Task finished!
+    wakeUpIsland('done');
+    island.classList.remove('state-thinking', 'state-waiting');
+    island.classList.add('state-done');
+    triggerWateryMorph();
+    playChime('success');
+
+    // Bloom for 4.5s preview, then gracefully return to idle and tuck to notch
+    clearTimeout(doneCelebrationTimer);
+    doneCelebrationTimer = setTimeout(() => {
+      if (currentState === 'done') {
+        currentState = 'idle';
+        island.classList.remove('state-done');
+        triggerWateryMorph();
+        updateIslandLabels({ state: 'idle', model: data.model, quotaPercent: data.quotaPercent }, modelLabel);
+        scheduleSleep(1500);
+      }
+    }, 4500);
+  } else if (targetState === 'thinking') {
+    // 🟣 CODING / THINKING:
+    island.classList.remove('state-done', 'state-waiting');
+    island.classList.add('state-thinking');
+
+    if (stateChanged) {
+      triggerWateryMorph();
+    }
+
+    if (stealthCodingEnabled) {
+      // ZEN STEALTH CODING: Keep tucked in the notch tab with purple breathing glow!
+      // NEVER block user's screen or code editor while AI is working.
+      if (!isInteractiveArea && !settingsCard.classList.contains('visible')) {
+        island.classList.add('is-sleeping');
+      }
+    } else {
+      // Normal mode: show expanded thinking island
+      wakeUpIsland('thinking');
+    }
+  } else {
+    // 🟢 NORMAL IDLE:
+    island.classList.remove('state-thinking', 'state-done', 'state-waiting');
+
+    if (stateChanged) {
+      triggerWateryMorph();
+    }
+
+    // CRITICAL BUG FIX FOR TERMINAL TYPING:
+    // When user types in terminal, Antigravity statusLine fires with state: idle.
+    // If the island is ALREADY sleeping, DO NOT WAKE IT UP!
+    // Simply let it remain sleeping peacefully.
+    if (!island.classList.contains('is-sleeping') && !isInteractiveArea && !settingsCard.classList.contains('visible')) {
+      scheduleSleep(3000);
+    }
   }
 }
 
@@ -449,6 +520,18 @@ btnToggleSleep.addEventListener('click', () => {
   }
 });
 
+// Stealth Coding Mode Toggle
+btnToggleStealth.addEventListener('click', () => {
+  stealthCodingEnabled = !stealthCodingEnabled;
+  appleToggleStealth.classList.toggle('active', stealthCodingEnabled);
+  ipcRenderer.send('save-stealth-config', stealthCodingEnabled);
+  if (stealthCodingEnabled && currentState === 'thinking' && !isInteractiveArea) {
+    enterSleepMode();
+  } else if (!stealthCodingEnabled && currentState === 'thinking') {
+    wakeUpIsland('stealth-off');
+  }
+});
+
 // ==========================================================
 // Settings Test Buttons
 // ==========================================================
@@ -494,6 +577,10 @@ ipcRenderer.on('initial-config', (event, cfg) => {
     if (cfg.sleepMode !== undefined) {
       sleepModeEnabled = cfg.sleepMode;
       appleToggleSleep.classList.toggle('active', sleepModeEnabled);
+    }
+    if (cfg.stealthMode !== undefined) {
+      stealthCodingEnabled = cfg.stealthMode;
+      appleToggleStealth.classList.toggle('active', stealthCodingEnabled);
     }
     scheduleSleep(4000);
   }

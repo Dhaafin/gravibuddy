@@ -19,7 +19,7 @@ function loadConfig() {
       return JSON.parse(fs.readFileSync(LEGACY_CONFIG_FILE, 'utf8'));
     }
   } catch (e) {}
-  return { position: 'center', sound: true, sleepMode: true };
+  return { position: 'center', sound: true, sleepMode: true, stealthMode: true };
 }
 
 function saveConfig(cfg) {
@@ -37,7 +37,7 @@ function getWindowBoundsForPosition(pos) {
 
   if (pos === 'left') {
     const width = 440;
-    const height = 360;
+    const height = 400;
     const x = areaX;
     const y = areaY + Math.round((screenHeight - height) / 2);
     return { width, height, x, y, orientation: 'vertical-left' };
@@ -45,7 +45,7 @@ function getWindowBoundsForPosition(pos) {
 
   if (pos === 'right') {
     const width = 440;
-    const height = 360;
+    const height = 400;
     const x = areaX + screenWidth - width;
     const y = areaY + Math.round((screenHeight - height) / 2);
     return { width, height, x, y, orientation: 'vertical-right' };
@@ -53,7 +53,7 @@ function getWindowBoundsForPosition(pos) {
 
   // Default: Center Top Horizontal
   const width = 500;
-  const height = 280;
+  const height = 340;
   const x = areaX + Math.round((screenWidth - width) / 2);
   const y = areaY; // Flush with top screen edge for perfect notch tucking
   return { width, height, x, y, orientation: 'horizontal-center' };
@@ -235,6 +235,11 @@ ipcMain.on('save-sound-config', (event, soundEnabled) => {
 
 ipcMain.on('save-sleep-config', (event, sleepEnabled) => {
   userConfig.sleepMode = sleepEnabled;
+  saveConfig(userConfig);
+});
+
+ipcMain.on('save-stealth-config', (event, stealthEnabled) => {
+  userConfig.stealthMode = stealthEnabled;
   saveConfig(userConfig);
 });
 
