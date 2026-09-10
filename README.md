@@ -15,9 +15,10 @@
 - 🌙 **Responsive Bezel Sleep Mode**:
   - On idle (~1.4s), smoothly retracts up into the screen bezel, leaving a minimalist 6px hardware tab with a gentle breathing ambient LED indicator.
   - **Hover Intent Filter (160ms)**: Fast cursor sweeps over browser tabs will never accidentally pop the notch open; blooms only on intentional hover or direct click.
-- 🥷 **Stealth Coding (Zen Mode)**:
+- 🥷 **Stealth Coding & Peek-on-Start**:
   - While Antigravity is processing/coding (`thinking`), it stays tucked away in the notch tab with a gentle violet breathing LED line, keeping your code editor tabs and terminal 100% visible and unblocked.
-  - Only pops out when an action is required (`waiting`) or when the task finishes (`done`).
+  - **Peek on Start Toggle**: Optionally pops up for 2.5s upon task start so you see what is running, then automatically retracts into sleep.
+  - **Persistent Alert & Done Displays**: When an action is required (`waiting`) or a task finishes (`done`), the HUD stays bloomed open continuously until you acknowledge it or continue with the next command.
   - Terminal keystrokes and cursor movements update telemetry silently without triggering annoying popups.
 - 🎯 **Intelligent Zero-Padding Click-Through**:
   - Full mouse event pass-through on transparent screen areas.
@@ -87,10 +88,10 @@ To pipe real-time agent states from Antigravity CLI into Gravibuddy:
 In a separate terminal, trigger state simulations:
 
 ```powershell
-node test-event.js thinking   # Simulate active coding state
-node test-event.js done       # Simulate task finished with chime
-node test-event.js waiting    # Simulate tool permission required
-node test-event.js idle       # Reset to idle standby
+node cli/test-event.js thinking   # Simulate active coding state
+node cli/test-event.js done       # Simulate task finished (stays open until continued)
+node cli/test-event.js waiting    # Simulate tool permission required (stays open)
+node cli/test-event.js idle       # Reset to idle standby
 ```
 
 Or open the in-app **Control Center Settings** (click the ⚙️ icon or right-click the pill) and use the **Preview States** tactile tiles.
@@ -101,16 +102,23 @@ Or open the in-app **Control Center Settings** (click the ⚙️ icon or right-c
 
 ```
 gravibuddy/
-├── assets/
-│   └── antigravity-icon.png  # Official high-res logo
-├── main.js                   # Electron main process & HTTP bridge (port 8998)
-├── renderer.js               # Web Audio synth, click-through, state machine
-├── index.html                # Dynamic Island & Control Center DOM
-├── style.css                 # Squircle glassmorphism & fluid spring physics
-├── forwarder.js              # Asynchronous CLI statusline forwarder
-├── forwarder.cmd             # Windows launcher script for forwarder
-├── test-event.js             # CLI event tester utility
-└── package.json              # Project configuration
+├── assets/                  # Official high-res branding & icons
+│   └── antigravity-icon.png
+├── cli/                     # CLI integration & forwarder
+│   ├── forwarder.cmd        # Statusline pipe launcher
+│   ├── forwarder.js         # HTTP dispatcher & agy-hud pipe
+│   └── test-event.js        # CLI simulation tool
+├── src/
+│   ├── main/
+│   │   └── index.js         # Window lifecycle & HTTP server (port 8998)
+│   ├── preload/
+│   │   └── index.js         # Secure contextBridge API
+│   └── renderer/
+│       ├── index.html       # Dynamic Island & Control Center DOM
+│       ├── renderer.js      # State machine, audio & interaction
+│       └── style.css        # Squircle glassmorphism & fluid spring physics
+├── forwarder.cmd            # Root backward-compatible shim
+└── package.json             # App metadata & dependencies
 ```
 
 ---
