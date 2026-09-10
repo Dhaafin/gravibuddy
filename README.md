@@ -11,10 +11,10 @@
 
 ## ✨ Features
 
-- 🌊 **Fluid Watery Morphing**: Viscous jelly squash-and-stretch rubber-band spring physics (`cubic-bezier(0.19, 1.45, 0.26, 1)`) with specular glass light sweeps.
-- 🌙 **Option 1 Sleep Mode (Ultra-Thin Notch Tab)**:
-  - On idle (~4.5s), the island tucks smoothly into the screen edge, leaving a minimalist ~8px notch tab with a gentle breathing ambient LED line.
-  - Instantly blooms and unfurls on cursor hover or on any CLI activity (`thinking`, `done`, `waiting`).
+- 🖥️ **Attached Hardware Notch**: Sits completely flush against the top screen bezel (zero floating gap) with signature MacBook-grade concave outer fillet ears that seamlessly bridge the notch into the display frame.
+- 🌙 **Responsive Bezel Sleep Mode**:
+  - On idle (~1.4s), smoothly retracts up into the screen bezel, leaving a minimalist 6px hardware tab with a gentle breathing ambient LED indicator.
+  - **Hover Intent Filter (160ms)**: Fast cursor sweeps over browser tabs will never accidentally pop the notch open; blooms only on intentional hover or direct click.
 - 🥷 **Stealth Coding (Zen Mode)**:
   - While Antigravity is processing/coding (`thinking`), it stays tucked away in the notch tab with a gentle violet breathing LED line, keeping your code editor tabs and terminal 100% visible and unblocked.
   - Only pops out when an action is required (`waiting`) or when the task finishes (`done`).
