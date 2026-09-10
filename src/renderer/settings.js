@@ -1,4 +1,4 @@
-﻿const api = window.graviAPI;
+const api = window.graviAPI;
 
 // DOM Elements
 const btnCloseSettings = document.getElementById('btnCloseSettings');
@@ -21,6 +21,7 @@ const testDone = document.getElementById('testDone');
 const testWait = document.getElementById('testWait');
 const testSleep = document.getElementById('testSleep');
 const testIdle = document.getElementById('testIdle');
+const btnQuitGravibuddy = document.getElementById('btnQuitGravibuddy');
 
 let soundEnabled = true;
 let sleepModeEnabled = true;
@@ -31,6 +32,13 @@ let thinkingPreviewEnabled = true;
 if (btnCloseSettings) {
   btnCloseSettings.addEventListener('click', () => {
     api.closeSettings();
+  });
+}
+
+// Quit Gravibuddy completely
+if (btnQuitGravibuddy) {
+  btnQuitGravibuddy.addEventListener('click', () => {
+    api.quitApp();
   });
 }
 

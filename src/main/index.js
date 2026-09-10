@@ -132,7 +132,7 @@ function createSettingsWindow() {
   const primaryDisplay = screen.getPrimaryDisplay();
   const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
   const width = 360;
-  const height = 530;
+  const height = 570;
 
   settingsWindow = new BrowserWindow({
     width,
@@ -381,6 +381,10 @@ ipcMain.on('test-state', (event, stateData) => {
   if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.webContents.send('agent-update', stateData);
   }
+});
+
+ipcMain.on('quit-app', () => {
+  app.quit();
 });
 
 ipcMain.on('reset-to-idle', () => {

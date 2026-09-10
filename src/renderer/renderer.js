@@ -10,6 +10,7 @@ const vState = document.getElementById('vState');
 const vQuota = document.getElementById('vQuota');
 const sleepIndicator = document.getElementById('sleepIndicator');
 const btnSettings = document.getElementById('btnSettings');
+const btnCloseApp = document.getElementById('btnCloseApp');
 
 // State Variables
 let soundEnabled = true;
@@ -421,6 +422,13 @@ btnSettings.addEventListener('click', (e) => {
   e.stopPropagation();
   api.toggleSettings();
 });
+
+if (btnCloseApp) {
+  btnCloseApp.addEventListener('click', (e) => {
+    e.stopPropagation();
+    api.quitApp();
+  });
+}
 
 function applyOrientationClasses(orientation) {
   islandRoot.classList.remove('vertical-left', 'vertical-right');

@@ -57,5 +57,8 @@ contextBridge.exposeInMainWorld('graviAPI', {
   },
   resetToIdle: () => {
     ipcRenderer.send('reset-to-idle');
+  },
+  quitApp: () => {
+    ipcRenderer.send('quit-app');
   }
 });
