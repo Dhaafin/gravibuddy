@@ -11,7 +11,6 @@
 
 ## ✨ Features
 
-- 🚀 **One-Click Workspace Launcher**: Auto-discovers your projects from Antigravity CLI's `trustedWorkspaces`. Launch any project in Windows Terminal with `agy` directly from the Gravibuddy Control Center without manually opening a terminal or typing commands.
 - 🔍 **Center Spotlight Control Center**: Opens cleanly in the dead-center of your screen (Raycast/Spotlight style) with blur/Esc auto-hide, keeping the top notch 100% compact and uncluttered.
 - 👻 **Complete Alt+Tab Stealth**: Native Win32 `WS_EX_TOOLWINDOW` integration completely hides Gravibuddy from the Windows Alt+Tab task switcher and taskbar.
 - 🖥️ **Attached Hardware Notch**: Sits completely flush against the top screen bezel (zero floating gap) with signature MacBook-grade concave outer fillet ears that seamlessly bridge the notch into the display frame.
