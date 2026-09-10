@@ -6,8 +6,15 @@ const island = document.getElementById('island');
 const primaryLabel = document.getElementById('primaryLabel');
 const secondaryLabel = document.getElementById('secondaryLabel');
 const metricVal = document.getElementById('metricVal');
-const vState = document.getElementById('vState');
-const vQuota = document.getElementById('vQuota');
+const gaugeFill = document.getElementById('gaugeFill');
+const glyphIdle = document.getElementById('glyphIdle');
+const glyphThinking = document.getElementById('glyphThinking');
+const glyphWaiting = document.getElementById('glyphWaiting');
+const glyphDone = document.getElementById('glyphDone');
+const vTooltipDot = document.getElementById('vTooltipDot');
+const vTooltipStatus = document.getElementById('vTooltipStatus');
+const vTooltipModel = document.getElementById('vTooltipModel');
+const vGlyphBtn = document.getElementById('vGlyphBtn');
 const sleepIndicator = document.getElementById('sleepIndicator');
 const btnSettings = document.getElementById('btnSettings');
 const btnCloseApp = document.getElementById('btnCloseApp');
@@ -291,34 +298,75 @@ window.addEventListener('blur', () => {
   }
 });
 
+function updateRadialGauge(quotaPercent) {
+  if (!gaugeFill) return;
+  const pct = Math.max(0, Math.min(100, quotaPercent ?? 95));
+  // Circle radius 15.5 -> Circumference = 2 * PI * 15.5 = 97.389
+  const offset = 97.39 * (1 - pct / 100);
+  gaugeFill.style.strokeDashoffset = offset.toFixed(1);
+
+  if (pct <= 15) {
+    gaugeFill.style.stroke = '#ef4444';
+  } else if (pct <= 35) {
+    gaugeFill.style.stroke = '#f59e0b';
+  } else {
+    gaugeFill.style.stroke = '#10b981';
+  }
+}
+
+function updateStateGlyph(state, modelLabel, message) {
+  const glyphs = [glyphIdle, glyphThinking, glyphWaiting, glyphDone];
+  glyphs.forEach(g => {
+    if (g) g.classList.remove('active');
+  });
+
+  const model = modelLabel || 'Antigravity';
+  if (vTooltipModel) vTooltipModel.textContent = model;
+
+  if (state === 'thinking') {
+    if (glyphThinking) glyphThinking.classList.add('active');
+    if (vTooltipStatus) vTooltipStatus.textContent = 'Coding...';
+    if (vTooltipDot) vTooltipDot.className = 'v-tooltip-dot dot-thinking';
+  } else if (state === 'waiting') {
+    if (glyphWaiting) glyphWaiting.classList.add('active');
+    if (vTooltipStatus) vTooltipStatus.textContent = message || 'Action Required';
+    if (vTooltipDot) vTooltipDot.className = 'v-tooltip-dot dot-waiting';
+  } else if (state === 'done') {
+    if (glyphDone) glyphDone.classList.add('active');
+    if (vTooltipStatus) vTooltipStatus.textContent = 'Task Completed';
+    if (vTooltipDot) vTooltipDot.className = 'v-tooltip-dot dot-done';
+  } else {
+    if (glyphIdle) glyphIdle.classList.add('active');
+    if (vTooltipStatus) vTooltipStatus.textContent = 'Standby';
+    if (vTooltipDot) vTooltipDot.className = 'v-tooltip-dot dot-idle';
+  }
+}
+
 // ==========================================================
 // Content & Label Formatter
 // ==========================================================
 function updateIslandLabels(data, modelLabel) {
-  if (data.quotaPercent !== null && data.quotaPercent !== undefined) {
-    vQuota.textContent = `${data.quotaPercent}%`;
-  }
+  updateRadialGauge(data.quotaPercent);
+  updateStateGlyph(data.state, modelLabel, data.message);
 
   if (data.state === 'thinking') {
     primaryLabel.textContent = 'Antigravity Coding';
     secondaryLabel.textContent = data.message || `Processing with ${modelLabel}`;
     metricVal.textContent = 'ACTIVE';
-    vState.textContent = 'BUSY';
   } else if (data.state === 'done') {
     primaryLabel.textContent = 'Task Completed';
     secondaryLabel.textContent = `Ready for next prompt • ${modelLabel}`;
     metricVal.textContent = 'DONE';
-    vState.textContent = 'DONE';
   } else if (data.state === 'waiting') {
     primaryLabel.textContent = 'Action Required';
     secondaryLabel.textContent = data.message || 'Waiting for tool approval in terminal';
     metricVal.textContent = 'WAIT';
-    vState.textContent = 'WAIT';
   } else {
     primaryLabel.textContent = 'Antigravity';
     secondaryLabel.textContent = modelLabel;
-    metricVal.textContent = data.quotaPercent !== null ? `${data.quotaPercent}% QTA` : (data.contextPercent !== null ? `${data.contextPercent}% CTX` : 'READY');
-    vState.textContent = 'IDLE';
+    metricVal.textContent = data.quotaPercent !== null && data.quotaPercent !== undefined
+      ? `${data.quotaPercent}% QTA`
+      : (data.contextPercent !== null && data.contextPercent !== undefined ? `${data.contextPercent}% CTX` : 'READY');
   }
 }
 

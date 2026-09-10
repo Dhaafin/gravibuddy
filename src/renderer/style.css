@@ -636,12 +636,12 @@ body {
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  width: 52px;
-  min-width: 52px;
-  height: 192px;
-  min-height: 192px;
-  border-radius: 26px;
-  padding: 10px 5px;
+  width: 48px;
+  min-width: 48px;
+  height: 168px;
+  min-height: 168px;
+  border-radius: 24px;
+  padding: 8px 4px;
   gap: 0;
 }
 
@@ -659,11 +659,11 @@ body {
 
 /* Vertical Sleep State */
 .island-root.vertical-left .island.is-sleeping {
-  translate: -45px 0;
-  width: 52px;
-  min-width: 52px;
-  height: 120px;
-  min-height: 120px;
+  translate: -41px 0;
+  width: 48px;
+  min-width: 48px;
+  height: 96px;
+  min-height: 96px;
   border-radius: 0 16px 16px 0;
   cursor: pointer;
   box-shadow: 
@@ -687,11 +687,11 @@ body {
 }
 
 .island-root.vertical-right .island.is-sleeping {
-  translate: 45px 0;
-  width: 52px;
-  min-width: 52px;
-  height: 120px;
-  min-height: 120px;
+  translate: 41px 0;
+  width: 48px;
+  min-width: 48px;
+  height: 96px;
+  min-height: 96px;
   border-radius: 16px 0 0 16px;
   cursor: pointer;
   box-shadow: 
@@ -722,61 +722,251 @@ body {
   display: none;
 }
 
-/* Clean Horizontal Badges in Vertical Stack */
+/* Radial Quota Gauge (Apple Watch Activity Ring) */
+.radial-gauge {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  width: 36px;
+  height: 36px;
+  transform: rotate(-90deg);
+  pointer-events: none;
+  display: none;
+  z-index: 10;
+}
+
+.island-root.vertical-left .radial-gauge,
+.island-root.vertical-right .radial-gauge {
+  display: block;
+}
+
+.gauge-track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.12);
+  stroke-width: 2.2px;
+}
+
+.gauge-fill {
+  fill: none;
+  stroke: #10b981;
+  stroke-width: 2.2px;
+  stroke-linecap: round;
+  stroke-dasharray: 97.4;
+  stroke-dashoffset: 4.9;
+  transition: stroke-dashoffset 0.6s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.3s ease;
+  filter: drop-shadow(0 0 3px rgba(16, 185, 129, 0.5));
+}
+
+/* Vertical Stack & Glyph Controls */
 .island-root.vertical-left .vertical-stack,
 .island-root.vertical-right .vertical-stack {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   width: 100%;
 }
 
 .v-divider {
-  width: 22px;
+  width: 20px;
   height: 0.5px;
   background: rgba(255, 255, 255, 0.12);
 }
 
-.v-badge {
-  font-size: 9.5px;
-  font-weight: 700;
-  text-align: center;
-  letter-spacing: 0.02em;
-  padding: 2.5px 5px;
-  border-radius: 6px;
-  width: 38px;
-  display: block;
-}
-
-.v-badge.v-state {
-  background: rgba(255, 255, 255, 0.08);
+/* Interactive State Glyph Button */
+.v-glyph-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 0.5px solid rgba(255, 255, 255, 0.1);
   color: #d1d1d6;
-  border: 0.5px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  outline: none;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.12);
 }
 
-.v-badge.v-quota {
-  background: rgba(48, 209, 88, 0.15);
-  color: #30d158;
-  border: 0.5px solid rgba(48, 209, 88, 0.3);
+.v-glyph-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.24);
+  transform: scale(1.06);
+  color: #ffffff;
 }
 
-.island.state-thinking .v-badge.v-state {
-  background: rgba(191, 90, 242, 0.2);
-  color: #e9d5ff;
-  border-color: rgba(191, 90, 242, 0.4);
+.v-glyph-btn:active {
+  transform: scale(0.94);
 }
 
-.island.state-done .v-badge.v-state {
-  background: rgba(48, 209, 88, 0.2);
-  color: #6ee7b7;
-  border-color: rgba(48, 209, 88, 0.4);
+.v-glyph-icon {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.island.state-waiting .v-badge.v-state {
-  background: rgba(255, 159, 10, 0.2);
-  color: #fde68a;
-  border-color: rgba(255, 159, 10, 0.4);
+.v-glyph-icon.active {
+  display: flex;
+}
+
+/* State-specific Glyph Accents */
+.island.state-thinking .v-glyph-btn {
+  background: rgba(168, 85, 247, 0.18);
+  border-color: rgba(168, 85, 247, 0.4);
+  color: #c084fc;
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.35);
+}
+
+.island.state-thinking .glyph-thinking svg {
+  animation: agy-sparkle-spin 7s linear infinite;
+}
+
+@keyframes agy-sparkle-spin {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.12); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+.island.state-waiting .v-glyph-btn {
+  background: rgba(245, 158, 11, 0.2);
+  border-color: rgba(245, 158, 11, 0.45);
+  color: #fbbf24;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+  animation: agy-pulse-amber 1.8s infinite;
+}
+
+@keyframes agy-pulse-amber {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.07); }
+}
+
+.island.state-done .v-glyph-btn {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: rgba(16, 185, 129, 0.45);
+  color: #34d399;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.35);
+}
+
+/* Flyout Tooltip (VisionOS / Apple Glass Pill) */
+.v-flyout-tooltip {
+  position: absolute;
+  top: 50%;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  background: rgba(16, 16, 20, 0.94);
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  border: 0.5px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 
+    0 12px 30px rgba(0, 0, 0, 0.85),
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border-radius: 11px;
+  padding: 6px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  white-space: nowrap;
+  z-index: 9999;
+  transition: 
+    opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.26s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0.22s;
+}
+
+/* Tooltip positioning for left dock */
+.island-root.vertical-left .v-flyout-tooltip {
+  left: calc(100% + 10px);
+  transform: translateY(-50%) translateX(-8px) scale(0.92);
+  transform-origin: left center;
+}
+
+.island-root.vertical-left .v-glyph-btn:hover .v-flyout-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) translateX(0) scale(1);
+}
+
+/* Tooltip positioning for right dock */
+.island-root.vertical-right .v-flyout-tooltip {
+  right: calc(100% + 10px);
+  transform: translateY(-50%) translateX(8px) scale(0.92);
+  transform-origin: right center;
+}
+
+.island-root.vertical-right .v-glyph-btn:hover .v-flyout-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) translateX(0) scale(1);
+}
+
+.v-tooltip-header {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.v-tooltip-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.v-tooltip-dot.dot-idle {
+  background: #10b981;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+}
+
+.v-tooltip-dot.dot-thinking {
+  background: #a855f7;
+  box-shadow: 0 0 6px rgba(168, 85, 247, 0.7);
+}
+
+.v-tooltip-dot.dot-waiting {
+  background: #f59e0b;
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.7);
+}
+
+.v-tooltip-dot.dot-done {
+  background: #10b981;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.7);
+}
+
+.v-tooltip-status {
+  font-size: 10px;
+  font-weight: 700;
+  color: #f4f4f5;
+  letter-spacing: 0.01em;
+}
+
+.v-tooltip-model {
+  font-size: 9px;
+  color: #a1a1aa;
+  font-weight: 500;
+  padding-left: 11px;
+}
+
+/* Compact Trailing Controls for Vertical Dock */
+.island-root.vertical-left .trailing-accessory,
+.island-root.vertical-right .trailing-accessory {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.island-root.vertical-left .settings-btn,
+.island-root.vertical-right .settings-btn {
+  width: 22px;
+  height: 22px;
 }
 
 /* ==========================================================

@@ -21,6 +21,11 @@
       <!-- Leading Dynamic Accessory (Official Antigravity Logo) -->
       <div class="leading-accessory" id="leadingAccessory">
         <div class="logo-orb" id="logoOrb">
+          <!-- Radial Quota Gauge (Apple Watch Activity Ring Style) -->
+          <svg class="radial-gauge" id="radialGauge" viewBox="0 0 36 36">
+            <circle class="gauge-track" cx="18" cy="18" r="15.5" />
+            <circle class="gauge-fill" id="gaugeFill" cx="18" cy="18" r="15.5" />
+          </svg>
           <div class="logo-aura" id="logoAura"></div>
           <div class="logo-backdrop" id="logoBackdrop">
             <img src="../../assets/antigravity-icon.png" alt="Antigravity Logo" class="agy-logo-img" id="agyLogoImg">
@@ -41,11 +46,53 @@
         <div class="secondary-label" id="secondaryLabel">Ready & listening</div>
       </div>
 
-      <!-- Vertical Mode Stack (Clean Stacked Badges) -->
+      <!-- Vertical Mode Stack (Antigravity Glyphs & Model Flyout Tooltip) -->
       <div class="vertical-stack" id="verticalStack">
         <div class="v-divider"></div>
-        <span class="v-badge v-state" id="vState">IDLE</span>
-        <span class="v-badge v-quota" id="vQuota">94%</span>
+
+        <!-- Interactive State Glyph Button -->
+        <div class="v-glyph-btn" id="vGlyphBtn" tabindex="0" role="button" aria-label="Agent State & Model Info">
+          <!-- State Glyphs -->
+          <div class="v-glyph-icon glyph-idle active" id="glyphIdle" title="Standby">
+            <!-- Calm Antigravity Standby Diamond/Orb -->
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2.5L19.5 12L12 21.5L4.5 12L12 2.5Z" fill="currentColor" fill-opacity="0.18" />
+              <circle cx="12" cy="12" r="2.5" fill="currentColor" />
+            </svg>
+          </div>
+
+          <div class="v-glyph-icon glyph-thinking" id="glyphThinking" title="Coding">
+            <!-- Antigravity / Gemini 4-Point AI Sparkle Star -->
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor">
+              <path d="M12 1.5C12 7.298 7.298 12 1.5 12C7.298 12 12 16.702 12 22.5C12 16.702 16.702 12 22.5 12C16.702 12 12 7.298 12 1.5Z" />
+            </svg>
+          </div>
+
+          <div class="v-glyph-icon glyph-waiting" id="glyphWaiting" title="Action Required">
+            <!-- Terminal CLI Prompt & Cursor -->
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="4 7 10 12 4 17" />
+              <line x1="12" y1="17" x2="20" y2="17" />
+            </svg>
+          </div>
+
+          <div class="v-glyph-icon glyph-done" id="glyphDone" title="Task Completed">
+            <!-- Apple-Grade Completion Checkmark -->
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
+
+          <!-- Flyout Tooltip (Slides in smoothly towards the screen center) -->
+          <div class="v-flyout-tooltip" id="vFlyoutTooltip">
+            <div class="v-tooltip-header">
+              <span class="v-tooltip-dot dot-idle" id="vTooltipDot"></span>
+              <span class="v-tooltip-status" id="vTooltipStatus">Standby</span>
+            </div>
+            <div class="v-tooltip-model" id="vTooltipModel">Antigravity</div>
+          </div>
+        </div>
+
         <div class="v-divider"></div>
       </div>
 
