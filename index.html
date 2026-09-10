@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Gravibuddy</title>
+  <!-- Apple SF Pro Equivalent: Inter Display -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="island-root" id="islandRoot">
+    
+    <!-- Dynamic Island Pill (Horizontal or Vertical) -->
+    <div class="island" id="island">
+      
+      <!-- Leading Dynamic Accessory (Official Antigravity Logo) -->
+      <div class="leading-accessory" id="leadingAccessory">
+        <div class="logo-orb" id="logoOrb">
+          <div class="logo-aura" id="logoAura"></div>
+          <div class="logo-backdrop" id="logoBackdrop">
+            <img src="assets/antigravity-icon.png" alt="Antigravity Logo" class="agy-logo-img" id="agyLogoImg">
+          </div>
+        </div>
+
+        <!-- Waveform overlay for Thinking State -->
+        <div class="mini-waveform" id="miniWaveform">
+          <span class="bar bar-1"></span>
+          <span class="bar bar-2"></span>
+          <span class="bar bar-3"></span>
+        </div>
+      </div>
+
+      <!-- Center Typography Area (Horizontal Mode) -->
+      <div class="island-content" id="islandContent">
+        <div class="primary-label" id="primaryLabel">Antigravity</div>
+        <div class="secondary-label" id="secondaryLabel">Ready & listening</div>
+      </div>
+
+      <!-- Vertical Mode Stack (Clean Stacked Badges) -->
+      <div class="vertical-stack" id="verticalStack">
+        <div class="v-divider"></div>
+        <span class="v-badge v-state" id="vState">IDLE</span>
+        <span class="v-badge v-quota" id="vQuota">94%</span>
+        <div class="v-divider"></div>
+      </div>
+
+      <!-- Trailing Controls (Metrics + Settings Button) -->
+      <div class="trailing-accessory" id="trailingAccessory">
+        <!-- Metric Capsule (Horizontal mode) -->
+        <div class="metric-capsule" id="metricCapsule">
+          <span class="metric-dot"></span>
+          <span class="metric-val" id="metricVal">READY</span>
+        </div>
+
+        <!-- Settings Icon Button -->
+        <button class="settings-btn" id="btnSettings" title="Settings">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Sleep Notch Tab Indicator (Option 1: Minimalist Glowing Status Tab) -->
+      <div class="sleep-indicator" id="sleepIndicator">
+        <span class="sleep-bar"></span>
+      </div>
+    </div>
+
+    <!-- macOS Control Center Style Settings Card -->
+    <div class="settings-card" id="settingsCard">
+      <div class="card-header">
+        <div class="header-left">
+          <img src="assets/antigravity-icon.png" width="16" height="16" alt="Icon">
+          <span class="card-title">Island Settings</span>
+        </div>
+        <button class="card-close-btn" id="btnCloseSettings">✕</button>
+      </div>
+
+      <!-- Alignment Segmented Control -->
+      <div class="setting-group">
+        <div class="setting-label">Docking Position</div>
+        <div class="segmented-control">
+          <button class="segment-btn" data-pos="left" id="btnPosLeft">Left Dock</button>
+          <button class="segment-btn active" data-pos="center" id="btnPosCenter">Center Top</button>
+          <button class="segment-btn" data-pos="right" id="btnPosRight">Right Dock</button>
+        </div>
+      </div>
+
+      <!-- Sleep Mode (Auto-Hide) Toggle -->
+      <div class="setting-row" id="btnToggleSleep">
+        <div class="row-info">
+          <span class="row-label">Auto-Hide (Sleep Mode)</span>
+          <span class="row-sub">Peek & emerge on hover or alert</span>
+        </div>
+        <div class="apple-toggle active" id="appleToggleSleep">
+          <div class="toggle-thumb"></div>
+        </div>
+      </div>
+
+      <!-- Chime Audio Row -->
+      <div class="setting-row" id="btnToggleSound">
+        <div class="row-info">
+          <span class="row-label">Sound Effects</span>
+          <span class="row-sub">Apple chime & morph pops</span>
+        </div>
+        <div class="apple-toggle active" id="appleToggleSound">
+          <div class="toggle-thumb"></div>
+        </div>
+      </div>
+
+      <!-- Quick Test Row -->
+      <div class="setting-group" style="margin-top: 10px;">
+        <div class="setting-label">Test Animations</div>
+        <div class="test-btn-row">
+          <button class="test-pill" id="testThinking">Thinking</button>
+          <button class="test-pill" id="testDone">Done</button>
+          <button class="test-pill" id="testWait">Wait</button>
+          <button class="test-pill" id="testSleep">Sleep</button>
+          <button class="test-pill" id="testIdle">Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
