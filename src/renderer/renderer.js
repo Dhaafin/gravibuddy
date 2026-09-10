@@ -300,8 +300,9 @@ window.addEventListener('blur', () => {
 function updateRadialGauge(quotaPercent) {
   if (!gaugeFill) return;
   const pct = Math.max(0, Math.min(100, quotaPercent ?? 95));
-  // Circle radius 15.5 -> Circumference = 2 * PI * 15.5 = 97.389
-  const offset = 97.39 * (1 - pct / 100);
+  // Circle radius 18.5 -> Circumference = 2 * PI * 18.5 = 116.24
+  const offset = 116.24 * (1 - pct / 100);
+  gaugeFill.style.strokeDasharray = '116.24';
   gaugeFill.style.strokeDashoffset = offset.toFixed(1);
 
   if (pct <= 15) {
