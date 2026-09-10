@@ -1,4 +1,5 @@
-const { app, BrowserWindow, screen, ipcMain } = require('electron');
+const { app, BrowserWindow, screen, ipcMain, dialog } = require('electron');
+const { spawn } = require('child_process');
 const http = require('http');
 const path = require('path');
 const fs = require('fs');
@@ -9,9 +10,10 @@ let currentPosition = 'center'; // 'center' | 'left' | 'right'
 
 const CONFIG_FILE = path.join(app.getPath('userData'), 'gravibuddy-config.json');
 const LEGACY_CONFIG_FILE = path.join(app.getPath('userData'), 'vibing-config.json');
+const AGY_SETTINGS_FILE = path.join(app.getPath('home'), '.gemini', 'antigravity-cli', 'settings.json');
 
 function loadConfig() {
-  let cfg = { position: 'center', sound: true, sleepMode: true, stealthMode: true, thinkingPreview: true };
+  let cfg = { position: 'center', sound: true, sleepMode: true, stealthMode: true, thinkingPreview: true, recentWorkspaces: [] };
   try {
     if (fs.existsSync(CONFIG_FILE)) {
       cfg = { ...cfg, ...JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8')) };
@@ -31,29 +33,74 @@ function saveConfig(cfg) {
 const userConfig = loadConfig();
 currentPosition = userConfig.position || 'center';
 
+function getWorkspaces() {
+  const list = new Set(userConfig.recentWorkspaces || []);
+  try {
+    if (fs.existsSync(AGY_SETTINGS_FILE)) {
+      const data = JSON.parse(fs.readFileSync(AGY_SETTINGS_FILE, 'utf8'));
+      (data.trustedWorkspaces || []).forEach(p => {
+        if (p && fs.existsSync(p) && p !== app.getPath('home')) list.add(p);
+      });
+    }
+  } catch (e) {}
+  return Array.from(list);
+}
+
+function launchAgyInWorkspace(projectDir) {
+  if (!projectDir || !fs.existsSync(projectDir)) return false;
+
+  userConfig.lastOpenedWorkspace = projectDir;
+  const recents = (userConfig.recentWorkspaces || []).filter(p => p !== projectDir);
+  userConfig.recentWorkspaces = [projectDir, ...recents].slice(0, 8);
+  saveConfig(userConfig);
+
+  try {
+    const wtProc = spawn('wt.exe', ['-d', projectDir, 'powershell.exe', '-NoExit', '-Command', 'agy'], {
+      detached: true,
+      stdio: 'ignore'
+    });
+    wtProc.on('error', () => {
+      const psProc = spawn('powershell.exe', ['-NoExit', '-Command', `Set-Location -LiteralPath '${projectDir}'; agy`], {
+        detached: true,
+        stdio: 'ignore'
+      });
+      psProc.unref();
+    });
+    wtProc.unref();
+    return true;
+  } catch (err) {
+    const psProc = spawn('powershell.exe', ['-NoExit', '-Command', `Set-Location -LiteralPath '${projectDir}'; agy`], {
+      detached: true,
+      stdio: 'ignore'
+    });
+    psProc.unref();
+    return true;
+  }
+}
+
 function getWindowBoundsForPosition(pos) {
   const primaryDisplay = screen.getPrimaryDisplay();
   const { x: screenX, y: screenY, width: screenWidth, height: screenHeight } = primaryDisplay.bounds;
 
   if (pos === 'left') {
-    const width = 440;
-    const height = 400;
+    const width = 460;
+    const height = 480;
     const x = screenX;
     const y = screenY + Math.round((screenHeight - height) / 2);
     return { width, height, x, y, orientation: 'vertical-left' };
   }
 
   if (pos === 'right') {
-    const width = 440;
-    const height = 400;
+    const width = 460;
+    const height = 480;
     const x = screenX + screenWidth - width;
     const y = screenY + Math.round((screenHeight - height) / 2);
     return { width, height, x, y, orientation: 'vertical-right' };
   }
 
   // Default: Center Top Attached Hardware Notch (Flush with bezel)
-  const width = 500;
-  const height = 340;
+  const width = 520;
+  const height = 480;
   const x = screenX + Math.round((screenWidth - width) / 2);
   const y = screenY; // 0px from physical top screen bezel!
   return { width, height, x, y, orientation: 'horizontal-center' };
@@ -261,6 +308,39 @@ ipcMain.on('reset-to-idle', () => {
       quotaPercent: 95,
       message: null,
       timestamp: Date.now()
+    });
+  }
+});
+
+ipcMain.handle('get-workspaces-data', () => {
+  return {
+    workspaces: getWorkspaces(),
+    lastOpened: userConfig.lastOpenedWorkspace || null
+  };
+});
+
+ipcMain.on('launch-workspace', (event, dirPath) => {
+  launchAgyInWorkspace(dirPath);
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('workspaces-updated', {
+      workspaces: getWorkspaces(),
+      lastOpened: userConfig.lastOpenedWorkspace
+    });
+  }
+});
+
+ipcMain.on('browse-and-launch', async () => {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  const result = await dialog.showOpenDialog(mainWindow, {
+    title: 'Select Project Folder for Antigravity',
+    properties: ['openDirectory']
+  });
+  if (!result.canceled && result.filePaths.length > 0) {
+    const selectedPath = result.filePaths[0];
+    launchAgyInWorkspace(selectedPath);
+    mainWindow.webContents.send('workspaces-updated', {
+      workspaces: getWorkspaces(),
+      lastOpened: userConfig.lastOpenedWorkspace
     });
   }
 });

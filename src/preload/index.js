@@ -1,4 +1,4 @@
-﻿const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('graviAPI', {
   // Event listeners
@@ -11,10 +11,22 @@ contextBridge.exposeInMainWorld('graviAPI', {
   onInitialConfig: (callback) => {
     ipcRenderer.on('initial-config', (_, data) => callback(data));
   },
+  onWorkspacesUpdated: (callback) => {
+    ipcRenderer.on('workspaces-updated', (_, data) => callback(data));
+  },
 
   // Actions
   getInitialConfig: () => {
     ipcRenderer.send('get-initial-config');
+  },
+  getWorkspacesData: () => {
+    return ipcRenderer.invoke('get-workspaces-data');
+  },
+  launchWorkspace: (dirPath) => {
+    ipcRenderer.send('launch-workspace', dirPath);
+  },
+  browseAndLaunch: () => {
+    ipcRenderer.send('browse-and-launch');
   },
   setPosition: (pos) => {
     ipcRenderer.send('set-position', pos);
