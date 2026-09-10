@@ -33,29 +33,29 @@ currentPosition = userConfig.position || 'center';
 
 function getWindowBoundsForPosition(pos) {
   const primaryDisplay = screen.getPrimaryDisplay();
-  const { x: areaX, y: areaY, width: screenWidth, height: screenHeight } = primaryDisplay.workArea;
+  const { x: screenX, y: screenY, width: screenWidth, height: screenHeight } = primaryDisplay.bounds;
 
   if (pos === 'left') {
     const width = 440;
     const height = 400;
-    const x = areaX;
-    const y = areaY + Math.round((screenHeight - height) / 2);
+    const x = screenX;
+    const y = screenY + Math.round((screenHeight - height) / 2);
     return { width, height, x, y, orientation: 'vertical-left' };
   }
 
   if (pos === 'right') {
     const width = 440;
     const height = 400;
-    const x = areaX + screenWidth - width;
-    const y = areaY + Math.round((screenHeight - height) / 2);
+    const x = screenX + screenWidth - width;
+    const y = screenY + Math.round((screenHeight - height) / 2);
     return { width, height, x, y, orientation: 'vertical-right' };
   }
 
-  // Default: Center Top Horizontal
+  // Default: Center Top Attached Hardware Notch (Flush with bezel)
   const width = 500;
   const height = 340;
-  const x = areaX + Math.round((screenWidth - width) / 2);
-  const y = areaY; // Flush with top screen edge for perfect notch tucking
+  const x = screenX + Math.round((screenWidth - width) / 2);
+  const y = screenY; // 0px from physical top screen bezel!
   return { width, height, x, y, orientation: 'horizontal-center' };
 }
 
