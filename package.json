@@ -1,0 +1,22 @@
+{
+  "name": "gravibuddy",
+  "version": "1.0.0",
+  "description": "A delightful floating Apple-grade Dynamic Island companion for Google Antigravity CLI",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "keywords": [
+    "antigravity",
+    "dynamic-island",
+    "hud",
+    "notifications",
+    "companion",
+    "desktop-overlay"
+  ],
+  "author": "Dhaafin",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^41.0.0"
+  }
+}
