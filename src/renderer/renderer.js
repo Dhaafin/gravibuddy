@@ -6,32 +6,10 @@ const island = document.getElementById('island');
 const primaryLabel = document.getElementById('primaryLabel');
 const secondaryLabel = document.getElementById('secondaryLabel');
 const metricVal = document.getElementById('metricVal');
-const settingsCard = document.getElementById('settingsCard');
 const vState = document.getElementById('vState');
 const vQuota = document.getElementById('vQuota');
 const sleepIndicator = document.getElementById('sleepIndicator');
-
 const btnSettings = document.getElementById('btnSettings');
-const btnCloseSettings = document.getElementById('btnCloseSettings');
-const btnPosLeft = document.getElementById('btnPosLeft');
-const btnPosCenter = document.getElementById('btnPosCenter');
-const btnPosRight = document.getElementById('btnPosRight');
-const btnToggleSound = document.getElementById('btnToggleSound');
-const appleToggleSound = document.getElementById('appleToggleSound');
-const btnToggleSleep = document.getElementById('btnToggleSleep');
-const appleToggleSleep = document.getElementById('appleToggleSleep');
-const btnToggleStealth = document.getElementById('btnToggleStealth');
-const appleToggleStealth = document.getElementById('appleToggleStealth');
-const btnToggleThinkingPreview = document.getElementById('btnToggleThinkingPreview');
-const appleToggleThinkingPreview = document.getElementById('appleToggleThinkingPreview');
-const btnBrowseFolder = document.getElementById('btnBrowseFolder');
-const workspaceList = document.getElementById('workspaceList');
-
-const testThinking = document.getElementById('testThinking');
-const testDone = document.getElementById('testDone');
-const testWait = document.getElementById('testWait');
-const testSleep = document.getElementById('testSleep');
-const testIdle = document.getElementById('testIdle');
 
 // State Variables
 let soundEnabled = true;
@@ -46,10 +24,10 @@ let isSwitchingPosition = false;
 let isInteractiveArea = false;
 let wakeHoverTimer = null;
 
-// Prevent Windows native context menu & toggle settings on right click
+// Prevent Windows native context menu & toggle center settings window
 window.addEventListener('contextmenu', e => {
   e.preventDefault();
-  toggleSettings();
+  api.toggleSettings();
 });
 
 function formatModelName(model) {
@@ -181,7 +159,6 @@ function wakeUpIsland(reason = 'interaction') {
 function enterSleepMode() {
   clearSleepTimer();
   if (!sleepModeEnabled) return;
-  if (settingsCard.classList.contains('visible')) return;
   if (isSwitchingPosition) return;
   if (isInteractiveArea) return; // Never sleep while user is hovering
 
@@ -197,7 +174,6 @@ function enterSleepMode() {
 
 function scheduleSleep(delay = 1400, force = false) {
   if (!sleepModeEnabled) return;
-  if (settingsCard.classList.contains('visible')) return;
   if (isSwitchingPosition) return;
   if (island.classList.contains('is-sleeping')) return; // Already sleeping!
   if (currentState === 'waiting' || currentState === 'done') return; // Persistent open until next action!
@@ -238,9 +214,7 @@ island.addEventListener('click', e => {
 // ==========================================================
 function checkInteractiveHit(e) {
   const hit = document.elementFromPoint(e.clientX, e.clientY);
-  const overIsland = Boolean(island && (island === hit || island.contains(hit)));
-  const overSettings = Boolean(settingsCard && settingsCard.classList.contains('visible') && (settingsCard === hit || settingsCard.contains(hit)));
-  const shouldBeInteractive = overIsland || overSettings;
+  const shouldBeInteractive = Boolean(island && (island === hit || island.contains(hit)));
 
   if (shouldBeInteractive !== isInteractiveArea) {
     isInteractiveArea = shouldBeInteractive;
@@ -303,9 +277,6 @@ window.addEventListener('blur', () => {
   if (wakeHoverTimer) {
     clearTimeout(wakeHoverTimer);
     wakeHoverTimer = null;
-  }
-  if (settingsCard.classList.contains('visible')) {
-    settingsCard.classList.remove('visible');
   }
   if (isInteractiveArea) {
     isInteractiveArea = false;
@@ -408,7 +379,7 @@ function updateIslandState(data) {
           // Immediate stealth: Stay tucked without popping up
           clearTimeout(thinkingPreviewTimer);
           thinkingPreviewTimer = null;
-          if (!isInteractiveArea && !settingsCard.classList.contains('visible')) {
+          if (!isInteractiveArea) {
             enterSleepMode();
           }
         }
@@ -417,7 +388,7 @@ function updateIslandState(data) {
       }
     } else {
       // Periodic update while still thinking: keep asleep if stealth mode active
-      if (stealthCodingEnabled && !thinkingPreviewTimer && !isInteractiveArea && !settingsCard.classList.contains('visible')) {
+      if (stealthCodingEnabled && !thinkingPreviewTimer && !isInteractiveArea) {
         enterSleepMode();
       }
     }
@@ -432,7 +403,7 @@ function updateIslandState(data) {
       scheduleSleep(1200, true);
     } else {
       // Periodic idle telemetry from terminal
-      if (!island.classList.contains('is-sleeping') && !isInteractiveArea && !settingsCard.classList.contains('visible')) {
+      if (!island.classList.contains('is-sleeping') && !isInteractiveArea) {
         scheduleSleep(1400, false);
       }
     }
@@ -444,99 +415,11 @@ api.onAgentUpdate((data) => {
 });
 
 // ==========================================================
-// Workspaces Launcher
+// Settings Button & Config Synchronization
 // ==========================================================
-async function loadWorkspaces() {
-  if (!api || !api.getWorkspacesData) return;
-  try {
-    const data = await api.getWorkspacesData();
-    renderWorkspaces(data);
-  } catch (e) {}
-}
-
-function renderWorkspaces(data) {
-  if (!workspaceList) return;
-  workspaceList.innerHTML = '';
-  const { workspaces = [], lastOpened = null } = data || {};
-
-  if (workspaces.length === 0) {
-    workspaceList.innerHTML = '<div class="workspace-empty">No projects detected. Click "+ Open Folder"</div>';
-    return;
-  }
-
-  workspaces.forEach(dirPath => {
-    const parts = dirPath.split(/[/\\]/);
-    const folderName = parts[parts.length - 1] || dirPath;
-    const isLast = dirPath === lastOpened;
-
-    const item = document.createElement('div');
-    item.className = `workspace-item${isLast ? ' is-last-opened' : ''}`;
-    item.title = `Launch agy in ${dirPath}`;
-    item.innerHTML = `
-      <div class="workspace-info">
-        <span class="workspace-name">${folderName}${isLast ? ' <span style="color:#10b981;font-size:8.5px;font-weight:700;">● Recent</span>' : ''}</span>
-        <span class="workspace-path">${dirPath}</span>
-      </div>
-      <div class="workspace-launch-badge">▶</div>
-    `;
-
-    item.addEventListener('click', (e) => {
-      e.stopPropagation();
-      playPopSound('blossom');
-      api.launchWorkspace(dirPath);
-      settingsCard.classList.remove('visible');
-      scheduleSleep(3000);
-    });
-
-    workspaceList.appendChild(item);
-  });
-}
-
-if (btnBrowseFolder) {
-  btnBrowseFolder.addEventListener('click', (e) => {
-    e.stopPropagation();
-    api.browseAndLaunch();
-    settingsCard.classList.remove('visible');
-  });
-}
-
-if (api && api.onWorkspacesUpdated) {
-  api.onWorkspacesUpdated((data) => {
-    renderWorkspaces(data);
-  });
-}
-
-// ==========================================================
-// Settings UI Logic
-// ==========================================================
-function toggleSettings() {
-  wakeUpIsland();
-  settingsCard.classList.toggle('visible');
-  if (settingsCard.classList.contains('visible')) {
-    loadWorkspaces();
-  } else {
-    scheduleSleep(3500);
-  }
-}
-
-btnSettings.addEventListener('click', e => {
+btnSettings.addEventListener('click', (e) => {
   e.stopPropagation();
-  toggleSettings();
-});
-
-btnCloseSettings.addEventListener('click', e => {
-  e.stopPropagation();
-  settingsCard.classList.remove('visible');
-  scheduleSleep(3500);
-});
-
-document.addEventListener('click', e => {
-  if (!settingsCard.contains(e.target) && !btnSettings.contains(e.target)) {
-    if (settingsCard.classList.contains('visible')) {
-      settingsCard.classList.remove('visible');
-      scheduleSleep(3500);
-    }
-  }
+  api.toggleSettings();
 });
 
 function applyOrientationClasses(orientation) {
@@ -548,193 +431,25 @@ function applyOrientationClasses(orientation) {
   }
 }
 
-function setActivePositionButton(pos) {
-  [btnPosLeft, btnPosCenter, btnPosRight].forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.pos === pos);
-  });
-}
-
-// ==========================================================
-// Seamless 3-Phase Position Switching ("Enak Banget")
-// ==========================================================
-function transitionToPosition(targetPos, targetOrientation) {
-  if (isSwitchingPosition) return;
-  if (currentPosition === targetPos) return;
-
-  isSwitchingPosition = true;
-  clearSleepTimer();
-
-  const wasSettingsOpen = settingsCard.classList.contains('visible');
-
-  // Step 1: Smoothly fold out settings card if open
-  if (wasSettingsOpen) {
-    settingsCard.classList.add('folding-out');
-  }
-
-  // Step 2: Liquid droplet implosion (collapse)
-  island.classList.remove('is-sleeping', 'watery-morph', 'island-blossom');
-  island.classList.add('switching-implode');
-  playPopSound('implode');
-
-  setTimeout(() => {
-    // Step 3: Change window bounds and orientation while 100% invisible
-    api.setPosition(targetPos);
-    currentPosition = targetPos;
-    setActivePositionButton(targetPos);
-    applyOrientationClasses(targetOrientation);
-
-    // Prepare for entry at new location
-    island.classList.remove('switching-implode');
-    island.classList.add('switching-prep');
-
-    // Wait 80ms for Electron and Windows DWM to finish transparent window repositioning
-    setTimeout(() => {
-      island.classList.remove('switching-prep');
-      island.classList.add('island-blossom');
-      
-      playPopSound('blossom');
-      triggerWateryMorph();
-
-      // If settings was previously open, smoothly restore it next to the island
-      if (wasSettingsOpen) {
-        setTimeout(() => {
-          settingsCard.classList.remove('folding-out');
-          settingsCard.classList.add('visible');
-          isSwitchingPosition = false;
-        }, 180);
-      } else {
-        setTimeout(() => {
-          isSwitchingPosition = false;
-          scheduleSleep(4500);
-        }, 350);
-      }
-
-      // Cleanup blossom class
-      setTimeout(() => {
-        island.classList.remove('island-blossom');
-      }, 650);
-
-    }, 80);
-  }, 220);
-}
-
-btnPosLeft.addEventListener('click', () => {
-  transitionToPosition('left', 'vertical-left');
-});
-
-btnPosCenter.addEventListener('click', () => {
-  transitionToPosition('center', 'horizontal-center');
-});
-
-btnPosRight.addEventListener('click', () => {
-  transitionToPosition('right', 'vertical-right');
-});
-
 api.onPositionChanged((info) => {
   const pos = typeof info === 'string' ? info : info.position;
   const orientation = typeof info === 'object' ? info.orientation : null;
   currentPosition = pos;
-  setActivePositionButton(pos);
   if (orientation) applyOrientationClasses(orientation);
-  if (!isSwitchingPosition) scheduleSleep(4000);
+  triggerWateryMorph();
+  playPopSound('blossom');
+  scheduleSleep(4000);
 });
 
-// Sound Toggle
-btnToggleSound.addEventListener('click', () => {
-  soundEnabled = !soundEnabled;
-  appleToggleSound.classList.toggle('active', soundEnabled);
-  api.saveSoundConfig(soundEnabled);
-  if (soundEnabled) playChime('success');
-});
-
-// Sleep Mode Toggle
-btnToggleSleep.addEventListener('click', () => {
-  sleepModeEnabled = !sleepModeEnabled;
-  appleToggleSleep.classList.toggle('active', sleepModeEnabled);
-  api.saveSleepConfig(sleepModeEnabled);
-  if (!sleepModeEnabled) {
-    wakeUpIsland();
-  } else {
-    scheduleSleep(3000);
-  }
-});
-
-// Stealth Coding Mode Toggle
-btnToggleStealth.addEventListener('click', () => {
-  stealthCodingEnabled = !stealthCodingEnabled;
-  appleToggleStealth.classList.toggle('active', stealthCodingEnabled);
-  api.saveStealthConfig(stealthCodingEnabled);
-  if (stealthCodingEnabled && currentState === 'thinking' && !isInteractiveArea) {
-    enterSleepMode();
-  } else if (!stealthCodingEnabled && currentState === 'thinking') {
-    wakeUpIsland('stealth-off');
-  }
-});
-
-// Peek on Task Start Toggle
-if (btnToggleThinkingPreview && appleToggleThinkingPreview) {
-  btnToggleThinkingPreview.addEventListener('click', () => {
-    thinkingPreviewEnabled = !thinkingPreviewEnabled;
-    appleToggleThinkingPreview.classList.toggle('active', thinkingPreviewEnabled);
-    api.saveThinkingPreviewConfig(thinkingPreviewEnabled);
-  });
-}
-
-// ==========================================================
-// Settings Test Buttons
-// ==========================================================
-testThinking.addEventListener('click', () => {
-  updateIslandState({ state: 'thinking', model: 'Gemini 3.8 Flash (High)' });
-});
-
-testDone.addEventListener('click', () => {
-  updateIslandState({ state: 'done', model: 'Gemini 3.8 Flash (High)' });
-});
-
-testWait.addEventListener('click', () => {
-  updateIslandState({ state: 'waiting', model: 'Gemini 3.8 Flash (High)' });
-});
-
-testSleep.addEventListener('click', () => {
-  // Test immediate sleep mode entry
-  settingsCard.classList.remove('visible');
-  currentState = 'idle';
-  enterSleepMode();
-});
-
-testIdle.addEventListener('click', () => {
-  wakeUpIsland();
-  api.resetToIdle();
-});
-
-// ==========================================================
-// Initial Config Restoration
-// ==========================================================
 api.getInitialConfig();
 api.onInitialConfig((cfg) => {
   if (cfg) {
-    if (cfg.position) {
-      currentPosition = cfg.position;
-      setActivePositionButton(cfg.position);
-    }
+    if (cfg.position) currentPosition = cfg.position;
     if (cfg.orientation) applyOrientationClasses(cfg.orientation);
-    if (cfg.sound !== undefined) {
-      soundEnabled = cfg.sound;
-      appleToggleSound.classList.toggle('active', soundEnabled);
-    }
-    if (cfg.sleepMode !== undefined) {
-      sleepModeEnabled = cfg.sleepMode;
-      appleToggleSleep.classList.toggle('active', sleepModeEnabled);
-    }
-    if (cfg.stealthMode !== undefined) {
-      stealthCodingEnabled = cfg.stealthMode;
-      appleToggleStealth.classList.toggle('active', stealthCodingEnabled);
-    }
-    if (cfg.thinkingPreview !== undefined && appleToggleThinkingPreview) {
-      thinkingPreviewEnabled = cfg.thinkingPreview;
-      appleToggleThinkingPreview.classList.toggle('active', thinkingPreviewEnabled);
-    }
-    loadWorkspaces();
+    if (cfg.sound !== undefined) soundEnabled = cfg.sound;
+    if (cfg.sleepMode !== undefined) sleepModeEnabled = cfg.sleepMode;
+    if (cfg.stealthMode !== undefined) stealthCodingEnabled = cfg.stealthMode;
+    if (cfg.thinkingPreview !== undefined) thinkingPreviewEnabled = cfg.thinkingPreview;
     scheduleSleep(4000);
   }
 });

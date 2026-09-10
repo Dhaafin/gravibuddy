@@ -83,24 +83,24 @@ function getWindowBoundsForPosition(pos) {
   const { x: screenX, y: screenY, width: screenWidth, height: screenHeight } = primaryDisplay.bounds;
 
   if (pos === 'left') {
-    const width = 460;
-    const height = 480;
+    const width = 80;
+    const height = 380;
     const x = screenX;
     const y = screenY + Math.round((screenHeight - height) / 2);
     return { width, height, x, y, orientation: 'vertical-left' };
   }
 
   if (pos === 'right') {
-    const width = 460;
-    const height = 480;
+    const width = 80;
+    const height = 380;
     const x = screenX + screenWidth - width;
     const y = screenY + Math.round((screenHeight - height) / 2);
     return { width, height, x, y, orientation: 'vertical-right' };
   }
 
-  // Default: Center Top Attached Hardware Notch (Flush with bezel)
-  const width = 520;
-  const height = 480;
+  // Default: Center Top Attached Hardware Notch (Flush with bezel, compact)
+  const width = 480;
+  const height = 75;
   const x = screenX + Math.round((screenWidth - width) / 2);
   const y = screenY; // 0px from physical top screen bezel!
   return { width, height, x, y, orientation: 'horizontal-center' };
@@ -126,6 +126,49 @@ function applyPosition(pos) {
   });
 }
 
+let settingsWindow = null;
+
+function createSettingsWindow() {
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
+  const width = 360;
+  const height = 530;
+
+  settingsWindow = new BrowserWindow({
+    width,
+    height,
+    x: Math.round((screenWidth - width) / 2),
+    y: Math.round((screenHeight - height) / 2),
+    frame: false,
+    transparent: true,
+    alwaysOnTop: true,
+    resizable: false,
+    skipTaskbar: true,
+    type: 'toolbar',
+    hasShadow: false,
+    show: false,
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, '../preload/index.js')
+    }
+  });
+
+  settingsWindow.setMenu(null);
+  settingsWindow.setAlwaysOnTop(true, 'screen-saver');
+  settingsWindow.loadFile(path.join(__dirname, '../renderer/settings.html'));
+
+  settingsWindow.on('blur', () => {
+    if (settingsWindow && !settingsWindow.isDestroyed()) {
+      settingsWindow.hide();
+    }
+  });
+
+  settingsWindow.on('closed', () => {
+    settingsWindow = null;
+  });
+}
+
 function createWindow() {
   const bounds = getWindowBoundsForPosition(currentPosition);
 
@@ -138,7 +181,8 @@ function createWindow() {
     transparent: true,
     alwaysOnTop: true,
     resizable: false,
-    skipTaskbar: false,
+    skipTaskbar: true,
+    type: 'toolbar',
     hasShadow: false,
     webPreferences: {
       nodeIntegration: false,
@@ -276,24 +320,67 @@ ipcMain.on('get-initial-config', event => {
   });
 });
 
+function broadcastConfigChange() {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('initial-config', {
+      ...userConfig,
+      orientation: getWindowBoundsForPosition(currentPosition).orientation
+    });
+  }
+}
+
 ipcMain.on('save-sound-config', (event, soundEnabled) => {
   userConfig.sound = soundEnabled;
   saveConfig(userConfig);
+  broadcastConfigChange();
 });
 
 ipcMain.on('save-sleep-config', (event, sleepEnabled) => {
   userConfig.sleepMode = sleepEnabled;
   saveConfig(userConfig);
+  broadcastConfigChange();
 });
 
 ipcMain.on('save-stealth-config', (event, stealthEnabled) => {
   userConfig.stealthMode = stealthEnabled;
   saveConfig(userConfig);
+  broadcastConfigChange();
 });
 
 ipcMain.on('save-thinking-preview-config', (event, previewEnabled) => {
   userConfig.thinkingPreview = previewEnabled;
   saveConfig(userConfig);
+  broadcastConfigChange();
+});
+
+ipcMain.on('toggle-settings', () => {
+  if (!settingsWindow || settingsWindow.isDestroyed()) {
+    createSettingsWindow();
+  }
+  if (settingsWindow.isVisible()) {
+    settingsWindow.hide();
+  } else {
+    const primaryDisplay = screen.getPrimaryDisplay();
+    const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
+    settingsWindow.setPosition(
+      Math.round((screenWidth - 360) / 2),
+      Math.round((screenHeight - 530) / 2)
+    );
+    settingsWindow.show();
+    settingsWindow.focus();
+  }
+});
+
+ipcMain.on('close-settings', () => {
+  if (settingsWindow && !settingsWindow.isDestroyed()) {
+    settingsWindow.hide();
+  }
+});
+
+ipcMain.on('test-state', (event, stateData) => {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('agent-update', stateData);
+  }
 });
 
 ipcMain.on('reset-to-idle', () => {
@@ -321,6 +408,9 @@ ipcMain.handle('get-workspaces-data', () => {
 
 ipcMain.on('launch-workspace', (event, dirPath) => {
   launchAgyInWorkspace(dirPath);
+  if (settingsWindow && !settingsWindow.isDestroyed()) {
+    settingsWindow.hide();
+  }
   if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.webContents.send('workspaces-updated', {
       workspaces: getWorkspaces(),
@@ -330,18 +420,23 @@ ipcMain.on('launch-workspace', (event, dirPath) => {
 });
 
 ipcMain.on('browse-and-launch', async () => {
-  if (!mainWindow || mainWindow.isDestroyed()) return;
-  const result = await dialog.showOpenDialog(mainWindow, {
+  const targetWin = (settingsWindow && settingsWindow.isVisible()) ? settingsWindow : mainWindow;
+  const result = await dialog.showOpenDialog(targetWin, {
     title: 'Select Project Folder for Antigravity',
     properties: ['openDirectory']
   });
   if (!result.canceled && result.filePaths.length > 0) {
     const selectedPath = result.filePaths[0];
     launchAgyInWorkspace(selectedPath);
-    mainWindow.webContents.send('workspaces-updated', {
-      workspaces: getWorkspaces(),
-      lastOpened: userConfig.lastOpenedWorkspace
-    });
+    if (settingsWindow && !settingsWindow.isDestroyed()) {
+      settingsWindow.hide();
+    }
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('workspaces-updated', {
+        workspaces: getWorkspaces(),
+        lastOpened: userConfig.lastOpenedWorkspace
+      });
+    }
   }
 });
 
@@ -354,6 +449,7 @@ ipcMain.on('set-ignore-mouse-events', (event, ignore, options) => {
 
 app.whenReady().then(() => {
   createWindow();
+  createSettingsWindow();
   startServer();
 
   app.on('activate', () => {

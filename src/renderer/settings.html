@@ -1,0 +1,171 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Gravibuddy Settings</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+    }
+    .spotlight-card {
+      position: relative !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 320px !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+      pointer-events: auto !important;
+      transform: none !important;
+      filter: none !important;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.92), 0 0 0 1px rgba(255, 255, 255, 0.15) !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="settings-card spotlight-card" id="settingsCard">
+    <div class="card-header">
+      <div class="header-left">
+        <div class="header-logo-badge">
+          <img src="../../assets/antigravity-icon.png" width="14" height="14" alt="Icon">
+        </div>
+        <span class="card-title">Gravibuddy</span>
+        <span class="card-badge">PRO</span>
+      </div>
+      <button class="card-close-btn" id="btnCloseSettings" aria-label="Close settings">
+        <svg viewBox="0 0 24 24" width="11" height="11" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Workspaces Quick Launcher -->
+    <div class="setting-group">
+      <div class="setting-header-row">
+        <span class="setting-label">WORKSPACES</span>
+        <button class="action-text-btn" id="btnBrowseFolder" title="Open any folder in Antigravity">
+          <span>+ Open Folder</span>
+        </button>
+      </div>
+      <div class="workspace-list" id="workspaceList">
+        <div class="workspace-empty">Loading projects...</div>
+      </div>
+    </div>
+
+    <!-- Docking Position Segmented Control -->
+    <div class="setting-group">
+      <div class="setting-label">DOCK POSITION</div>
+      <div class="segmented-control">
+        <button class="segment-btn" data-pos="left" id="btnPosLeft">
+          <span class="segment-icon">◧</span> Left
+        </button>
+        <button class="segment-btn active" data-pos="center" id="btnPosCenter">
+          <span class="segment-icon">⬒</span> Notch
+        </button>
+        <button class="segment-btn" data-pos="right" id="btnPosRight">
+          <span class="segment-icon">◨</span> Right
+        </button>
+      </div>
+    </div>
+
+    <!-- Preferences Section -->
+    <div class="setting-group">
+      <div class="setting-label">PREFERENCES</div>
+      
+      <div class="settings-surface">
+        <!-- Stealth Mode Row -->
+        <div class="setting-row" id="btnToggleStealth">
+          <div class="row-info">
+            <span class="row-label">Stealth Mode</span>
+            <span class="row-sub">Stays tucked while coding, pops on alert</span>
+          </div>
+          <div class="apple-toggle active" id="appleToggleStealth">
+            <div class="toggle-thumb"></div>
+          </div>
+        </div>
+
+        <div class="row-divider"></div>
+
+        <!-- Peek on Start Row -->
+        <div class="setting-row" id="btnToggleThinkingPreview">
+          <div class="row-info">
+            <span class="row-label">Peek on Start</span>
+            <span class="row-sub">Pop up sejenak lalu sleep saat mulai kerja</span>
+          </div>
+          <div class="apple-toggle active" id="appleToggleThinkingPreview">
+            <div class="toggle-thumb"></div>
+          </div>
+        </div>
+
+        <div class="row-divider"></div>
+
+        <!-- Auto-Sleep Row -->
+        <div class="setting-row" id="btnToggleSleep">
+          <div class="row-info">
+            <span class="row-label">Auto Sleep</span>
+            <span class="row-sub">Retracts to screen rim when idle</span>
+          </div>
+          <div class="apple-toggle active" id="appleToggleSleep">
+            <div class="toggle-thumb"></div>
+          </div>
+        </div>
+
+        <div class="row-divider"></div>
+
+        <!-- Sound Effects Row -->
+        <div class="setting-row" id="btnToggleSound">
+          <div class="row-info">
+            <span class="row-label">Audio Feedback</span>
+            <span class="row-sub">Subtle spatial chimes and pops</span>
+          </div>
+          <div class="apple-toggle active" id="appleToggleSound">
+            <div class="toggle-thumb"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Simulation Section -->
+    <div class="setting-group" style="margin-top: 12px; margin-bottom: 2px;">
+      <div class="setting-label">PREVIEW STATES</div>
+      <div class="test-pill-grid">
+        <button class="test-pill test-pill-thinking" id="testThinking" title="Preview Coding State">
+          <span class="pill-dot dot-thinking"></span>
+          <span>Coding</span>
+        </button>
+        <button class="test-pill test-pill-done" id="testDone" title="Preview Completed State">
+          <span class="pill-dot dot-done"></span>
+          <span>Done</span>
+        </button>
+        <button class="test-pill test-pill-wait" id="testWait" title="Preview Action Required State">
+          <span class="pill-dot dot-wait"></span>
+          <span>Action</span>
+        </button>
+        <button class="test-pill test-pill-sleep" id="testSleep" title="Preview Sleep Notch">
+          <span class="pill-dot dot-sleep"></span>
+          <span>Sleep</span>
+        </button>
+        <button class="test-pill test-pill-idle" id="testIdle" title="Reset to Standby">
+          <span class="pill-dot dot-idle"></span>
+          <span>Reset</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="settings.js"></script>
+</body>
+</html>

@@ -46,6 +46,15 @@ contextBridge.exposeInMainWorld('graviAPI', {
   saveThinkingPreviewConfig: (enabled) => {
     ipcRenderer.send('save-thinking-preview-config', enabled);
   },
+  toggleSettings: () => {
+    ipcRenderer.send('toggle-settings');
+  },
+  closeSettings: () => {
+    ipcRenderer.send('close-settings');
+  },
+  testState: (stateData) => {
+    ipcRenderer.send('test-state', stateData);
+  },
   resetToIdle: () => {
     ipcRenderer.send('reset-to-idle');
   }
