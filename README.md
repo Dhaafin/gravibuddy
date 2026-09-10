@@ -15,6 +15,10 @@
 - 🌙 **Option 1 Sleep Mode (Ultra-Thin Notch Tab)**:
   - On idle (~4.5s), the island tucks smoothly into the screen edge, leaving a minimalist ~8px notch tab with a gentle breathing ambient LED line.
   - Instantly blooms and unfurls on cursor hover or on any CLI activity (`thinking`, `done`, `waiting`).
+- 🥷 **Stealth Coding (Zen Mode)**:
+  - While Antigravity is processing/coding (`thinking`), it stays tucked away in the notch tab with a gentle violet breathing LED line, keeping your code editor tabs and terminal 100% visible and unblocked.
+  - Only pops out when an action is required (`waiting`) or when the task finishes (`done`).
+  - Terminal keystrokes and cursor movements update telemetry silently without triggering annoying popups.
 - 🎯 **Intelligent Zero-Padding Click-Through**:
   - Full mouse event pass-through on transparent screen areas.
   - Clicks right next to the island pass directly through to underlying browser tabs, window titlebars, and code editors with zero dead zones.
