@@ -25,10 +25,9 @@
 - 🎯 **Intelligent Zero-Padding Click-Through**:
   - Full mouse event pass-through on transparent screen areas.
   - Clicks right next to the island pass directly through to underlying browser tabs, window titlebars, and code editors with zero dead zones.
-- 🎛️ **Multi-Position Docking**:
-  - **Center Top**: Horizontal Dynamic Island notch.
-  - **Left Dock**: Vertical edge capsule.
-  - **Right Dock**: Vertical edge capsule.
+- 🎛️ **Multi-Position Docking & Glyph Telemetry**:
+  - **Center Top**: Horizontal Dynamic Island attached notch with fluid typography.
+  - **Left / Right Dock**: Glyph-first vertical edge capsule featuring an Apple Watch-style radial quota gauge, custom Antigravity AI state micro-glyphs (Thinking star, Action prompt, Completion checkmark, Standby diamond), and a smooth VisionOS glass flyout tooltip on hover displaying active model and agent telemetry.
   - Teleport between docks with a 3-phase droplet implosion and spring blossoming transition.
 - 🔮 **Official Antigravity Branding**:
   - Authentic high-resolution Google Antigravity logo.
