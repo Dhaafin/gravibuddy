@@ -1,5 +1,5 @@
 /* ==========================================================
-   agy-vibing: Apple-grade Dynamic Island Stylesheet
+   Gravibuddy: Luxury Apple VisionOS & Dynamic Island Stylesheet
    ========================================================== */
 
 * {
@@ -39,27 +39,27 @@ body {
   gap: 10px;
   background: #000000;
   border-radius: 9999px;
-  padding: 5px 12px;
-  min-width: 300px;
+  padding: 5px 12px 5px 10px;
+  min-width: 296px;
   height: 44px;
   position: relative;
   cursor: default;
   margin-top: 0;
   pointer-events: auto;
   
-  /* Specular Highlight Rim & Outer Ambient Shadows */
+  /* Dual-Layer Specular Glass Rim & Ambient Shadow */
   box-shadow: 
-    0 16px 36px -4px rgba(0, 0, 0, 0.88),
-    0 0 0 1px rgba(255, 255, 255, 0.12),
-    inset 0 1px 0.8px 0 rgba(255, 255, 255, 0.32),
-    inset 0 -1px 0.8px 0 rgba(255, 255, 255, 0.05);
+    0 18px 42px -4px rgba(0, 0, 0, 0.92),
+    0 0 0 1px rgba(255, 255, 255, 0.13),
+    inset 0 1px 0.6px 0 rgba(255, 255, 255, 0.38),
+    inset 0 -1px 0.6px 0 rgba(0, 0, 0, 0.6);
 
-  /* Modern Independent CSS Transforms (Chromium 134+) */
+  /* Modern Independent CSS Transforms */
   translate: 0 0;
   scale: 1 1;
   transform-origin: center top;
 
-  /* Fluid Apple Spring Physics for Dimensions & Sleep Morphing */
+  /* Fluid Apple Spring Physics */
   transition: 
     translate 0.52s cubic-bezier(0.16, 1.15, 0.3, 1),
     scale 0.52s cubic-bezier(0.175, 0.885, 0.32, 1.275),
@@ -87,7 +87,7 @@ body {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.12) 50%,
+    rgba(255, 255, 255, 0.13) 50%,
     transparent 100%
   );
   border-radius: inherit;
@@ -184,7 +184,7 @@ body {
 /* Settings Card Smooth Fold during Dock Switch */
 .settings-card.folding-out {
   opacity: 0 !important;
-  transform: scale(0.92) !important;
+  transform: scale(0.92) translateY(-10px) !important;
   transition: opacity 0.15s ease, transform 0.15s ease !important;
 }
 
@@ -193,18 +193,18 @@ body {
    ========================================================== */
 /* Top Center: Tucks upward leaving sleek 8px notch tab */
 .island.is-sleeping {
-  translate: 0 -38px;
-  min-width: 146px;
-  width: 146px;
-  height: 46px;
+  translate: 0 -37px;
+  min-width: 140px;
+  width: 140px;
+  height: 44px;
   padding: 0 10px;
   border-radius: 0 0 16px 16px;
   cursor: pointer;
   box-shadow: 
     0 10px 24px -2px rgba(0, 0, 0, 0.9),
-    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.09),
     inset 0 -1.5px 1px 0 rgba(48, 209, 88, 0.45),
-    0 6px 18px rgba(48, 209, 88, 0.2);
+    0 6px 18px rgba(48, 209, 88, 0.22);
 }
 
 .island.is-sleeping .island-content,
@@ -233,7 +233,7 @@ body {
 
 /* Horizontal Top Notch Sleep Indicator */
 .island.is-sleeping .sleep-indicator {
-  bottom: 2.5px;
+  bottom: 2px;
   left: 0;
   width: 100%;
   height: 5px;
@@ -257,7 +257,7 @@ body {
 .island.state-thinking.is-sleeping {
   box-shadow: 
     0 10px 24px -2px rgba(0, 0, 0, 0.9),
-    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.09),
     inset 0 -1.5px 1px 0 rgba(191, 90, 242, 0.55),
     0 6px 20px rgba(191, 90, 242, 0.3);
 }
@@ -269,7 +269,7 @@ body {
 .island.state-waiting.is-sleeping {
   box-shadow: 
     0 10px 24px -2px rgba(0, 0, 0, 0.9),
-    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.09),
     inset 0 -1.5px 1px 0 rgba(255, 159, 10, 0.55),
     0 6px 20px rgba(255, 159, 10, 0.3);
 }
@@ -282,15 +282,15 @@ body {
 .island-root:hover .island.is-sleeping,
 .island.is-sleeping:hover {
   translate: 0 0;
-  min-width: 326px;
+  min-width: 296px;
   width: auto;
   border-radius: 9999px;
-  padding: 6px 14px;
+  padding: 5px 12px 5px 10px;
   box-shadow: 
-    0 16px 36px -4px rgba(0, 0, 0, 0.88),
-    0 0 0 1px rgba(255, 255, 255, 0.12),
-    inset 0 1px 0.8px 0 rgba(255, 255, 255, 0.32),
-    inset 0 -1px 0.8px 0 rgba(255, 255, 255, 0.05);
+    0 18px 42px -4px rgba(0, 0, 0, 0.92),
+    0 0 0 1px rgba(255, 255, 255, 0.13),
+    inset 0 1px 0.6px 0 rgba(255, 255, 255, 0.38),
+    inset 0 -1px 0.6px 0 rgba(0, 0, 0, 0.6);
 }
 
 .island-root:hover .island.is-sleeping .sleep-indicator,
@@ -338,9 +338,9 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(5, 150, 105, 0.05) 100%);
-  border: 1px solid rgba(16, 185, 129, 0.35);
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.28) 0%, rgba(5, 150, 105, 0.06) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  box-shadow: inset 0 1px 1.5px rgba(255, 255, 255, 0.25);
   transition: all 0.4s ease;
 }
 
@@ -373,37 +373,38 @@ body {
   50% { transform: scale(1.4); opacity: 0.85; }
 }
 
-/* Mini Waveform */
+/* Refined Harmonic Mini-Waveform */
 .mini-waveform {
   display: none;
   position: absolute;
   bottom: -4px;
   right: -4px;
   gap: 1.5px;
-  height: 10px;
-  background: rgba(0, 0, 0, 0.7);
-  padding: 1px 3px;
+  height: 11px;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 1.5px 3px;
   border-radius: 6px;
-  border: 0.5px solid rgba(255, 255, 255, 0.15);
+  border: 0.5px solid rgba(255, 255, 255, 0.18);
 }
 
 .mini-waveform .bar {
   width: 2px;
-  background: #bf5af2;
+  background: linear-gradient(180deg, #e9d5ff 0%, #bf5af2 100%);
   border-radius: 2px;
   animation: waveBar 0.8s infinite ease-in-out alternate;
 }
 .mini-waveform .bar-1 { height: 4px; animation-delay: 0.05s; }
 .mini-waveform .bar-2 { height: 9px; animation-delay: 0.2s; }
 .mini-waveform .bar-3 { height: 6px; animation-delay: 0.35s; }
+.mini-waveform .bar-4 { height: 8px; animation-delay: 0.12s; }
 
 @keyframes waveBar {
-  0% { transform: scaleY(0.4); }
-  100% { transform: scaleY(1.3); }
+  0% { transform: scaleY(0.35); }
+  100% { transform: scaleY(1.35); }
 }
 
 /* ==========================================================
-   ISLAND CONTENT (Horizontal Mode)
+   ISLAND CONTENT (Typography & Hierarchy)
    ========================================================== */
 .island-content {
   flex: 1;
@@ -416,10 +417,10 @@ body {
 }
 
 .primary-label {
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
   color: #ffffff;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -427,10 +428,10 @@ body {
 }
 
 .secondary-label {
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 450;
-  color: #98989d;
-  letter-spacing: -0.01em;
+  color: #98989f;
+  letter-spacing: -0.015em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -444,13 +445,13 @@ body {
 }
 
 /* ==========================================================
-   TRAILING ACCESSORY (Metric Pill + Settings Button)
+   TRAILING ACCESSORY (Metric Capsule + Tactile Settings Button)
    ========================================================== */
 .trailing-accessory {
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   transition: opacity 0.3s ease;
 }
 
@@ -458,15 +459,16 @@ body {
   display: flex;
   align-items: center;
   gap: 5px;
-  background: rgba(255, 255, 255, 0.08);
-  border: 0.5px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.07);
+  border: 0.5px solid rgba(255, 255, 255, 0.11);
   border-radius: 9999px;
-  padding: 4px 10px;
-  font-size: 11px;
+  padding: 3.5px 9px;
+  font-size: 10.5px;
   font-weight: 600;
   color: #e5e5ea;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
   transition: all 0.35s ease;
+  box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.12);
 }
 
 .metric-dot {
@@ -476,24 +478,36 @@ body {
   background: #30d158;
 }
 
+/* Tactile Frosted Gear Button */
 .settings-btn {
-  background: transparent;
-  border: none;
-  width: 26px;
-  height: 26px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 0.5px solid rgba(255, 255, 255, 0.1);
+  width: 25px;
+  height: 25px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #8e8e93;
+  color: #98989f;
   cursor: pointer;
   outline: none;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.15);
+}
+
+.settings-btn .gear-icon {
+  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .settings-btn:hover {
   color: #ffffff;
-  background: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+.settings-btn:hover .gear-icon {
+  transform: rotate(60deg);
 }
 
 .settings-btn:active {
@@ -506,20 +520,20 @@ body {
 
 /* State: Thinking */
 .island.state-thinking {
-  min-width: 390px;
+  min-width: 380px;
   box-shadow: 
-    0 20px 48px -4px rgba(168, 85, 247, 0.4),
-    0 0 0 1px rgba(191, 90, 242, 0.45),
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.35),
-    inset 0 -1px 1px 0 rgba(168, 85, 247, 0.2);
+    0 20px 48px -4px rgba(168, 85, 247, 0.42),
+    0 0 0 1px rgba(191, 90, 242, 0.48),
+    inset 0 1px 0.8px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1px 1px 0 rgba(168, 85, 247, 0.25);
 }
 
 .island.state-thinking .logo-backdrop {
   background: linear-gradient(135deg, rgba(168, 85, 247, 0.45) 0%, rgba(126, 34, 206, 0.15) 100%);
-  border-color: rgba(191, 90, 242, 0.55);
+  border-color: rgba(191, 90, 242, 0.6);
 }
 .island.state-thinking .logo-aura {
-  background: rgba(168, 85, 247, 0.5);
+  background: rgba(168, 85, 247, 0.52);
 }
 .island.state-thinking .agy-logo-img {
   animation: logoBreatheThinking 2s infinite ease-in-out;
@@ -529,7 +543,7 @@ body {
 }
 .island.state-thinking .metric-capsule {
   background: rgba(191, 90, 242, 0.18);
-  border-color: rgba(191, 90, 242, 0.38);
+  border-color: rgba(191, 90, 242, 0.4);
   color: #f3e8ff;
 }
 .island.state-thinking .metric-dot {
@@ -544,24 +558,24 @@ body {
 
 /* State: Done */
 .island.state-done {
-  min-width: 372px;
+  min-width: 360px;
   box-shadow: 
-    0 20px 48px -4px rgba(48, 209, 88, 0.45),
-    0 0 0 1px rgba(48, 209, 88, 0.55),
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.35),
-    inset 0 -1px 1px 0 rgba(48, 209, 88, 0.2);
+    0 20px 48px -4px rgba(48, 209, 88, 0.48),
+    0 0 0 1px rgba(48, 209, 88, 0.58),
+    inset 0 1px 0.8px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1px 1px 0 rgba(48, 209, 88, 0.25);
 }
 
 .island.state-done .logo-backdrop {
   background: linear-gradient(135deg, rgba(48, 209, 88, 0.45) 0%, rgba(5, 150, 105, 0.2) 100%);
-  border-color: rgba(48, 209, 88, 0.6);
+  border-color: rgba(48, 209, 88, 0.65);
 }
 .island.state-done .logo-aura {
-  background: rgba(48, 209, 88, 0.55);
+  background: rgba(48, 209, 88, 0.58);
 }
 .island.state-done .metric-capsule {
   background: rgba(48, 209, 88, 0.18);
-  border-color: rgba(48, 209, 88, 0.4);
+  border-color: rgba(48, 209, 88, 0.42);
   color: #d1fae5;
 }
 .island.state-done .metric-dot {
@@ -571,24 +585,24 @@ body {
 
 /* State: Waiting */
 .island.state-waiting {
-  min-width: 380px;
+  min-width: 370px;
   box-shadow: 
-    0 20px 48px -4px rgba(255, 159, 10, 0.45),
-    0 0 0 1px rgba(255, 159, 10, 0.55),
-    inset 0 1px 1px 0 rgba(255, 255, 255, 0.35),
-    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.2);
+    0 20px 48px -4px rgba(255, 159, 10, 0.48),
+    0 0 0 1px rgba(255, 159, 10, 0.58),
+    inset 0 1px 0.8px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1px 1px 0 rgba(255, 255, 255, 0.25);
 }
 
 .island.state-waiting .logo-backdrop {
   background: linear-gradient(135deg, rgba(255, 159, 10, 0.45) 0%, rgba(180, 83, 9, 0.2) 100%);
-  border-color: rgba(255, 159, 10, 0.6);
+  border-color: rgba(255, 159, 10, 0.65);
 }
 .island.state-waiting .logo-aura {
-  background: rgba(255, 159, 10, 0.55);
+  background: rgba(255, 159, 10, 0.58);
 }
 .island.state-waiting .metric-capsule {
   background: rgba(255, 159, 10, 0.2);
-  border-color: rgba(255, 159, 10, 0.42);
+  border-color: rgba(255, 159, 10, 0.45);
   color: #fef3c7;
 }
 .island.state-waiting .metric-dot {
@@ -609,12 +623,12 @@ body {
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  width: 54px;
-  min-width: 54px;
-  height: 196px;
-  min-height: 196px;
-  border-radius: 27px;
-  padding: 10px 6px;
+  width: 52px;
+  min-width: 52px;
+  height: 192px;
+  min-height: 192px;
+  border-radius: 26px;
+  padding: 10px 5px;
   gap: 0;
 }
 
@@ -630,20 +644,20 @@ body {
   top: 24px;
 }
 
-/* Vertical Sleep State (Tucks horizontally into screen edges) */
+/* Vertical Sleep State */
 .island-root.vertical-left .island.is-sleeping {
-  translate: -46px 0;
-  width: 54px;
-  min-width: 54px;
+  translate: -45px 0;
+  width: 52px;
+  min-width: 52px;
   height: 120px;
   min-height: 120px;
   border-radius: 0 16px 16px 0;
   cursor: pointer;
   box-shadow: 
     8px 0 20px -2px rgba(0, 0, 0, 0.9),
-    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.09),
     inset -1.5px 0 1px 0 rgba(48, 209, 88, 0.45),
-    6px 0 18px rgba(48, 209, 88, 0.2);
+    6px 0 18px rgba(48, 209, 88, 0.22);
 }
 
 .island-root.vertical-left .island.is-sleeping .sleep-indicator {
@@ -662,23 +676,23 @@ body {
 .island-root.vertical-left .island-root:hover .island.is-sleeping,
 .island-root.vertical-left .island.is-sleeping:hover {
   translate: 0 0;
-  height: 196px;
-  border-radius: 27px;
+  height: 192px;
+  border-radius: 26px;
 }
 
 .island-root.vertical-right .island.is-sleeping {
-  translate: 46px 0;
-  width: 54px;
-  min-width: 54px;
+  translate: 45px 0;
+  width: 52px;
+  min-width: 52px;
   height: 120px;
   min-height: 120px;
   border-radius: 16px 0 0 16px;
   cursor: pointer;
   box-shadow: 
     -8px 0 20px -2px rgba(0, 0, 0, 0.9),
-    0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.09),
     inset 1.5px 0 1px 0 rgba(48, 209, 88, 0.45),
-    -6px 0 18px rgba(48, 209, 88, 0.2);
+    -6px 0 18px rgba(48, 209, 88, 0.22);
 }
 
 .island-root.vertical-right .island.is-sleeping .sleep-indicator {
@@ -697,8 +711,8 @@ body {
 .island-root.vertical-right .island-root:hover .island.is-sleeping,
 .island-root.vertical-right .island.is-sleeping:hover {
   translate: 0 0;
-  height: 196px;
-  border-radius: 27px;
+  height: 192px;
+  border-radius: 26px;
 }
 
 /* Hide horizontal elements in vertical mode */
@@ -767,31 +781,35 @@ body {
 }
 
 /* ==========================================================
-   macOS CONTROL CENTER SETTINGS CARD & FLUID ANIMATION
+   macOS / VisionOS CONTROL CENTER CARD (Fluid Pop-in)
    ========================================================== */
 .settings-card {
   position: absolute;
-  top: 56px;
-  background: rgba(20, 20, 22, 0.92);
-  backdrop-filter: blur(34px) saturate(210%);
-  -webkit-backdrop-filter: blur(34px) saturate(210%);
+  top: 54px;
+  background: radial-gradient(120% 120% at 50% 0%, rgba(30, 30, 35, 0.92) 0%, rgba(13, 13, 16, 0.96) 100%);
+  backdrop-filter: blur(48px) saturate(220%);
+  -webkit-backdrop-filter: blur(48px) saturate(220%);
   border: 0.5px solid rgba(255, 255, 255, 0.18);
-  border-radius: 18px;
-  padding: 14px 16px;
-  width: 292px;
+  border-radius: 20px;
+  padding: 14px 15px;
+  width: 298px;
   box-shadow: 
-    0 24px 54px rgba(0, 0, 0, 0.75),
-    0 0 0 0.5px rgba(255, 255, 255, 0.1);
+    0 28px 60px -8px rgba(0, 0, 0, 0.88),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.04);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transform: scale(0.92) translateY(-10px);
+  transform: scale(0.88) translateY(-14px);
+  filter: blur(10px);
+  transform-origin: top center;
   
-  /* Fluid Apple Modal Spring Pop-in */
+  /* VisionOS Spring Expansion (Completely removes stiffness!) */
   transition: 
-    opacity 0.32s cubic-bezier(0.19, 1.45, 0.26, 1),
-    transform 0.32s cubic-bezier(0.19, 1.45, 0.26, 1),
-    visibility 0.32s;
+    opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.38s cubic-bezier(0.34, 1.45, 0.64, 1),
+    filter 0.28s ease,
+    visibility 0.38s;
   z-index: 1000;
 }
 
@@ -800,36 +818,41 @@ body {
   visibility: visible;
   pointer-events: auto;
   transform: scale(1) translateY(0);
+  filter: blur(0);
 }
 
-/* Positioning for vertical-left (Opens cleanly to the right of pill) */
+/* Positioning for vertical-left */
 .island-root.vertical-left .settings-card {
   top: 20px;
-  left: 70px;
-  transform: scale(0.92) translateX(-12px);
+  left: 68px;
+  transform-origin: top left;
+  transform: scale(0.88) translateX(-14px);
 }
 
 .island-root.vertical-left .settings-card.visible {
   transform: scale(1) translateX(0);
 }
 
-/* Positioning for vertical-right (Opens cleanly to the left of pill) */
+/* Positioning for vertical-right */
 .island-root.vertical-right .settings-card {
   top: 20px;
-  right: 70px;
+  right: 68px;
   left: auto;
-  transform: scale(0.92) translateX(12px);
+  transform-origin: top right;
+  transform: scale(0.88) translateX(14px);
 }
 
 .island-root.vertical-right .settings-card.visible {
   transform: scale(1) translateX(0);
 }
 
+/* Card Header */
 .card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 12px;
+  padding: 0 1px;
 }
 
 .header-left {
@@ -838,73 +861,136 @@ body {
   gap: 7px;
 }
 
+.header-logo-badge {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 0.5px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.2);
+}
+
 .card-title {
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 600;
-  text-transform: uppercase;
-  color: #98989d;
-  letter-spacing: 0.05em;
+  color: #ffffff;
+  letter-spacing: -0.015em;
+}
+
+.card-badge {
+  font-size: 8.5px;
+  font-weight: 700;
+  color: #a1a1aa;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 1.5px 4.5px;
+  border-radius: 4px;
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
+  letter-spacing: 0.03em;
 }
 
 .card-close-btn {
-  background: transparent;
-  border: none;
-  color: #8e8e93;
-  font-size: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 0.5px solid rgba(255, 255, 255, 0.1);
+  color: #a1a1aa;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
   cursor: pointer;
-  padding: 2px 4px;
-  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   outline: none;
-  transition: color 0.15s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .card-close-btn:hover {
   color: #ffffff;
+  background: rgba(255, 255, 255, 0.16);
+  transform: scale(1.08);
 }
 
+.card-close-btn:active {
+  transform: scale(0.92);
+}
+
+/* Section Groups */
 .setting-group {
   margin-bottom: 10px;
 }
 
 .setting-label {
-  font-size: 11px;
-  color: #98989d;
-  margin-bottom: 5px;
+  font-size: 9.5px;
+  font-weight: 600;
+  color: #71717a;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
   padding-left: 2px;
+  text-transform: uppercase;
 }
 
-/* Segmented Control */
+/* Floating Segmented Control */
 .segmented-control {
   display: flex;
-  background: rgba(0, 0, 0, 0.45);
-  border-radius: 9px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 11px;
   padding: 3px;
-  gap: 2px;
+  gap: 3px;
 }
 
 .segment-btn {
   flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
   background: transparent;
   border: none;
-  border-radius: 7px;
-  color: #98989d;
+  border-radius: 8px;
+  color: #98989f;
   font-size: 11px;
   font-weight: 500;
-  padding: 5px 0;
+  padding: 6px 0;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   outline: none;
+}
+
+.segment-icon {
+  font-size: 10px;
+  opacity: 0.8;
 }
 
 .segment-btn:hover {
   color: #ffffff;
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .segment-btn.active {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.16);
   color: #ffffff;
   font-weight: 600;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.45),
+    inset 0 0.8px 0 rgba(255, 255, 255, 0.35);
+}
+
+/* Grouped Settings Surface */
+.settings-surface {
+  background: rgba(255, 255, 255, 0.035);
+  border: 0.5px solid rgba(255, 255, 255, 0.07);
+  border-radius: 13px;
+  padding: 2px 10px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.row-divider {
+  height: 0.5px;
+  background: rgba(255, 255, 255, 0.06);
+  margin: 0 2px;
 }
 
 /* Setting Row */
@@ -912,7 +998,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 6px 2px;
+  padding: 8px 1px;
   cursor: pointer;
 }
 
@@ -923,70 +1009,114 @@ body {
 
 .row-label {
   font-size: 12px;
-  color: #e5e5ea;
+  font-weight: 550;
+  color: #f4f4f5;
+  letter-spacing: -0.01em;
 }
 
 .row-sub {
   font-size: 9.5px;
   color: #8e8e93;
   margin-top: 1px;
+  letter-spacing: -0.005em;
 }
 
-/* Apple iOS Toggle Switch */
+/* Refined Apple iOS Toggle Switch */
 .apple-toggle {
   width: 34px;
-  height: 20px;
+  height: 19px;
   background: #39393d;
   border-radius: 12px;
   position: relative;
-  transition: background 0.3s ease;
+  transition: background 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   flex-shrink: 0;
 }
 
 .toggle-thumb {
   position: absolute;
-  top: 2px;
+  top: 1.5px;
   left: 2px;
   width: 16px;
   height: 16px;
   background: #ffffff;
   border-radius: 50%;
-  transition: transform 0.25s cubic-bezier(0.19, 1.45, 0.26, 1);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  transition: transform 0.28s cubic-bezier(0.19, 1.45, 0.26, 1);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 
 .apple-toggle.active {
-  background: #30d158;
+  background: linear-gradient(135deg, #34c759, #30d158);
+  box-shadow: 0 0 10px rgba(48, 209, 88, 0.3);
 }
 
 .apple-toggle.active .toggle-thumb {
   transform: translateX(14px);
 }
 
-/* Test Button Row */
-.test-btn-row {
-  display: flex;
+/* ==========================================================
+   TACTILE PREVIEW BUTTON TILES (Redesigned Controls)
+   ========================================================== */
+.test-pill-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
   gap: 5px;
 }
 
 .test-pill {
-  flex: 1;
-  background: rgba(255, 255, 255, 0.08);
-  border: 0.5px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  color: #d1d1d6;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 0.5px solid rgba(255, 255, 255, 0.09);
+  border-radius: 8px;
+  color: #e5e5ea;
   font-size: 10px;
-  font-weight: 500;
-  padding: 5px 0;
+  font-weight: 550;
+  padding: 7px 3px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: inset 0 0.8px 0 rgba(255, 255, 255, 0.12);
+  outline: none;
 }
 
 .test-pill:hover {
-  background: rgba(255, 255, 255, 0.16);
-  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), inset 0 0.8px 0 rgba(255, 255, 255, 0.25);
 }
 
 .test-pill:active {
   transform: scale(0.95);
+}
+
+.pill-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot-thinking { background: #bf5af2; box-shadow: 0 0 6px #bf5af2; }
+.dot-done     { background: #30d158; box-shadow: 0 0 6px #30d158; }
+.dot-wait     { background: #ff9f0a; box-shadow: 0 0 6px #ff9f0a; }
+.dot-sleep    { background: #64d2ff; box-shadow: 0 0 6px #64d2ff; }
+.dot-idle     { background: #8e8e93; }
+
+.test-pill-thinking:hover {
+  border-color: rgba(191, 90, 242, 0.4);
+  box-shadow: 0 4px 14px rgba(191, 90, 242, 0.25), inset 0 0.8px 0 rgba(255, 255, 255, 0.25);
+}
+.test-pill-done:hover {
+  border-color: rgba(48, 209, 88, 0.4);
+  box-shadow: 0 4px 14px rgba(48, 209, 88, 0.25), inset 0 0.8px 0 rgba(255, 255, 255, 0.25);
+}
+.test-pill-wait:hover {
+  border-color: rgba(255, 159, 10, 0.4);
+  box-shadow: 0 4px 14px rgba(255, 159, 10, 0.25), inset 0 0.8px 0 rgba(255, 255, 255, 0.25);
+}
+.test-pill-sleep:hover {
+  border-color: rgba(100, 210, 255, 0.4);
+  box-shadow: 0 4px 14px rgba(100, 210, 255, 0.25), inset 0 0.8px 0 rgba(255, 255, 255, 0.25);
 }
