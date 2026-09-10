@@ -11,15 +11,15 @@ const CONFIG_FILE = path.join(app.getPath('userData'), 'gravibuddy-config.json')
 const LEGACY_CONFIG_FILE = path.join(app.getPath('userData'), 'vibing-config.json');
 
 function loadConfig() {
+  let cfg = { position: 'center', sound: true, sleepMode: true, stealthMode: true, thinkingPreview: true };
   try {
     if (fs.existsSync(CONFIG_FILE)) {
-      return JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
-    }
-    if (fs.existsSync(LEGACY_CONFIG_FILE)) {
-      return JSON.parse(fs.readFileSync(LEGACY_CONFIG_FILE, 'utf8'));
+      cfg = { ...cfg, ...JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8')) };
+    } else if (fs.existsSync(LEGACY_CONFIG_FILE)) {
+      cfg = { ...cfg, ...JSON.parse(fs.readFileSync(LEGACY_CONFIG_FILE, 'utf8')) };
     }
   } catch (e) {}
-  return { position: 'center', sound: true, sleepMode: true, stealthMode: true };
+  return cfg;
 }
 
 function saveConfig(cfg) {
@@ -94,15 +94,16 @@ function createWindow() {
     skipTaskbar: false,
     hasShadow: false,
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false
+      nodeIntegration: false,
+      contextIsolation: true,
+      preload: path.join(__dirname, '../preload/index.js')
     }
   });
 
   mainWindow.setMenu(null);
   mainWindow.setAlwaysOnTop(true, 'screen-saver');
   mainWindow.setIgnoreMouseEvents(true, { forward: true });
-  mainWindow.loadFile(path.join(__dirname, 'index.html'));
+  mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
 
   mainWindow.webContents.on('did-finish-load', () => {
     mainWindow.webContents.send('position-changed', {
@@ -241,6 +242,27 @@ ipcMain.on('save-sleep-config', (event, sleepEnabled) => {
 ipcMain.on('save-stealth-config', (event, stealthEnabled) => {
   userConfig.stealthMode = stealthEnabled;
   saveConfig(userConfig);
+});
+
+ipcMain.on('save-thinking-preview-config', (event, previewEnabled) => {
+  userConfig.thinkingPreview = previewEnabled;
+  saveConfig(userConfig);
+});
+
+ipcMain.on('reset-to-idle', () => {
+  lastState = 'idle';
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('agent-update', {
+      state: 'idle',
+      model: 'Antigravity',
+      plan: 'Google AI Pro',
+      cost: null,
+      contextPercent: null,
+      quotaPercent: 95,
+      message: null,
+      timestamp: Date.now()
+    });
+  }
 });
 
 ipcMain.on('set-ignore-mouse-events', (event, ignore, options) => {

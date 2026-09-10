@@ -2,7 +2,7 @@
   "name": "gravibuddy",
   "version": "1.0.0",
   "description": "A delightful floating Apple-grade Dynamic Island companion for Google Antigravity CLI",
-  "main": "main.js",
+  "main": "src/main/index.js",
   "scripts": {
     "start": "electron ."
   },

@@ -1,4 +1,4 @@
-const { ipcRenderer } = require('electron');
+const api = window.graviAPI;
 
 // DOM Elements
 const islandRoot = document.getElementById('islandRoot');
@@ -22,6 +22,8 @@ const btnToggleSleep = document.getElementById('btnToggleSleep');
 const appleToggleSleep = document.getElementById('appleToggleSleep');
 const btnToggleStealth = document.getElementById('btnToggleStealth');
 const appleToggleStealth = document.getElementById('appleToggleStealth');
+const btnToggleThinkingPreview = document.getElementById('btnToggleThinkingPreview');
+const appleToggleThinkingPreview = document.getElementById('appleToggleThinkingPreview');
 
 const testThinking = document.getElementById('testThinking');
 const testDone = document.getElementById('testDone');
@@ -33,10 +35,11 @@ const testIdle = document.getElementById('testIdle');
 let soundEnabled = true;
 let sleepModeEnabled = true;
 let stealthCodingEnabled = true; // Zen Mode: Stay tucked during thinking, emerge only on alerts/done
+let thinkingPreviewEnabled = true; // Peek on task start, then tuck into sleep
 let currentPosition = 'center'; // 'center' | 'left' | 'right'
 let currentState = 'idle';
 let sleepTimer = null;
-let doneCelebrationTimer = null;
+let thinkingPreviewTimer = null;
 let isSwitchingPosition = false;
 let isInteractiveArea = false;
 let wakeHoverTimer = null;
@@ -195,6 +198,7 @@ function scheduleSleep(delay = 1400, force = false) {
   if (settingsCard.classList.contains('visible')) return;
   if (isSwitchingPosition) return;
   if (island.classList.contains('is-sleeping')) return; // Already sleeping!
+  if (currentState === 'waiting' || currentState === 'done') return; // Persistent open until next action!
 
   // If sleep timer is already actively counting down and not forced, let it finish!
   if (sleepTimer && !force) return;
@@ -206,7 +210,7 @@ function scheduleSleep(delay = 1400, force = false) {
   }, delay);
 }
 
-// Click to wake immediately when sleeping
+// Click to wake immediately when sleeping or dismiss done state
 island.addEventListener('click', e => {
   if (btnSettings.contains(e.target) || e.target.closest('button')) return;
   if (island.classList.contains('is-sleeping')) {
@@ -215,6 +219,15 @@ island.addEventListener('click', e => {
       wakeHoverTimer = null;
     }
     wakeUpIsland('click');
+    return;
+  }
+  if (currentState === 'done') {
+    // User acknowledged completed task: smoothly return to idle
+    currentState = 'idle';
+    island.classList.remove('state-done');
+    triggerWateryMorph();
+    updateIslandLabels({ state: 'idle' }, 'Antigravity');
+    scheduleSleep(1200, true);
   }
 });
 
@@ -231,7 +244,7 @@ function checkInteractiveHit(e) {
     isInteractiveArea = shouldBeInteractive;
     if (isInteractiveArea) {
       // Mouse touched the island or settings card
-      ipcRenderer.send('set-ignore-mouse-events', false);
+      api.setIgnoreMouseEvents(false);
 
       // If it was sleeping, check hover intent with debounce (160ms)
       // This prevents rapid cursor flicks over browser tabs from accidentally popping open the notch!
@@ -249,8 +262,12 @@ function checkInteractiveHit(e) {
         clearTimeout(wakeHoverTimer);
         wakeHoverTimer = null;
       }
-      ipcRenderer.send('set-ignore-mouse-events', true, { forward: true });
+      api.setIgnoreMouseEvents(true, { forward: true });
 
+      // Persistent open: never sleep if waiting or done!
+      if (currentState === 'waiting' || currentState === 'done') {
+        return;
+      }
       // If in stealth coding mode and thinking: tuck back to sleep after short delay
       if (currentState === 'thinking' && stealthCodingEnabled) {
         scheduleSleep(800, true);
@@ -270,8 +287,9 @@ window.addEventListener('mouseleave', () => {
   }
   if (isInteractiveArea) {
     isInteractiveArea = false;
-    ipcRenderer.send('set-ignore-mouse-events', true, { forward: true });
+    api.setIgnoreMouseEvents(true, { forward: true });
   }
+  if (currentState === 'waiting' || currentState === 'done') return;
   if (currentState === 'thinking' && stealthCodingEnabled) {
     scheduleSleep(800, true);
   } else if (currentState === 'idle') {
@@ -289,8 +307,9 @@ window.addEventListener('blur', () => {
   }
   if (isInteractiveArea) {
     isInteractiveArea = false;
-    ipcRenderer.send('set-ignore-mouse-events', true, { forward: true });
+    api.setIgnoreMouseEvents(true, { forward: true });
   }
+  if (currentState === 'waiting' || currentState === 'done') return;
   if (currentState === 'thinking' && stealthCodingEnabled) {
     enterSleepMode();
   } else if (currentState === 'idle') {
@@ -343,61 +362,74 @@ function updateIslandState(data) {
   updateIslandLabels(data, modelLabel);
 
   if (targetState === 'waiting') {
-    // 🚨 ACTION REQUIRED: Must bloom open immediately so user notices!
+    // 🚨 ACTION REQUIRED: Must bloom open immediately and STAY open until user proceeds!
+    clearTimeout(thinkingPreviewTimer);
+    thinkingPreviewTimer = null;
+    clearSleepTimer();
+
     wakeUpIsland('alert');
     island.classList.remove('state-thinking', 'state-done');
     island.classList.add('state-waiting');
     triggerWateryMorph();
     playChime('alert');
   } else if (targetState === 'done') {
-    // 🌟 CELEBRATION: Task finished!
+    // 🌟 TASK COMPLETED: Bloom open and STAY open until user clicks or next command starts!
+    clearTimeout(thinkingPreviewTimer);
+    thinkingPreviewTimer = null;
+    clearSleepTimer();
+
     wakeUpIsland('done');
     island.classList.remove('state-thinking', 'state-waiting');
     island.classList.add('state-done');
     triggerWateryMorph();
     playChime('success');
-
-    // Bloom for 3.2s celebration preview, then gracefully return to idle and tuck to notch
-    clearTimeout(doneCelebrationTimer);
-    doneCelebrationTimer = setTimeout(() => {
-      if (currentState === 'done') {
-        currentState = 'idle';
-        island.classList.remove('state-done');
-        triggerWateryMorph();
-        updateIslandLabels({ state: 'idle', model: data.model, quotaPercent: data.quotaPercent }, modelLabel);
-        scheduleSleep(1000, true);
-      }
-    }, 3200);
   } else if (targetState === 'thinking') {
     // 🟣 CODING / THINKING:
+    clearSleepTimer();
     island.classList.remove('state-done', 'state-waiting');
     island.classList.add('state-thinking');
 
     if (stateChanged) {
       triggerWateryMorph();
-    }
-
-    if (stealthCodingEnabled) {
-      // ZEN STEALTH CODING: Keep tucked in the notch tab with purple breathing glow!
-      // NEVER block user's screen or code editor while AI is working.
-      if (!isInteractiveArea && !settingsCard.classList.contains('visible')) {
-        enterSleepMode();
+      if (stealthCodingEnabled) {
+        if (thinkingPreviewEnabled) {
+          // Peek on task start: Pop up for 2.5s, then automatically sleep
+          wakeUpIsland('thinking-peek');
+          clearTimeout(thinkingPreviewTimer);
+          thinkingPreviewTimer = setTimeout(() => {
+            thinkingPreviewTimer = null;
+            if (currentState === 'thinking' && !isInteractiveArea && !settingsCard.classList.contains('visible')) {
+              enterSleepMode();
+            }
+          }, 2500);
+        } else {
+          // Immediate stealth: Stay tucked without popping up
+          clearTimeout(thinkingPreviewTimer);
+          thinkingPreviewTimer = null;
+          if (!isInteractiveArea && !settingsCard.classList.contains('visible')) {
+            enterSleepMode();
+          }
+        }
+      } else {
+        wakeUpIsland('thinking');
       }
     } else {
-      // Normal mode: show expanded thinking island
-      wakeUpIsland('thinking');
+      // Periodic update while still thinking: keep asleep if stealth mode active
+      if (stealthCodingEnabled && !thinkingPreviewTimer && !isInteractiveArea && !settingsCard.classList.contains('visible')) {
+        enterSleepMode();
+      }
     }
   } else {
     // 🟢 NORMAL IDLE:
+    clearTimeout(thinkingPreviewTimer);
+    thinkingPreviewTimer = null;
     island.classList.remove('state-thinking', 'state-done', 'state-waiting');
 
     if (stateChanged) {
       triggerWateryMorph();
       scheduleSleep(1200, true);
     } else {
-      // CRITICAL: When terminal sends periodic idle updates,
-      // schedule sleep WITHOUT resetting the existing countdown (force=false).
-      // This allows the timer to actually expire and enter sleep mode!
+      // Periodic idle telemetry from terminal
       if (!island.classList.contains('is-sleeping') && !isInteractiveArea && !settingsCard.classList.contains('visible')) {
         scheduleSleep(1400, false);
       }
@@ -405,7 +437,7 @@ function updateIslandState(data) {
   }
 }
 
-ipcRenderer.on('agent-update', (event, data) => {
+api.onAgentUpdate((data) => {
   updateIslandState(data);
 });
 
@@ -479,7 +511,7 @@ function transitionToPosition(targetPos, targetOrientation) {
 
   setTimeout(() => {
     // Step 3: Change window bounds and orientation while 100% invisible
-    ipcRenderer.send('set-position', targetPos);
+    api.setPosition(targetPos);
     currentPosition = targetPos;
     setActivePositionButton(targetPos);
     applyOrientationClasses(targetOrientation);
@@ -531,7 +563,7 @@ btnPosRight.addEventListener('click', () => {
   transitionToPosition('right', 'vertical-right');
 });
 
-ipcRenderer.on('position-changed', (event, info) => {
+api.onPositionChanged((info) => {
   const pos = typeof info === 'string' ? info : info.position;
   const orientation = typeof info === 'object' ? info.orientation : null;
   currentPosition = pos;
@@ -544,7 +576,7 @@ ipcRenderer.on('position-changed', (event, info) => {
 btnToggleSound.addEventListener('click', () => {
   soundEnabled = !soundEnabled;
   appleToggleSound.classList.toggle('active', soundEnabled);
-  ipcRenderer.send('save-sound-config', soundEnabled);
+  api.saveSoundConfig(soundEnabled);
   if (soundEnabled) playChime('success');
 });
 
@@ -552,7 +584,7 @@ btnToggleSound.addEventListener('click', () => {
 btnToggleSleep.addEventListener('click', () => {
   sleepModeEnabled = !sleepModeEnabled;
   appleToggleSleep.classList.toggle('active', sleepModeEnabled);
-  ipcRenderer.send('save-sleep-config', sleepModeEnabled);
+  api.saveSleepConfig(sleepModeEnabled);
   if (!sleepModeEnabled) {
     wakeUpIsland();
   } else {
@@ -564,13 +596,22 @@ btnToggleSleep.addEventListener('click', () => {
 btnToggleStealth.addEventListener('click', () => {
   stealthCodingEnabled = !stealthCodingEnabled;
   appleToggleStealth.classList.toggle('active', stealthCodingEnabled);
-  ipcRenderer.send('save-stealth-config', stealthCodingEnabled);
+  api.saveStealthConfig(stealthCodingEnabled);
   if (stealthCodingEnabled && currentState === 'thinking' && !isInteractiveArea) {
     enterSleepMode();
   } else if (!stealthCodingEnabled && currentState === 'thinking') {
     wakeUpIsland('stealth-off');
   }
 });
+
+// Peek on Task Start Toggle
+if (btnToggleThinkingPreview && appleToggleThinkingPreview) {
+  btnToggleThinkingPreview.addEventListener('click', () => {
+    thinkingPreviewEnabled = !thinkingPreviewEnabled;
+    appleToggleThinkingPreview.classList.toggle('active', thinkingPreviewEnabled);
+    api.saveThinkingPreviewConfig(thinkingPreviewEnabled);
+  });
+}
 
 // ==========================================================
 // Settings Test Buttons
@@ -596,14 +637,14 @@ testSleep.addEventListener('click', () => {
 
 testIdle.addEventListener('click', () => {
   wakeUpIsland();
-  updateIslandState({ state: 'idle', model: 'Gemini 3.8 Flash (High)', quotaPercent: 94 });
+  api.resetToIdle();
 });
 
 // ==========================================================
 // Initial Config Restoration
 // ==========================================================
-ipcRenderer.send('get-initial-config');
-ipcRenderer.on('initial-config', (event, cfg) => {
+api.getInitialConfig();
+api.onInitialConfig((cfg) => {
   if (cfg) {
     if (cfg.position) {
       currentPosition = cfg.position;
@@ -621,6 +662,10 @@ ipcRenderer.on('initial-config', (event, cfg) => {
     if (cfg.stealthMode !== undefined) {
       stealthCodingEnabled = cfg.stealthMode;
       appleToggleStealth.classList.toggle('active', stealthCodingEnabled);
+    }
+    if (cfg.thinkingPreview !== undefined && appleToggleThinkingPreview) {
+      thinkingPreviewEnabled = cfg.thinkingPreview;
+      appleToggleThinkingPreview.classList.toggle('active', thinkingPreviewEnabled);
     }
     scheduleSleep(4000);
   }
