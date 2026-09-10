@@ -515,12 +515,6 @@ body {
   transform: scale(0.92);
 }
 
-.settings-btn.close-app-btn:hover {
-  color: #ff453a;
-  background: rgba(255, 69, 58, 0.18);
-  border-color: rgba(255, 69, 58, 0.35);
-  box-shadow: 0 0 8px rgba(255, 69, 58, 0.25);
-}
 
 /* ==========================================================
    STATE VARIATIONS (Dynamic Aura & Waveforms)
