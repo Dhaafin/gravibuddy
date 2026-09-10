@@ -12,6 +12,8 @@
 ## ✨ Features
 
 - 🚀 **One-Click Workspace Launcher**: Auto-discovers your projects from Antigravity CLI's `trustedWorkspaces`. Launch any project in Windows Terminal with `agy` directly from the Gravibuddy Control Center without manually opening a terminal or typing commands.
+- 🔍 **Center Spotlight Control Center**: Opens cleanly in the dead-center of your screen (Raycast/Spotlight style) with blur/Esc auto-hide, keeping the top notch 100% compact and uncluttered.
+- 👻 **Complete Alt+Tab Stealth**: Native Win32 `WS_EX_TOOLWINDOW` integration completely hides Gravibuddy from the Windows Alt+Tab task switcher and taskbar.
 - 🖥️ **Attached Hardware Notch**: Sits completely flush against the top screen bezel (zero floating gap) with signature MacBook-grade concave outer fillet ears that seamlessly bridge the notch into the display frame.
 - 🌙 **Responsive Bezel Sleep Mode**:
   - On idle (~1.4s), smoothly retracts up into the screen bezel, leaving a minimalist 6px hardware tab with a gentle breathing ambient LED indicator.
@@ -115,8 +117,10 @@ gravibuddy/
 │   ├── preload/
 │   │   └── index.js         # Secure contextBridge API
 │   └── renderer/
-│       ├── index.html       # Dynamic Island & Control Center DOM
-│       ├── renderer.js      # State machine, audio & interaction
+│       ├── index.html       # Dynamic Island notch DOM
+│       ├── renderer.js      # Notch state machine & audio
+│       ├── settings.html    # Center Spotlight modal window DOM
+│       ├── settings.js      # Spotlight controller & launcher
 │       └── style.css        # Squircle glassmorphism & fluid spring physics
 ├── forwarder.cmd            # Root backward-compatible shim
 └── package.json             # App metadata & dependencies
