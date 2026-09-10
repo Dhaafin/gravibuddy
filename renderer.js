@@ -39,6 +39,7 @@ let sleepTimer = null;
 let doneCelebrationTimer = null;
 let isSwitchingPosition = false;
 let isInteractiveArea = false;
+let wakeHoverTimer = null;
 
 // Prevent Windows native context menu & toggle settings on right click
 window.addEventListener('contextmenu', e => {
@@ -150,7 +151,7 @@ function triggerWateryMorph() {
 }
 
 // ==========================================================
-// Sleep Mode (Option 1: Ultra-Thin Notch Tab) & Wake Logic
+// Sleep Mode (Attached Notch Tab) & Wake Logic
 // ==========================================================
 function clearSleepTimer() {
   if (sleepTimer) {
@@ -161,6 +162,10 @@ function clearSleepTimer() {
 
 function wakeUpIsland(reason = 'interaction') {
   clearSleepTimer();
+  if (wakeHoverTimer) {
+    clearTimeout(wakeHoverTimer);
+    wakeHoverTimer = null;
+  }
   if (island.classList.contains('is-sleeping')) {
     island.classList.remove('is-sleeping');
     triggerWateryMorph();
@@ -169,6 +174,7 @@ function wakeUpIsland(reason = 'interaction') {
 }
 
 function enterSleepMode() {
+  clearSleepTimer();
   if (!sleepModeEnabled) return;
   if (settingsCard.classList.contains('visible')) return;
   if (isSwitchingPosition) return;
@@ -184,20 +190,36 @@ function enterSleepMode() {
   island.classList.add('is-sleeping');
 }
 
-function scheduleSleep(delay = 3500) {
-  clearSleepTimer();
+function scheduleSleep(delay = 1400, force = false) {
   if (!sleepModeEnabled) return;
   if (settingsCard.classList.contains('visible')) return;
   if (isSwitchingPosition) return;
+  if (island.classList.contains('is-sleeping')) return; // Already sleeping!
 
+  // If sleep timer is already actively counting down and not forced, let it finish!
+  if (sleepTimer && !force) return;
+
+  clearSleepTimer();
   sleepTimer = setTimeout(() => {
+    sleepTimer = null;
     enterSleepMode();
   }, delay);
 }
 
+// Click to wake immediately when sleeping
+island.addEventListener('click', e => {
+  if (btnSettings.contains(e.target) || e.target.closest('button')) return;
+  if (island.classList.contains('is-sleeping')) {
+    if (wakeHoverTimer) {
+      clearTimeout(wakeHoverTimer);
+      wakeHoverTimer = null;
+    }
+    wakeUpIsland('click');
+  }
+});
+
 // ==========================================================
-// Intelligent Zero-Padding Click-Through Pass
-// (As long as mouse is not touching the pill/settings, clicks pass right through!)
+// Intelligent Zero-Padding Click-Through Pass & Hover Intent
 // ==========================================================
 function checkInteractiveHit(e) {
   const hit = document.elementFromPoint(e.clientX, e.clientY);
@@ -211,19 +233,29 @@ function checkInteractiveHit(e) {
       // Mouse touched the island or settings card
       ipcRenderer.send('set-ignore-mouse-events', false);
 
-      // If it was sleeping, hover peeks it open
+      // If it was sleeping, check hover intent with debounce (160ms)
+      // This prevents rapid cursor flicks over browser tabs from accidentally popping open the notch!
       if (island.classList.contains('is-sleeping')) {
-        wakeUpIsland('hover');
+        if (wakeHoverTimer) clearTimeout(wakeHoverTimer);
+        wakeHoverTimer = setTimeout(() => {
+          if (isInteractiveArea && island.classList.contains('is-sleeping')) {
+            wakeUpIsland('hover');
+          }
+        }, 160);
       }
     } else {
       // Mouse left the interactive surfaces: clicks pass right through immediately!
+      if (wakeHoverTimer) {
+        clearTimeout(wakeHoverTimer);
+        wakeHoverTimer = null;
+      }
       ipcRenderer.send('set-ignore-mouse-events', true, { forward: true });
 
       // If in stealth coding mode and thinking: tuck back to sleep after short delay
       if (currentState === 'thinking' && stealthCodingEnabled) {
-        scheduleSleep(1200);
+        scheduleSleep(800, true);
       } else if (currentState === 'idle') {
-        scheduleSleep(2500);
+        scheduleSleep(1200, true);
       }
     }
   }
@@ -232,18 +264,26 @@ function checkInteractiveHit(e) {
 window.addEventListener('mousemove', checkInteractiveHit);
 
 window.addEventListener('mouseleave', () => {
+  if (wakeHoverTimer) {
+    clearTimeout(wakeHoverTimer);
+    wakeHoverTimer = null;
+  }
   if (isInteractiveArea) {
     isInteractiveArea = false;
     ipcRenderer.send('set-ignore-mouse-events', true, { forward: true });
   }
   if (currentState === 'thinking' && stealthCodingEnabled) {
-    scheduleSleep(1000);
+    scheduleSleep(800, true);
   } else if (currentState === 'idle') {
-    scheduleSleep(2500);
+    scheduleSleep(1400, true);
   }
 });
 
 window.addEventListener('blur', () => {
+  if (wakeHoverTimer) {
+    clearTimeout(wakeHoverTimer);
+    wakeHoverTimer = null;
+  }
   if (settingsCard.classList.contains('visible')) {
     settingsCard.classList.remove('visible');
   }
@@ -254,7 +294,7 @@ window.addEventListener('blur', () => {
   if (currentState === 'thinking' && stealthCodingEnabled) {
     enterSleepMode();
   } else if (currentState === 'idle') {
-    scheduleSleep(2000);
+    scheduleSleep(1400, true);
   }
 });
 
@@ -317,7 +357,7 @@ function updateIslandState(data) {
     triggerWateryMorph();
     playChime('success');
 
-    // Bloom for 4.5s preview, then gracefully return to idle and tuck to notch
+    // Bloom for 3.2s celebration preview, then gracefully return to idle and tuck to notch
     clearTimeout(doneCelebrationTimer);
     doneCelebrationTimer = setTimeout(() => {
       if (currentState === 'done') {
@@ -325,9 +365,9 @@ function updateIslandState(data) {
         island.classList.remove('state-done');
         triggerWateryMorph();
         updateIslandLabels({ state: 'idle', model: data.model, quotaPercent: data.quotaPercent }, modelLabel);
-        scheduleSleep(1500);
+        scheduleSleep(1000, true);
       }
-    }, 4500);
+    }, 3200);
   } else if (targetState === 'thinking') {
     // 🟣 CODING / THINKING:
     island.classList.remove('state-done', 'state-waiting');
@@ -341,7 +381,7 @@ function updateIslandState(data) {
       // ZEN STEALTH CODING: Keep tucked in the notch tab with purple breathing glow!
       // NEVER block user's screen or code editor while AI is working.
       if (!isInteractiveArea && !settingsCard.classList.contains('visible')) {
-        island.classList.add('is-sleeping');
+        enterSleepMode();
       }
     } else {
       // Normal mode: show expanded thinking island
@@ -353,14 +393,14 @@ function updateIslandState(data) {
 
     if (stateChanged) {
       triggerWateryMorph();
-    }
-
-    // CRITICAL BUG FIX FOR TERMINAL TYPING:
-    // When user types in terminal, Antigravity statusLine fires with state: idle.
-    // If the island is ALREADY sleeping, DO NOT WAKE IT UP!
-    // Simply let it remain sleeping peacefully.
-    if (!island.classList.contains('is-sleeping') && !isInteractiveArea && !settingsCard.classList.contains('visible')) {
-      scheduleSleep(3000);
+      scheduleSleep(1200, true);
+    } else {
+      // CRITICAL: When terminal sends periodic idle updates,
+      // schedule sleep WITHOUT resetting the existing countdown (force=false).
+      // This allows the timer to actually expire and enter sleep mode!
+      if (!island.classList.contains('is-sleeping') && !isInteractiveArea && !settingsCard.classList.contains('visible')) {
+        scheduleSleep(1400, false);
+      }
     }
   }
 }

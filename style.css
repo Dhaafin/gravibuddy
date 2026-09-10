@@ -278,36 +278,7 @@ body {
   box-shadow: 0 0 10px rgba(255, 159, 10, 0.9);
 }
 
-/* Hover or Wake-Up: Springs out into full Dynamic Island */
-.island-root:hover .island.is-sleeping,
-.island.is-sleeping:hover {
-  translate: 0 0;
-  min-width: 296px;
-  width: auto;
-  border-radius: 9999px;
-  padding: 5px 12px 5px 10px;
-  box-shadow: 
-    0 18px 42px -4px rgba(0, 0, 0, 0.92),
-    0 0 0 1px rgba(255, 255, 255, 0.13),
-    inset 0 1px 0.6px 0 rgba(255, 255, 255, 0.38),
-    inset 0 -1px 0.6px 0 rgba(0, 0, 0, 0.6);
-}
 
-.island-root:hover .island.is-sleeping .sleep-indicator,
-.island.is-sleeping:hover .sleep-indicator {
-  opacity: 0;
-}
-
-.island-root:hover .island.is-sleeping .island-content,
-.island-root:hover .island.is-sleeping .trailing-accessory,
-.island-root:hover .island.is-sleeping .leading-accessory,
-.island.is-sleeping:hover .island-content,
-.island.is-sleeping:hover .trailing-accessory,
-.island.is-sleeping:hover .leading-accessory {
-  opacity: 1;
-  pointer-events: auto;
-  transition: opacity 0.32s ease 0.08s;
-}
 
 /* ==========================================================
    LEADING ACCESSORY: ANTIGRAVITY LOGO ORB
@@ -673,13 +644,6 @@ body {
   height: 28px;
 }
 
-.island-root.vertical-left .island-root:hover .island.is-sleeping,
-.island-root.vertical-left .island.is-sleeping:hover {
-  translate: 0 0;
-  height: 192px;
-  border-radius: 26px;
-}
-
 .island-root.vertical-right .island.is-sleeping {
   translate: 45px 0;
   width: 52px;
@@ -706,13 +670,6 @@ body {
 .island-root.vertical-right .island.is-sleeping .sleep-bar {
   width: 2.5px;
   height: 28px;
-}
-
-.island-root.vertical-right .island-root:hover .island.is-sleeping,
-.island-root.vertical-right .island.is-sleeping:hover {
-  translate: 0 0;
-  height: 192px;
-  border-radius: 26px;
 }
 
 /* Hide horizontal elements in vertical mode */
