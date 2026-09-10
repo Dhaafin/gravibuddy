@@ -37,16 +37,16 @@ function getWindowBoundsForPosition(pos) {
   const { x: screenX, y: screenY, width: screenWidth, height: screenHeight } = primaryDisplay.bounds;
 
   if (pos === 'left') {
-    const width = 80;
-    const height = 380;
+    const width = 240;
+    const height = 230;
     const x = screenX;
     const y = screenY + Math.round((screenHeight - height) / 2);
     return { width, height, x, y, orientation: 'vertical-left' };
   }
 
   if (pos === 'right') {
-    const width = 80;
-    const height = 380;
+    const width = 240;
+    const height = 230;
     const x = screenX + screenWidth - width;
     const y = screenY + Math.round((screenHeight - height) / 2);
     return { width, height, x, y, orientation: 'vertical-right' };
