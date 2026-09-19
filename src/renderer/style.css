@@ -53,7 +53,6 @@ body {
   box-shadow: 
     0 16px 36px -4px rgba(0, 0, 0, 0.94),
     0 4px 12px rgba(0, 0, 0, 0.6),
-    0 1px 0 0 rgba(255, 255, 255, 0.09),
     inset 0 -1px 0.6px 0 rgba(255, 255, 255, 0.22);
 
   /* Modern Independent CSS Transforms */
@@ -83,20 +82,22 @@ body {
   position: absolute;
   top: 0;
   width: 14px;
-  height: 14px;
+  height: 12px;
   pointer-events: none;
   z-index: 1;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
   transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .notch-ear-left {
-  left: -14px;
-  background: radial-gradient(circle at 0 100%, transparent 13px, #000000 13.5px);
+  left: -12px;
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2014%2012%22%3E%3Cpath%20d%3D%22M14%2C0%20L0%2C0%20A12%2C12%200%200%2C1%2012%2C12%20L14%2C12%20Z%22%20fill%3D%22%23000000%22%2F%3E%3C%2Fsvg%3E");
 }
 
 .notch-ear-right {
-  right: -14px;
-  background: radial-gradient(circle at 100% 100%, transparent 13px, #000000 13.5px);
+  right: -12px;
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2014%2012%22%3E%3Cpath%20d%3D%22M0%2C0%20L14%2C0%20A12%2C12%200%200%2C0%202%2C12%20L0%2C12%20Z%22%20fill%3D%22%23000000%22%2F%3E%3C%2Fsvg%3E");
 }
 
 /* ==========================================================
@@ -526,10 +527,11 @@ body {
 .island.state-thinking {
   min-width: 380px;
   box-shadow: 
-    0 18px 46px -4px rgba(168, 85, 247, 0.44),
-    0 4px 14px rgba(168, 85, 247, 0.3),
-    0 1px 0 0 rgba(191, 90, 242, 0.45),
-    inset 0 -1px 0.8px 0 rgba(255, 255, 255, 0.35);
+    0 16px 36px -4px rgba(0, 0, 0, 0.88),
+    0 10px 28px -4px rgba(168, 85, 247, 0.28),
+    0 3px 10px rgba(168, 85, 247, 0.2),
+    inset 0 -1px 0.8px 0 rgba(191, 90, 242, 0.4),
+    inset 0 -1px 0.5px 0 rgba(255, 255, 255, 0.25);
 }
 
 .island.state-thinking .logo-backdrop {
@@ -537,7 +539,7 @@ body {
   border-color: rgba(191, 90, 242, 0.45);
 }
 .island.state-thinking .logo-aura {
-  background: rgba(168, 85, 247, 0.48);
+  background: rgba(168, 85, 247, 0.32);
 }
 .island.state-thinking .agy-logo-img {
   animation: logoBreatheThinking 2s infinite ease-in-out;
@@ -546,9 +548,10 @@ body {
   display: flex;
 }
 .island.state-thinking .metric-capsule {
-  background: rgba(191, 90, 242, 0.18);
-  border-color: rgba(191, 90, 242, 0.4);
+  background: linear-gradient(180deg, rgba(191, 90, 242, 0.2) 0%, rgba(191, 90, 242, 0.1) 100%);
+  border-color: rgba(191, 90, 242, 0.38);
   color: #f3e8ff;
+  box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.15);
 }
 .island.state-thinking .metric-dot {
   background: #bf5af2;
@@ -564,10 +567,11 @@ body {
 .island.state-done {
   min-width: 360px;
   box-shadow: 
-    0 18px 46px -4px rgba(48, 209, 88, 0.48),
-    0 4px 14px rgba(48, 209, 88, 0.3),
-    0 1px 0 0 rgba(48, 209, 88, 0.5),
-    inset 0 -1px 0.8px 0 rgba(255, 255, 255, 0.35);
+    0 16px 36px -4px rgba(0, 0, 0, 0.88),
+    0 10px 28px -4px rgba(48, 209, 88, 0.28),
+    0 3px 10px rgba(48, 209, 88, 0.2),
+    inset 0 -1px 0.8px 0 rgba(48, 209, 88, 0.4),
+    inset 0 -1px 0.5px 0 rgba(255, 255, 255, 0.25);
 }
 
 .island.state-done .logo-backdrop {
@@ -575,12 +579,13 @@ body {
   border-color: rgba(48, 209, 88, 0.48);
 }
 .island.state-done .logo-aura {
-  background: rgba(48, 209, 88, 0.48);
+  background: rgba(48, 209, 88, 0.32);
 }
 .island.state-done .metric-capsule {
-  background: rgba(48, 209, 88, 0.18);
-  border-color: rgba(48, 209, 88, 0.42);
+  background: linear-gradient(180deg, rgba(48, 209, 88, 0.2) 0%, rgba(48, 209, 88, 0.1) 100%);
+  border-color: rgba(48, 209, 88, 0.38);
   color: #d1fae5;
+  box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.15);
 }
 .island.state-done .metric-dot {
   background: #30d158;
@@ -591,10 +596,11 @@ body {
 .island.state-waiting {
   min-width: 370px;
   box-shadow: 
-    0 18px 46px -4px rgba(255, 159, 10, 0.48),
-    0 4px 14px rgba(255, 159, 10, 0.3),
-    0 1px 0 0 rgba(255, 159, 10, 0.5),
-    inset 0 -1px 0.8px 0 rgba(255, 255, 255, 0.35);
+    0 16px 36px -4px rgba(0, 0, 0, 0.88),
+    0 10px 28px -4px rgba(255, 159, 10, 0.28),
+    0 3px 10px rgba(255, 159, 10, 0.2),
+    inset 0 -1px 0.8px 0 rgba(255, 159, 10, 0.4),
+    inset 0 -1px 0.5px 0 rgba(255, 255, 255, 0.25);
 }
 
 .island.state-waiting .logo-backdrop {
@@ -602,12 +608,13 @@ body {
   border-color: rgba(255, 159, 10, 0.48);
 }
 .island.state-waiting .logo-aura {
-  background: rgba(255, 159, 10, 0.48);
+  background: rgba(255, 159, 10, 0.32);
 }
 .island.state-waiting .metric-capsule {
-  background: rgba(255, 159, 10, 0.2);
-  border-color: rgba(255, 159, 10, 0.45);
+  background: linear-gradient(180deg, rgba(255, 159, 10, 0.2) 0%, rgba(255, 159, 10, 0.1) 100%);
+  border-color: rgba(255, 159, 10, 0.4);
   color: #fef3c7;
+  box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.15);
 }
 .island.state-waiting .metric-dot {
   background: #ff9f0a;
@@ -645,27 +652,26 @@ body {
   box-shadow: 
     8px 0 26px -2px rgba(0, 0, 0, 0.94),
     0 4px 12px rgba(0, 0, 0, 0.6),
-    0 0 0 1px rgba(255, 255, 255, 0.09),
     inset 0 -1px 0.6px 0 rgba(255, 255, 255, 0.15);
 }
 
 /* Left Concave Bezel Ears (Hardware Fillets into Display Edge) */
 .island-root.vertical-left .notch-ear {
   display: block !important;
-  width: 14px;
+  width: 12px;
   height: 14px;
   left: 0;
   right: auto;
 }
 .island-root.vertical-left .notch-ear-left {
-  top: -14px;
+  top: -12px;
   bottom: auto;
-  background: radial-gradient(circle at 100% 0, transparent 13px, #000000 13.5px);
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2012%2014%22%3E%3Cpath%20d%3D%22M0%2C0%20L0%2C14%20L12%2C14%20L12%2C12%20A12%2C12%200%200%2C0%200%2C0%20Z%22%20fill%3D%22%23000000%22%2F%3E%3C%2Fsvg%3E");
 }
 .island-root.vertical-left .notch-ear-right {
   top: auto;
-  bottom: -14px;
-  background: radial-gradient(circle at 100% 100%, transparent 13px, #000000 13.5px);
+  bottom: -12px;
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2012%2014%22%3E%3Cpath%20d%3D%22M0%2C14%20L0%2C0%20L12%2C0%20L12%2C2%20A12%2C12%200%200%2C1%200%2C14%20Z%22%20fill%3D%22%23000000%22%2F%3E%3C%2Fsvg%3E");
 }
 
 /* Right Dock: Flush against right screen bezel */
@@ -678,27 +684,26 @@ body {
   box-shadow: 
     -8px 0 26px -2px rgba(0, 0, 0, 0.94),
     0 4px 12px rgba(0, 0, 0, 0.6),
-    0 0 0 1px rgba(255, 255, 255, 0.09),
     inset 0 -1px 0.6px 0 rgba(255, 255, 255, 0.15);
 }
 
 /* Right Concave Bezel Ears (Hardware Fillets into Display Edge) */
 .island-root.vertical-right .notch-ear {
   display: block !important;
-  width: 14px;
+  width: 12px;
   height: 14px;
   right: 0;
   left: auto;
 }
 .island-root.vertical-right .notch-ear-left {
-  top: -14px;
+  top: -12px;
   bottom: auto;
-  background: radial-gradient(circle at 0 0, transparent 13px, #000000 13.5px);
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2012%2014%22%3E%3Cpath%20d%3D%22M12%2C0%20L12%2C14%20L0%2C14%20L0%2C12%20A12%2C12%200%200%2C1%2012%2C0%20Z%22%20fill%3D%22%23000000%22%2F%3E%3C%2Fsvg%3E");
 }
 .island-root.vertical-right .notch-ear-right {
   top: auto;
-  bottom: -14px;
-  background: radial-gradient(circle at 0 100%, transparent 13px, #000000 13.5px);
+  bottom: -12px;
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2012%2014%22%3E%3Cpath%20d%3D%22M12%2C14%20L12%2C0%20L0%2C0%20L0%2C2%20A12%2C12%200%200%2C0%2012%2C14%20Z%22%20fill%3D%22%23000000%22%2F%3E%3C%2Fsvg%3E");
 }
 
 /* Vertical Sleep States */
