@@ -638,8 +638,8 @@ body {
   min-width: 50px;
   height: 168px;
   min-height: 168px;
-  padding: 8px 4px;
-  gap: 0;
+  padding: 6px 4px;
+  gap: 6px;
 }
 
 /* Left Dock: Flush against left screen bezel */
@@ -771,7 +771,16 @@ body {
   display: none;
 }
 
-/* Enlarge Orb in Vertical Mode */
+/* Enlarge Orb & Slot in Vertical Mode */
+.island-root.vertical-left .leading-accessory,
+.island-root.vertical-right .leading-accessory {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 48px;
+}
+
 .island-root.vertical-left .logo-orb,
 .island-root.vertical-right .logo-orb {
   width: 34px;
@@ -825,8 +834,13 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 5px;
+  gap: 0;
   width: 100%;
+}
+
+.island-root.vertical-left .v-divider,
+.island-root.vertical-right .v-divider {
+  display: none !important;
 }
 
 .v-divider {
@@ -853,15 +867,28 @@ body {
   box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.12);
 }
 
+.island-root.vertical-left .v-glyph-btn,
+.island-root.vertical-right .v-glyph-btn {
+  width: 42px;
+  height: 48px;
+  border-radius: 14px;
+}
+
+.island-root.vertical-left .v-glyph-icon svg,
+.island-root.vertical-right .v-glyph-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
 .v-glyph-btn:hover {
   background: rgba(255, 255, 255, 0.12);
   border-color: rgba(255, 255, 255, 0.24);
-  transform: scale(1.06);
+  transform: scale(1.04);
   color: #ffffff;
 }
 
 .v-glyph-btn:active {
-  transform: scale(0.94);
+  transform: scale(0.95);
 }
 
 .v-glyph-icon {
@@ -1022,13 +1049,37 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 0;
+  width: 100%;
 }
 
 .island-root.vertical-left .settings-btn,
 .island-root.vertical-right .settings-btn {
-  width: 22px;
-  height: 22px;
+  width: 42px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 0.5px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.12);
+}
+
+.island-root.vertical-left .settings-btn:hover,
+.island-root.vertical-right .settings-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.24);
+  transform: scale(1.04);
+  color: #ffffff;
+}
+
+.island-root.vertical-left .settings-btn:active,
+.island-root.vertical-right .settings-btn:active {
+  transform: scale(0.95);
+}
+
+.island-root.vertical-left .settings-btn svg,
+.island-root.vertical-right .settings-btn svg {
+  width: 17px;
+  height: 17px;
 }
 
 /* ==========================================================
