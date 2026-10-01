@@ -9,25 +9,39 @@ const STATE_WEIGHT = { waiting: 4, thinking: 3, done: 2, idle: 1 };
 const CHEVRON_UP_SVG = `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>`;
 const CHEVRON_DOWN_SVG = `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
 
-function updateGlobalStatusOrb(sessions) {
-  if (!dom.globalStatusOrb) return;
-  dom.globalStatusOrb.className = 'global-status-orb';
-
+function getGlobalOrbState(sessions) {
   const hasWaiting = sessions.some(s => s.state === 'waiting');
   const hasFree = sessions.some(s => s.state === 'idle' || s.state === 'done');
   const allBusy = sessions.length > 0 && sessions.every(s => s.state === 'thinking');
 
-  if (hasWaiting) {
-    dom.globalStatusOrb.classList.add('orb-waiting');
-    dom.globalStatusOrb.title = 'Action required on an agent';
-  } else if (hasFree || sessions.length === 0) {
-    dom.globalStatusOrb.classList.add('orb-ready');
-    dom.globalStatusOrb.title = 'Agents available / ready';
-  } else if (allBusy) {
-    dom.globalStatusOrb.classList.add('orb-thinking');
-    dom.globalStatusOrb.title = 'All agents currently busy';
-  } else {
-    dom.globalStatusOrb.classList.add('orb-ready');
+  if (hasWaiting) return 'waiting';
+  if (hasFree || sessions.length === 0) return 'ready';
+  if (allBusy) return 'thinking';
+  return 'ready';
+}
+
+function updateGlobalStatusOrb(orbState) {
+  if (!dom.globalStatusOrb) return;
+  dom.globalStatusOrb.className = `global-status-orb orb-${orbState}`;
+  dom.globalStatusOrb.title =
+    orbState === 'waiting' ? 'Action required on an agent' :
+    orbState === 'thinking' ? 'All agents currently busy' :
+    'Agents available / ready';
+}
+
+function updateExpandedQuotaRing(quotaPercent, orbState) {
+  const pct = Math.max(0, Math.min(100, quotaPercent ?? 95));
+  if (dom.expandedQuotaLabel) {
+    dom.expandedQuotaLabel.textContent = `${pct}%`;
+  }
+  if (dom.expandedQuotaFill) {
+    // r = 7.5 -> circumference = 2 * PI * 7.5 = 47.12
+    const offset = 47.12 * (1 - pct / 100);
+    dom.expandedQuotaFill.style.strokeDasharray = '47.12';
+    dom.expandedQuotaFill.style.strokeDashoffset = offset.toFixed(1);
+  }
+  if (dom.expandedQuotaBadge) {
+    dom.expandedQuotaBadge.className = `expanded-quota-ring quota-${orbState}`;
   }
 }
 
@@ -85,7 +99,7 @@ function createAgentRow(sess) {
   if (typeof sess.quotaPercent === 'number') {
     const metric = document.createElement('span');
     metric.className = 'agent-row-metric';
-    metric.textContent = `${sess.quotaPercent}% QTA`;
+    metric.textContent = `${sess.quotaPercent}%`;
     trailing.appendChild(metric);
   }
 
@@ -108,15 +122,20 @@ export function renderAgentList() {
   const count = sessions.length;
 
   if (dom.headerCountBadge) {
-    dom.headerCountBadge.textContent = count === 1 ? '1 AGENT' : `${count} AGENTS`;
+    if (count === 0) {
+      dom.headerCountBadge.style.display = 'none';
+      dom.headerCountBadge.textContent = '';
+    } else {
+      dom.headerCountBadge.style.display = '';
+      dom.headerCountBadge.textContent = count === 1 ? '1 AGENT' : `${count} AGENTS`;
+    }
   }
 
-  updateGlobalStatusOrb(sessions);
+  const orbState = getGlobalOrbState(sessions);
+  updateGlobalStatusOrb(orbState);
 
-  if (dom.expandedQuotaBadge) {
-    const active = getActiveSession() || sessions[0];
-    dom.expandedQuotaBadge.textContent = `${active?.quotaPercent ?? 95}% QTA`;
-  }
+  const active = getActiveSession() || sessions[0];
+  updateExpandedQuotaRing(active?.quotaPercent ?? 95, orbState);
 
   if (count === 0) {
     const empty = document.createElement('div');

@@ -127,33 +127,40 @@
         </div>
       </div>
 
-      <!-- 2. EXPANDED VIEW (Notch Gede - Multi-Agent Activity Deck ~620x195) -->
-      <div class="expanded-view" id="expandedView">
-        <!-- Header Bar (34px): Brand, Agent Count Badge, Trailing Utilities -->
-        <div class="expanded-header" id="expandedHeader">
-          <div class="header-brand">
-            <img src="../../assets/antigravity-icon.png" alt="AGY" class="brand-sparkle-img">
-            <span class="brand-label">AGY</span>
-            <span class="header-count-badge" id="headerCountBadge">1 AGENT</span>
-          </div>
+      <!-- Side Notch Toolbars (Unified Black Bezel Extensions flanking the Inner Grey Card) -->
+      <div class="side-notch-wing wing-left" id="wingLeft">
+        <div class="notch-ear notch-ear-left"></div>
+        <div class="wing-inner-fillet fillet-left"></div>
+        <img src="../../assets/antigravity-icon.png" alt="Antigravity" class="brand-sparkle-img">
+        <span class="header-count-badge" id="headerCountBadge" style="display: none;"></span>
+      </div>
 
-          <div class="expanded-trailing">
-            <span class="expanded-quota-badge" id="expandedQuotaBadge">95% QTA</span>
-            <button class="settings-btn" id="btnExpandedSettings" title="Settings">
-              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="3"></circle>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-              </svg>
-            </button>
-            <button class="settings-btn expanded-retract-btn" id="btnHeaderRetract" title="Minimize">
-              <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
-          </div>
+      <div class="side-notch-wing wing-right" id="wingRight">
+        <div class="notch-ear notch-ear-right"></div>
+        <div class="wing-inner-fillet fillet-right"></div>
+        <div class="expanded-quota-ring" id="expandedQuotaBadge" title="Remaining Quota">
+          <svg class="quota-ring-svg" viewBox="0 0 20 20">
+            <circle class="quota-ring-track" cx="10" cy="10" r="7.5" />
+            <circle class="quota-ring-fill" id="expandedQuotaFill" cx="10" cy="10" r="7.5" />
+          </svg>
+          <span class="quota-ring-label" id="expandedQuotaLabel">95%</span>
         </div>
+        <button class="settings-btn" id="btnExpandedSettings" title="Settings">
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
+        <button class="settings-btn expanded-retract-btn" id="btnHeaderRetract" title="Minimize">
+          <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
 
+      <!-- 2. EXPANDED VIEW (Notch Gede - Multi-Agent Activity Deck ~620x160) -->
+      <div class="expanded-view" id="expandedView">
         <!-- Body Area: Left Global State Orb + Right Stacked Agent Activity Deck -->
         <div class="expanded-body">
           <div class="global-orb-column">
@@ -164,29 +171,14 @@
           </div>
         </div>
 
-        <!-- Footer Actions (36px): Minimal Command Bar (Uncluttered) -->
+        <!-- Footer Actions: Clean Minimal Command Bar -->
         <div class="expanded-footer" id="expandedFooter">
-          <button class="action-btn action-primary" id="btnFocusAntigravity">
-            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-              <polyline points="15 3 21 3 21 9"></polyline>
-              <line x1="10" y1="14" x2="21" y2="3"></line>
-            </svg>
-            <span>Focus Antigravity</span>
-          </button>
-
-          <button class="action-btn action-secondary" id="btnDismissActive">
+          <button class="action-btn action-primary" id="btnFocusAntigravity">Focus</button>
+          <button class="action-btn action-secondary" id="btnDismissActive">Dismiss</button>
+          <button class="action-btn action-ghost" id="btnRetractExpanded" title="Collapse">
             <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="20 6 9 17 4 12"></polyline>
-            </svg>
-            <span>Dismiss Task</span>
-          </button>
-
-          <button class="action-btn action-ghost" id="btnRetractExpanded">
-            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="18 15 12 9 6 15"></polyline>
             </svg>
-            <span>Collapse</span>
           </button>
         </div>
       </div>

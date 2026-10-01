@@ -32,6 +32,8 @@ export const dom = {
   agentListDeck: document.getElementById('agentListDeck'),
   headerCountBadge: document.getElementById('headerCountBadge'),
   expandedQuotaBadge: document.getElementById('expandedQuotaBadge'),
+  expandedQuotaFill: document.getElementById('expandedQuotaFill'),
+  expandedQuotaLabel: document.getElementById('expandedQuotaLabel'),
   btnExpandedSettings: document.getElementById('btnExpandedSettings'),
   btnHeaderRetract: document.getElementById('btnHeaderRetract'),
   btnFocusAntigravity: document.getElementById('btnFocusAntigravity'),
