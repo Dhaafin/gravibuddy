@@ -23,8 +23,13 @@ It renders an Apple-grade Dynamic Island attached directly to the top screen bez
 ├── references/              # External references (gitignored, e.g., Coucou)
 │   └── coucou/              # Reference implementation for notch interaction patterns
 ├── src/
-│   ├── main/
-│   │   └── index.js         # Electron main process (HTTP bridge :8998, windows, watchdog, config)
+│   ├── main/                    # Domain-split Electron main process (CommonJS)
+│   │   ├── index.js             # Thin application bootstrapper & lifecycle hookup
+│   │   ├── config.js            # Persistent user config loader & saver
+│   │   ├── windows.js           # HUD & Control Center window creation, bounds & positioning
+│   │   ├── session-manager.js   # Multi-agent session store, priority sorting & watchdog
+│   │   ├── bridge-server.js     # Local HTTP bridge server (:8998 /update, /event, /ping)
+│   │   └── ipc-handlers.js      # Centralized ipcMain channel registration
 │   ├── preload/
 │   │   └── index.js         # Secure contextBridge API (`window.graviAPI`)
 │   └── renderer/
@@ -43,9 +48,11 @@ It renders an Apple-grade Dynamic Island attached directly to the top screen bez
 │       ├── settings.js      # Modal controls (docking positions, toggles, quit)
 │       ├── style.css        # Modular CSS entry point (@import aggregator)
 │       └── styles/          # Domain-specific modular stylesheets
-│           ├── base.css         # Font typography & global resets
-│           ├── island.css       # Notch capsule, hardware ears, layout & typography
-│           ├── animations.css   # Fluid watery morph, specular light sheen, implosion/blossom
+│           ├── base.css         # Font typography, CSS custom properties (--liquid-spring) & resets
+│           ├── island.css       # Core notch capsule geometry, hardware ears, countdown & sleep tab
+│           ├── compact.css      # Compact pill layout, logo orb, waveform, labels & accessories
+│           ├── expanded.css     # Luxury card header, status orb, multi-agent deck rows & footer
+│           ├── animations.css   # 2D liquid spring morph, specular light sheen & wave keyframes
 │           ├── states.css       # Aura glowing (Thinking violet, Done green, Waiting amber)
 │           ├── vertical.css     # Vertical dock capsule, radial quota gauge, flyout tooltip
 │           └── settings.css     # Control Center modal styles & spring physics
@@ -141,7 +148,7 @@ Whenever contributing or refactoring Gravibuddy:
    * Avoid giant banner comment walls or verbose self-evident comments. Keep code minimal, expressive, and self-documenting.
 4. **Resilient & Crash-Proof**:
    * Always wrap IPC and network calls in try/catch or error handlers.
-   * State machine hierarchy: `waiting` (priority alert) $\succ$ `thinking` $\succ$ `done` $\succ$ `idle`.
+   * State machine hierarchy: `waiting` (priority alert) $\succ$ `done` (task completed) $\succ$ `thinking` $\succ$ `idle`.
 
 ---
 
