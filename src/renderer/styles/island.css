@@ -362,6 +362,15 @@
     0 2px 6px rgba(0, 0, 0, 0.5),
     inset 0 -1.5px 1px 0 rgba(48, 209, 88, 0.5),
     0 4px 14px rgba(48, 209, 88, 0.22);
+  transition: 
+    translate 0.26s cubic-bezier(0.3, 0, 0.2, 1),
+    width 0.26s cubic-bezier(0.3, 0, 0.2, 1),
+    min-width 0.26s cubic-bezier(0.3, 0, 0.2, 1),
+    height 0.26s cubic-bezier(0.3, 0, 0.2, 1),
+    min-height 0.26s cubic-bezier(0.3, 0, 0.2, 1),
+    border-radius 0.24s ease,
+    padding 0.24s ease,
+    box-shadow 0.26s ease;
 }
 
 .island.is-sleeping .notch-ear,
@@ -379,7 +388,7 @@
   opacity: 0;
   pointer-events: none;
   visibility: hidden;
-  transition: opacity 0.16s ease;
+  transition: opacity 0.14s ease-out;
 }
 
 .sleep-indicator {
@@ -409,20 +418,26 @@
   animation: sleepBreathing 3.2s infinite ease-in-out;
 }
 
-/* Vertical Slide Choreography for Expanded Mode */
+/* Micro-Elastic Magnetic Settle Choreography */
+@keyframes dropAndSettle {
+  0% {
+    translate: 0 -185px;
+  }
+  76% {
+    translate: 0 2.5px;
+  }
+  100% {
+    translate: 0 0px;
+  }
+}
+
 .island.slide-prep {
   translate: 0 -185px !important;
   transition: none !important;
 }
 
-.island.sliding-up {
-  translate: 0 -185px !important;
-  transition: translate 0.24s cubic-bezier(0.25, 1, 0.5, 1) !important;
-}
-
-.island.sliding-up .expanded-view {
-  opacity: 0 !important;
-  transition: opacity 0.16s ease-out !important;
+.island.dropping-down {
+  animation: dropAndSettle 0.30s cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
 }
 
 /* ==========================================================

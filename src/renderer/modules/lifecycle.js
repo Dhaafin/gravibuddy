@@ -11,31 +11,28 @@ import { playPopSound } from './audio.js';
 import { updateIslandLabels } from './compact-view.js';
 import { renderActiveSessionDetail, renderAgentTabs } from './expanded-view.js';
 
-let slideUpTimer = null;
-
 export function wakeUpIsland(reason = 'interaction') {
   clearSleepTimer();
   if (state.wakeHoverTimer) {
     clearTimeout(state.wakeHoverTimer);
     state.wakeHoverTimer = null;
   }
-  if (slideUpTimer) {
-    clearTimeout(slideUpTimer);
-    slideUpTimer = null;
-    if (dom.island) dom.island.classList.remove('sliding-up');
-  }
 
-  if (dom.island && (dom.island.classList.contains('is-sleeping') || dom.island.classList.contains('sliding-up'))) {
+  if (dom.island && dom.island.classList.contains('is-sleeping')) {
     if (state.isExpanded) {
       // Snap to 620px behind the top bezel without horizontal transition
       dom.island.classList.add('slide-prep');
-      dom.island.classList.remove('is-sleeping', 'sliding-up');
+      dom.island.classList.remove('is-sleeping');
       void dom.island.offsetHeight; // Force reflow at -185px
 
-      // Animate: Smooth vertical slide down from top bezel
+      // Animate: Drop down with micro-elastic magnetic settle
       requestAnimationFrame(() => {
         if (dom.island) {
           dom.island.classList.remove('slide-prep');
+          dom.island.classList.add('dropping-down');
+          setTimeout(() => {
+            if (dom.island) dom.island.classList.remove('dropping-down');
+          }, 320);
         }
       });
     } else {
@@ -58,31 +55,13 @@ export function enterSleepMode(force = false) {
     if (state.currentState === 'thinking' && !state.stealthCodingEnabled) return;
   }
 
-  if (slideUpTimer) {
-    clearTimeout(slideUpTimer);
-    slideUpTimer = null;
+  if (dom.island) {
+    dom.island.classList.remove('dropping-down', 'slide-prep');
+    dom.island.classList.add('is-sleeping');
   }
-
-  if (state.isExpanded && dom.island && !dom.island.classList.contains('is-sleeping')) {
-    // Smoothly slide up into top bezel first
-    dom.island.classList.add('sliding-up');
-    slideUpTimer = setTimeout(() => {
-      slideUpTimer = null;
-      if (dom.island) {
-        dom.island.classList.remove('sliding-up');
-        dom.island.classList.add('is-sleeping');
-      }
-      if (force) {
-        state.isInteractiveArea = false;
-        window.graviAPI?.setIgnoreMouseEvents(true, { forward: true });
-      }
-    }, 240);
-  } else {
-    if (dom.island) dom.island.classList.add('is-sleeping');
-    if (force) {
-      state.isInteractiveArea = false;
-      window.graviAPI?.setIgnoreMouseEvents(true, { forward: true });
-    }
+  if (force) {
+    state.isInteractiveArea = false;
+    window.graviAPI?.setIgnoreMouseEvents(true, { forward: true });
   }
 }
 
