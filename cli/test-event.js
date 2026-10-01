@@ -1,4 +1,4 @@
-﻿const http = require('http');
+const http = require('http');
 
 function sendEvent(data) {
   const postData = JSON.stringify(data);
@@ -27,6 +27,10 @@ if (action === 'thinking') {
   sendEvent({ agent_state: 'idle', model: { display_name: 'Gemini 3.8 Flash (High)' }, message: 'Refactoring completed successfully' });
 } else if (action === 'waiting') {
   sendEvent({ agent_state: 'waiting_for_input', tool_confirmation_pending: true, model: { display_name: 'Gemini 3.8 Flash (High)' }, message: 'Bash command requires confirmation' });
+} else if (action === 'agy2') {
+  sendEvent({ source: 'antigravity-2.0', state: 'thinking', model: 'Gemini 3.8 Flash (High)', project: 'gravibuddy', message: 'Analyzing codebase with Antigravity 2.0' });
+} else if (action === 'agy2-done') {
+  sendEvent({ source: 'antigravity-2.0', state: 'done', model: 'Gemini 3.8 Flash (High)', project: 'gravibuddy', message: 'Turn complete' });
 } else {
   sendEvent({ agent_state: 'idle', model: { display_name: 'Gemini 3.8 Flash (High)' }, quota: { 'gemini-5h': { remaining_fraction: 0.94 } } });
 }

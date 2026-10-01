@@ -350,19 +350,19 @@ function updateIslandLabels(data, modelLabel) {
   updateStateGlyph(data.state, modelLabel, data.message);
 
   if (data.state === 'thinking') {
-    primaryLabel.textContent = 'Antigravity Coding';
+    primaryLabel.textContent = data.project || 'Antigravity Coding';
     secondaryLabel.textContent = data.message || `Processing with ${modelLabel}`;
     metricVal.textContent = 'ACTIVE';
   } else if (data.state === 'done') {
-    primaryLabel.textContent = 'Task Completed';
+    primaryLabel.textContent = data.project ? `${data.project} • Done` : 'Task Completed';
     secondaryLabel.textContent = `Ready for next prompt • ${modelLabel}`;
     metricVal.textContent = 'DONE';
   } else if (data.state === 'waiting') {
-    primaryLabel.textContent = 'Action Required';
-    secondaryLabel.textContent = data.message || 'Waiting for tool approval in terminal';
+    primaryLabel.textContent = data.project ? `${data.project} • Action` : 'Action Required';
+    secondaryLabel.textContent = data.message || 'Waiting for approval';
     metricVal.textContent = 'WAIT';
   } else {
-    primaryLabel.textContent = 'Antigravity';
+    primaryLabel.textContent = data.project || 'Antigravity';
     secondaryLabel.textContent = modelLabel;
     metricVal.textContent = data.quotaPercent !== null && data.quotaPercent !== undefined
       ? `${data.quotaPercent}% QTA`

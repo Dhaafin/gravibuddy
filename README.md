@@ -84,6 +84,39 @@ To pipe real-time agent states from Antigravity CLI into Gravibuddy:
 
 ---
 
+## 🛸 Antigravity 2.0 Integration (Desktop App)
+
+To connect Gravibuddy with Antigravity 2.0:
+
+1. Open or create your global Antigravity hooks config:
+   `~/.gemini/config/hooks.json`
+
+2. Add the `gravibuddy` lifecycle hooks:
+   ```json
+   {
+     "gravibuddy": {
+       "PreInvocation": [
+         {
+           "type": "command",
+           "command": "C:\\Workspace\\01_Code\\00_personal_projects\\agy-vibing\\cli\\agy2-hook.cmd pre-invocation",
+           "timeout": 5
+         }
+       ],
+       "Stop": [
+         {
+           "type": "command",
+           "command": "C:\\Workspace\\01_Code\\00_personal_projects\\agy-vibing\\cli\\agy2-hook.cmd stop",
+           "timeout": 5
+         }
+       }
+     }
+   }
+   ```
+
+Antigravity 2.0 will automatically stream agent activity (`PreInvocation` -> Thinking, `Stop` -> Done) directly to Gravibuddy in real-time.
+
+---
+
 ## 🧪 Testing State Animations
 
 In a separate terminal, trigger state simulations:
