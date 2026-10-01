@@ -1123,30 +1123,6 @@ body {
   filter: blur(0);
 }
 
-/* Positioning for vertical-left */
-.island-root.vertical-left .settings-card {
-  top: 20px;
-  left: 68px;
-  transform-origin: top left;
-  transform: scale(0.88) translateX(-14px);
-}
-
-.island-root.vertical-left .settings-card.visible {
-  transform: scale(1) translateX(0);
-}
-
-/* Positioning for vertical-right */
-.island-root.vertical-right .settings-card {
-  top: 20px;
-  right: 68px;
-  left: auto;
-  transform-origin: top right;
-  transform: scale(0.88) translateX(14px);
-}
-
-.island-root.vertical-right .settings-card.visible {
-  transform: scale(1) translateX(0);
-}
 
 /* Card Header */
 .card-header {
@@ -1356,73 +1332,6 @@ body {
   transform: translateX(14px);
 }
 
-/* ==========================================================
-   TACTILE PREVIEW BUTTON TILES (Redesigned Controls)
-   ========================================================== */
-.test-pill-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 5px;
-}
-
-.test-pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 0.5px solid rgba(255, 255, 255, 0.09);
-  border-radius: 8px;
-  color: #e5e5ea;
-  font-size: 10px;
-  font-weight: 550;
-  padding: 7px 3px;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: inset 0 0.8px 0 rgba(255, 255, 255, 0.12);
-  outline: none;
-}
-
-.test-pill:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.2);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), inset 0 0.8px 0 rgba(255, 255, 255, 0.25);
-}
-
-.test-pill:active {
-  transform: scale(0.95);
-}
-
-.pill-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.dot-thinking { background: #bf5af2; box-shadow: 0 0 6px #bf5af2; }
-.dot-done     { background: #30d158; box-shadow: 0 0 6px #30d158; }
-.dot-wait     { background: #ff9f0a; box-shadow: 0 0 6px #ff9f0a; }
-.dot-sleep    { background: #64d2ff; box-shadow: 0 0 6px #64d2ff; }
-.dot-idle     { background: #8e8e93; }
-
-.test-pill-thinking:hover {
-  border-color: rgba(191, 90, 242, 0.4);
-  box-shadow: 0 4px 14px rgba(191, 90, 242, 0.25), inset 0 0.8px 0 rgba(255, 255, 255, 0.25);
-}
-.test-pill-done:hover {
-  border-color: rgba(48, 209, 88, 0.4);
-  box-shadow: 0 4px 14px rgba(48, 209, 88, 0.25), inset 0 0.8px 0 rgba(255, 255, 255, 0.25);
-}
-.test-pill-wait:hover {
-  border-color: rgba(255, 159, 10, 0.4);
-  box-shadow: 0 4px 14px rgba(255, 159, 10, 0.25), inset 0 0.8px 0 rgba(255, 255, 255, 0.25);
-}
-.test-pill-sleep:hover {
-  border-color: rgba(100, 210, 255, 0.4);
-  box-shadow: 0 4px 14px rgba(100, 210, 255, 0.25), inset 0 0.8px 0 rgba(255, 255, 255, 0.25);
-}
 
 /* Quit Application Button (Spotlight Settings Modal) */
 .quit-app-row-btn {

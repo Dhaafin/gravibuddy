@@ -374,30 +374,8 @@ ipcMain.on('close-settings', () => {
   }
 });
 
-ipcMain.on('test-state', (event, stateData) => {
-  if (mainWindow && !mainWindow.isDestroyed()) {
-    mainWindow.webContents.send('agent-update', stateData);
-  }
-});
-
 ipcMain.on('quit-app', () => {
   app.quit();
-});
-
-ipcMain.on('reset-to-idle', () => {
-  lastState = 'idle';
-  if (mainWindow && !mainWindow.isDestroyed()) {
-    mainWindow.webContents.send('agent-update', {
-      state: 'idle',
-      model: 'Antigravity',
-      plan: 'Google AI Pro',
-      cost: null,
-      contextPercent: null,
-      quotaPercent: 95,
-      message: null,
-      timestamp: Date.now()
-    });
-  }
 });
 
 

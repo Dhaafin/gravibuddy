@@ -15,7 +15,6 @@ const vTooltipDot = document.getElementById('vTooltipDot');
 const vTooltipStatus = document.getElementById('vTooltipStatus');
 const vTooltipModel = document.getElementById('vTooltipModel');
 const vGlyphBtn = document.getElementById('vGlyphBtn');
-const sleepIndicator = document.getElementById('sleepIndicator');
 const btnSettings = document.getElementById('btnSettings');
 
 // State Variables
@@ -420,7 +419,7 @@ function updateIslandState(data) {
           clearTimeout(thinkingPreviewTimer);
           thinkingPreviewTimer = setTimeout(() => {
             thinkingPreviewTimer = null;
-            if (currentState === 'thinking' && !isInteractiveArea && !settingsCard.classList.contains('visible')) {
+            if (currentState === 'thinking' && !isInteractiveArea) {
               enterSleepMode();
             }
           }, 2500);

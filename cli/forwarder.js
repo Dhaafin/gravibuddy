@@ -1,7 +1,6 @@
-﻿const http = require('http');
+const http = require('http');
 const { spawn } = require('child_process');
 const fs = require('fs');
-const path = require('path');
 
 let input = '';
 
@@ -12,10 +11,6 @@ process.stdin.on('data', chunk => {
 
 process.stdin.on('end', () => {
   if (input.trim()) {
-    // Debug dump
-    try {
-      fs.writeFileSync(path.join(__dirname, 'last_payload.json'), input, 'utf8');
-    } catch (e) {}
 
     // 1. Post to agy-vibing floating island (fire-and-forget)
     try {

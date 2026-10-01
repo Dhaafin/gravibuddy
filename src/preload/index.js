@@ -45,12 +45,6 @@ contextBridge.exposeInMainWorld('graviAPI', {
   closeSettings: () => {
     ipcRenderer.send('close-settings');
   },
-  testState: (stateData) => {
-    ipcRenderer.send('test-state', stateData);
-  },
-  resetToIdle: () => {
-    ipcRenderer.send('reset-to-idle');
-  },
   quitApp: () => {
     ipcRenderer.send('quit-app');
   }
