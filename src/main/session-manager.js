@@ -53,23 +53,24 @@ function inspectTranscriptState(transcriptPath) {
       } catch (e) {}
     }
 
-    let lastPlannerIdx = -1;
-    for (let i = entries.length - 1; i >= 0; i--) {
-      if (entries[i].type === 'PLANNER_RESPONSE') {
-        lastPlannerIdx = i;
-        break;
+    let latestPlanner = null;
+    for (const entry of entries) {
+      if (
+        entry.type === 'PLANNER_RESPONSE' &&
+        (!latestPlanner || (entry.step_index ?? 0) >= (latestPlanner.step_index ?? 0))
+      ) {
+        latestPlanner = entry;
       }
     }
-    if (lastPlannerIdx === -1) return null;
+    if (!latestPlanner) return null;
 
-    const planner = entries[lastPlannerIdx];
-    const toolCalls = Array.isArray(planner.tool_calls) ? planner.tool_calls : [];
+    const plannerStep = latestPlanner.step_index ?? -1;
+    const toolCalls = Array.isArray(latestPlanner.tool_calls) ? latestPlanner.tool_calls : [];
     const questionTool = toolCalls.find(t => t.name === 'ask_question');
 
-    // Check if tool step after lastPlannerIdx has already finished
-    const subsequentEntries = entries.slice(lastPlannerIdx + 1);
-    const hasCompletedStepAfter = subsequentEntries.some(
-      e => (e.type === 'GENERIC' || e.type === 'USER_INPUT') && e.status === 'DONE'
+    // Check if any step after latestPlanner's step_index has already completed
+    const hasCompletedStepAfter = entries.some(
+      e => (e.step_index ?? -1) > plannerStep && e.status === 'DONE'
     );
 
     if (questionTool && !hasCompletedStepAfter) {
@@ -137,42 +138,38 @@ setInterval(() => {
   for (const sess of activeSessions.values()) {
     if (!sess.transcriptPath || (sess.state !== 'thinking' && sess.state !== 'waiting')) continue;
 
-    try {
-      const stat = fs.statSync(sess.transcriptPath);
-      if (sess.lastTranscriptMtime === stat.mtimeMs) continue;
-      sess.lastTranscriptMtime = stat.mtimeMs;
+    const inspected = inspectTranscriptState(sess.transcriptPath);
+    if (!inspected) continue;
 
-      const inspected = inspectTranscriptState(sess.transcriptPath);
-      if (!inspected) continue;
-
-      if (inspected.state === 'waiting' && sess.state !== 'waiting') {
-        sess.state = 'waiting';
-        sess.message = inspected.message;
-        sess.toolName = null;
-        sess.updatedAt = Date.now();
-        changed = true;
-      } else if (inspected.state === 'thinking' && sess.state === 'waiting') {
-        sess.state = 'thinking';
-        sess.message = inspected.message;
-        sess.toolName = inspected.toolName;
-        sess.updatedAt = Date.now();
-        changed = true;
-      } else if (
-        inspected.state === 'thinking' &&
-        sess.state === 'thinking' &&
-        inspected.toolName !== sess.toolName
-      ) {
-        sess.toolName = inspected.toolName;
-        sess.message = inspected.message;
-        changed = true;
-      }
-    } catch (e) {}
+    if (inspected.state === 'waiting' && (sess.state !== 'waiting' || sess.message !== inspected.message)) {
+      sess.state = 'waiting';
+      sess.message = inspected.message;
+      sess.toolName = null;
+      sess.updatedAt = Date.now();
+      changed = true;
+      console.log(`[gravibuddy] Session "${sess.project}" -> waiting: ${sess.message}`);
+    } else if (inspected.state === 'thinking' && sess.state === 'waiting') {
+      sess.state = 'thinking';
+      sess.message = inspected.message;
+      sess.toolName = inspected.toolName;
+      sess.updatedAt = Date.now();
+      changed = true;
+      console.log(`[gravibuddy] Session "${sess.project}" -> resumed thinking`);
+    } else if (
+      inspected.state === 'thinking' &&
+      sess.state === 'thinking' &&
+      inspected.toolName !== sess.toolName
+    ) {
+      sess.toolName = inspected.toolName;
+      sess.message = inspected.message;
+      changed = true;
+    }
   }
 
   if (changed) {
     broadcastSessions(false);
   }
-}, 600);
+}, 450);
 
 function resolveSessionState(payload, prevSessState) {
   const rawState = (payload.agent_state || payload.state || 'idle').toLowerCase();
@@ -224,7 +221,6 @@ function handleAgentEvent(payload) {
     message: payload.message || null,
     toolName: payload.toolName || null,
     transcriptPath: payload.transcriptPath || existingSess?.transcriptPath || null,
-    lastTranscriptMtime: existingSess?.lastTranscriptMtime || 0,
     quotaPercent,
     contextPercent,
     updatedAt: Date.now()
