@@ -3,6 +3,8 @@ const api = window.graviAPI;
 // DOM Elements
 const islandRoot = document.getElementById('islandRoot');
 const island = document.getElementById('island');
+const compactView = document.getElementById('compactView');
+const expandedView = document.getElementById('expandedView');
 const primaryLabel = document.getElementById('primaryLabel');
 const secondaryLabel = document.getElementById('secondaryLabel');
 const metricVal = document.getElementById('metricVal');
@@ -19,6 +21,22 @@ const btnSettings = document.getElementById('btnSettings');
 const btnMiniClose = document.getElementById('btnMiniClose');
 const countdownBar = document.getElementById('countdownBar');
 
+// Expanded View DOM Elements
+const agentTabsDeck = document.getElementById('agentTabsDeck');
+const expandedOrb = document.getElementById('expandedOrb');
+const expandedAgentName = document.getElementById('expandedAgentName');
+const expandedStatusBadge = document.getElementById('expandedStatusBadge');
+const expandedModelPill = document.getElementById('expandedModelPill');
+const expandedMessage = document.getElementById('expandedMessage');
+const expandedToolRow = document.getElementById('expandedToolRow');
+const expandedToolTag = document.getElementById('expandedToolTag');
+const expandedQuotaBadge = document.getElementById('expandedQuotaBadge');
+const btnExpandedSettings = document.getElementById('btnExpandedSettings');
+const btnHeaderRetract = document.getElementById('btnHeaderRetract');
+const btnFocusAntigravity = document.getElementById('btnFocusAntigravity');
+const btnDismissActive = document.getElementById('btnDismissActive');
+const btnRetractExpanded = document.getElementById('btnRetractExpanded');
+
 // State Variables
 let soundEnabled = true;
 let sleepModeEnabled = true;
@@ -34,6 +52,10 @@ let doneCountdownStartTimer = null;
 let isSwitchingPosition = false;
 let isInteractiveArea = false;
 let wakeHoverTimer = null;
+let retractTimer = null;
+let isExpanded = false;
+let activeSessionsList = [];
+let selectedSessionId = null;
 
 // Prevent Windows native context menu & toggle center settings window
 window.addEventListener('contextmenu', e => {
@@ -145,6 +167,175 @@ function triggerWateryMorph() {
 }
 
 // ==========================================================
+// Dual-Scale Morphing (Notch Kecil <-> Notch Gede ~620x185)
+// ==========================================================
+function hasAnyWaitingSession() {
+  if (currentState === 'waiting') return true;
+  return activeSessionsList.some(s => s.state === 'waiting');
+}
+
+function getActiveSession() {
+  if (selectedSessionId) {
+    const found = activeSessionsList.find(s => s.id === selectedSessionId);
+    if (found) return found;
+  }
+  return activeSessionsList[0] || null;
+}
+
+function getOrbIconSvg(state) {
+  if (state === 'thinking') {
+    return `<svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+      <path d="M12 1.5C12 7.298 7.298 12 1.5 12C7.298 12 12 16.702 12 22.5C12 16.702 16.702 12 22.5 12C16.702 12 12 7.298 12 1.5Z" />
+    </svg>`;
+  }
+  if (state === 'waiting') {
+    return `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+      <line x1="12" y1="9" x2="12" y2="13"></line>
+      <line x1="12" y1="17" x2="12.01" y2="17"></line>
+    </svg>`;
+  }
+  if (state === 'done') {
+    return `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>`;
+  }
+  return `<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 2.5L19.5 12L12 21.5L4.5 12L12 2.5Z" fill="currentColor" fill-opacity="0.18" />
+    <circle cx="12" cy="12" r="2.5" fill="currentColor" />
+  </svg>`;
+}
+
+function renderAgentTabs() {
+  if (!agentTabsDeck) return;
+  agentTabsDeck.innerHTML = '';
+
+  if (activeSessionsList.length === 0) return;
+
+  activeSessionsList.forEach(sess => {
+    const btn = document.createElement('button');
+    btn.className = `agent-tab ${sess.id === selectedSessionId ? 'active' : ''}`;
+    btn.dataset.id = sess.id;
+    btn.title = `${sess.project} (${sess.state || 'idle'})`;
+
+    const dot = document.createElement('span');
+    dot.className = `agent-tab-dot dot-${sess.state || 'idle'}`;
+
+    const label = document.createElement('span');
+    label.className = 'agent-tab-label';
+    label.textContent = sess.project || 'Agent';
+
+    btn.appendChild(dot);
+    btn.appendChild(label);
+
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      selectedSessionId = sess.id;
+      renderAgentTabs();
+      renderActiveSessionDetail();
+    });
+
+    agentTabsDeck.appendChild(btn);
+  });
+}
+
+function renderActiveSessionDetail() {
+  const sess = getActiveSession();
+  if (!sess) return;
+
+  const state = sess.state || 'idle';
+  const modelName = formatModelName(sess.model);
+
+  if (expandedOrb) {
+    expandedOrb.className = `expanded-orb orb-${state}`;
+    expandedOrb.innerHTML = getOrbIconSvg(state);
+  }
+
+  if (expandedAgentName) {
+    expandedAgentName.textContent = sess.project || 'Antigravity';
+  }
+
+  if (expandedStatusBadge) {
+    expandedStatusBadge.className = `expanded-status-badge badge-${state}`;
+    if (state === 'thinking') expandedStatusBadge.textContent = 'Thinking';
+    else if (state === 'waiting') expandedStatusBadge.textContent = 'Action Required';
+    else if (state === 'done') expandedStatusBadge.textContent = 'Done';
+    else expandedStatusBadge.textContent = 'Standby';
+  }
+
+  if (expandedModelPill) {
+    expandedModelPill.textContent = modelName;
+  }
+
+  if (expandedMessage) {
+    let msg = sess.message;
+    if (!msg) {
+      if (state === 'thinking') msg = `Processing with ${modelName}...`;
+      else if (state === 'waiting') msg = 'Action or approval required';
+      else if (state === 'done') msg = 'Task completed successfully';
+      else msg = 'Ready & listening';
+    }
+    expandedMessage.textContent = msg;
+  }
+
+  if (expandedToolRow && expandedToolTag) {
+    if (sess.toolName) {
+      expandedToolRow.style.display = 'flex';
+      expandedToolTag.textContent = `Tool: ${sess.toolName}`;
+    } else {
+      expandedToolRow.style.display = 'none';
+    }
+  }
+
+  if (expandedQuotaBadge) {
+    const qPct = sess.quotaPercent ?? 95;
+    expandedQuotaBadge.textContent = `${qPct}% QTA`;
+  }
+}
+
+function clearRetractTimer() {
+  if (retractTimer) {
+    clearTimeout(retractTimer);
+    retractTimer = null;
+  }
+}
+
+function expandToLuxuryCard() {
+  if (currentPosition !== 'center') return;
+  clearRetractTimer();
+  if (island.classList.contains('is-sleeping')) {
+    wakeUpIsland('expand');
+  }
+  if (!isExpanded) {
+    isExpanded = true;
+    island.classList.add('is-expanded');
+    playPopSound('blossom');
+  }
+  renderAgentTabs();
+  renderActiveSessionDetail();
+}
+
+function collapseToCompact(force = false) {
+  if (!force && hasAnyWaitingSession()) return;
+  clearRetractTimer();
+  if (isExpanded) {
+    isExpanded = false;
+    island.classList.remove('is-expanded');
+    playPopSound('implode');
+  }
+}
+
+function scheduleRetraction(delay = 350) {
+  if (hasAnyWaitingSession()) return;
+  if (!isExpanded) return;
+  clearRetractTimer();
+  retractTimer = setTimeout(() => {
+    retractTimer = null;
+    collapseToCompact();
+  }, delay);
+}
+
+// ==========================================================
 // Sleep Mode (Attached Notch Tab) & Wake Logic
 // ==========================================================
 function clearSleepTimer() {
@@ -172,13 +363,15 @@ function enterSleepMode(force = false) {
   if (!sleepModeEnabled && !force) return;
   if (isSwitchingPosition) return;
   if (isInteractiveArea && !force) return; // Never sleep while user is hovering unless forced
+  if (isExpanded && !force) return; // Never sleep while luxury card is open unless forced
 
   if (!force) {
-    if (currentState === 'waiting') return;
+    if (currentState === 'waiting' || hasAnyWaitingSession()) return;
     if (currentState === 'done') return;
     if (currentState === 'thinking' && !stealthCodingEnabled) return;
   }
 
+  collapseToCompact(true);
   island.classList.add('is-sleeping');
   if (force) {
     isInteractiveArea = false;
@@ -190,7 +383,8 @@ function scheduleSleep(delay = 1400, force = false) {
   if (!sleepModeEnabled && !force) return;
   if (isSwitchingPosition) return;
   if (island.classList.contains('is-sleeping')) return;
-  if (!force && (currentState === 'waiting' || currentState === 'done')) return;
+  if (!force && (currentState === 'waiting' || hasAnyWaitingSession() || currentState === 'done')) return;
+  if (isExpanded && !force) return;
 
   if (sleepTimer && !force) return;
 
@@ -249,10 +443,12 @@ function scheduleDoneAutoDismiss() {
 }
 
 // Mini Close / Retract button: Force immediate sleep without keyboard shortcut
+// Mini Close / Retract button: Force immediate sleep without keyboard shortcut
 if (btnMiniClose) {
   btnMiniClose.addEventListener('click', e => {
     e.stopPropagation();
     cancelDoneAutoDismiss();
+    collapseToCompact(true);
     if (currentState === 'done') {
       currentState = 'idle';
       island.classList.remove('state-done');
@@ -262,7 +458,45 @@ if (btnMiniClose) {
   });
 }
 
-// Click to wake immediately when sleeping or dismiss done state
+// Action Buttons inside Expanded Notch Gede
+if (btnFocusAntigravity) {
+  btnFocusAntigravity.addEventListener('click', (e) => {
+    e.stopPropagation();
+    api.focusAntigravity();
+  });
+}
+
+if (btnDismissActive) {
+  btnDismissActive.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const sess = getActiveSession();
+    const idToDismiss = sess ? sess.id : null;
+    api.dismissSession(idToDismiss);
+  });
+}
+
+if (btnRetractExpanded) {
+  btnRetractExpanded.addEventListener('click', (e) => {
+    e.stopPropagation();
+    collapseToCompact(true);
+  });
+}
+
+if (btnHeaderRetract) {
+  btnHeaderRetract.addEventListener('click', (e) => {
+    e.stopPropagation();
+    collapseToCompact(true);
+  });
+}
+
+if (btnExpandedSettings) {
+  btnExpandedSettings.addEventListener('click', (e) => {
+    e.stopPropagation();
+    api.toggleSettings();
+  });
+}
+
+// Click to wake immediately when sleeping or expand to luxury card
 island.addEventListener('click', e => {
   if (btnSettings.contains(e.target) || (btnMiniClose && btnMiniClose.contains(e.target)) || e.target.closest('button')) return;
   if (island.classList.contains('is-sleeping')) {
@@ -271,6 +505,13 @@ island.addEventListener('click', e => {
       wakeHoverTimer = null;
     }
     wakeUpIsland('click');
+    if (currentPosition === 'center') {
+      expandToLuxuryCard();
+    }
+    return;
+  }
+  if (!isExpanded && currentPosition === 'center') {
+    expandToLuxuryCard();
     return;
   }
   if (currentState === 'done') {
@@ -290,6 +531,7 @@ function checkInteractiveHit(e) {
     if (isInteractiveArea) {
       // Mouse touched the island or controls
       api.setIgnoreMouseEvents(false);
+      clearRetractTimer();
 
       // If in done state, pause countdown bar while user is reading/interacting
       if (currentState === 'done') {
@@ -302,8 +544,15 @@ function checkInteractiveHit(e) {
         wakeHoverTimer = setTimeout(() => {
           if (isInteractiveArea && island.classList.contains('is-sleeping')) {
             wakeUpIsland('hover');
+            if (currentPosition === 'center') {
+              expandToLuxuryCard();
+            }
           }
         }, 160);
+      } else {
+        if (currentPosition === 'center') {
+          expandToLuxuryCard();
+        }
       }
     } else {
       // Mouse left the interactive surfaces: clicks pass right through immediately!
@@ -313,8 +562,11 @@ function checkInteractiveHit(e) {
       }
       api.setIgnoreMouseEvents(true, { forward: true });
 
+      // Trigger retraction with 350ms grace period (unless waiting)
+      scheduleRetraction(350);
+
       // Persistent open: never sleep if waiting!
-      if (currentState === 'waiting') {
+      if (currentState === 'waiting' || hasAnyWaitingSession()) {
         return;
       }
       // If done state, resume auto-dismiss countdown
@@ -324,9 +576,9 @@ function checkInteractiveHit(e) {
       }
       // If in stealth coding mode and thinking: tuck back to sleep after short delay
       if (currentState === 'thinking' && stealthCodingEnabled) {
-        scheduleSleep(800, true);
-      } else if (currentState === 'idle') {
         scheduleSleep(1200, true);
+      } else if (currentState === 'idle') {
+        scheduleSleep(1400, true);
       }
     }
   }
@@ -343,13 +595,15 @@ window.addEventListener('mouseleave', () => {
     isInteractiveArea = false;
     api.setIgnoreMouseEvents(true, { forward: true });
   }
-  if (currentState === 'waiting') return;
+  scheduleRetraction(350);
+
+  if (currentState === 'waiting' || hasAnyWaitingSession()) return;
   if (currentState === 'done') {
     scheduleDoneAutoDismiss();
     return;
   }
   if (currentState === 'thinking' && stealthCodingEnabled) {
-    scheduleSleep(800, true);
+    scheduleSleep(1200, true);
   } else if (currentState === 'idle') {
     scheduleSleep(1400, true);
   }
@@ -364,7 +618,9 @@ window.addEventListener('blur', () => {
     isInteractiveArea = false;
     api.setIgnoreMouseEvents(true, { forward: true });
   }
-  if (currentState === 'waiting') return;
+  scheduleRetraction(350);
+
+  if (currentState === 'waiting' || hasAnyWaitingSession()) return;
   if (currentState === 'done') {
     scheduleDoneAutoDismiss();
     return;
@@ -453,6 +709,33 @@ function updateIslandLabels(data, modelLabel) {
 // Agent State Updates (Zen Coding & Terminal Bug Fix)
 // ==========================================================
 function updateIslandState(data) {
+  // Sync sessions list
+  if (Array.isArray(data.sessions) && data.sessions.length > 0) {
+    activeSessionsList = data.sessions;
+  } else {
+    activeSessionsList = [{
+      id: data.heroId || 'default',
+      project: data.project || 'Antigravity',
+      state: data.state || 'idle',
+      model: data.model || 'Antigravity',
+      message: data.message || null,
+      toolName: data.toolName || null,
+      quotaPercent: data.quotaPercent,
+      contextPercent: data.contextPercent
+    }];
+  }
+
+  // Priority bubbling: if any session is waiting, focus it automatically!
+  const waitingSess = activeSessionsList.find(s => s.state === 'waiting');
+  if (waitingSess) {
+    selectedSessionId = waitingSess.id;
+  } else if (!selectedSessionId || !activeSessionsList.some(s => s.id === selectedSessionId)) {
+    selectedSessionId = data.heroId || activeSessionsList[0].id;
+  }
+
+  renderAgentTabs();
+  renderActiveSessionDetail();
+
   const modelLabel = formatModelName(data.model);
   const previousState = currentState;
   const targetState = data.state || 'idle';
@@ -462,14 +745,16 @@ function updateIslandState(data) {
   // Always update text and metrics in DOM quietly
   updateIslandLabels(data, modelLabel);
 
-  if (targetState === 'waiting') {
+  if (targetState === 'waiting' || hasAnyWaitingSession()) {
     // 🚨 ACTION REQUIRED: Must bloom open immediately and STAY open until user proceeds!
     cancelDoneAutoDismiss();
     clearTimeout(thinkingPreviewTimer);
     thinkingPreviewTimer = null;
     clearSleepTimer();
+    clearRetractTimer();
 
     wakeUpIsland('alert');
+    expandToLuxuryCard();
     island.classList.remove('state-thinking', 'state-done');
     island.classList.add('state-waiting');
     triggerWateryMorph();
@@ -503,7 +788,7 @@ function updateIslandState(data) {
           clearTimeout(thinkingPreviewTimer);
           thinkingPreviewTimer = setTimeout(() => {
             thinkingPreviewTimer = null;
-            if (currentState === 'thinking' && !isInteractiveArea) {
+            if (currentState === 'thinking' && !isInteractiveArea && !isExpanded) {
               enterSleepMode();
             }
           }, 2500);
@@ -511,7 +796,7 @@ function updateIslandState(data) {
           // Immediate stealth: Stay tucked without popping up
           clearTimeout(thinkingPreviewTimer);
           thinkingPreviewTimer = null;
-          if (!isInteractiveArea) {
+          if (!isInteractiveArea && !isExpanded) {
             enterSleepMode();
           }
         }
@@ -520,7 +805,7 @@ function updateIslandState(data) {
       }
     } else {
       // Periodic update while still thinking: keep asleep if stealth mode active
-      if (stealthCodingEnabled && !thinkingPreviewTimer && !isInteractiveArea) {
+      if (stealthCodingEnabled && !thinkingPreviewTimer && !isInteractiveArea && !isExpanded) {
         enterSleepMode();
       }
     }
@@ -536,7 +821,7 @@ function updateIslandState(data) {
       scheduleSleep(1200, true);
     } else {
       // Periodic idle telemetry from terminal
-      if (!island.classList.contains('is-sleeping') && !isInteractiveArea) {
+      if (!island.classList.contains('is-sleeping') && !isInteractiveArea && !isExpanded) {
         scheduleSleep(1400, false);
       }
     }
@@ -569,6 +854,9 @@ api.onPositionChanged((info) => {
   const orientation = typeof info === 'object' ? info.orientation : null;
   currentPosition = pos;
   if (orientation) applyOrientationClasses(orientation);
+  if (currentPosition !== 'center') {
+    collapseToCompact(true);
+  }
   triggerWateryMorph();
   playPopSound('blossom');
   scheduleSleep(4000);

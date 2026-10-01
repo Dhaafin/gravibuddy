@@ -18,108 +18,185 @@
       <div class="notch-ear notch-ear-left" id="notchEarLeft"></div>
       <div class="notch-ear notch-ear-right" id="notchEarRight"></div>
       
-      <!-- Leading Dynamic Accessory (Official Antigravity Logo) -->
-      <div class="leading-accessory" id="leadingAccessory">
-        <div class="logo-orb" id="logoOrb">
-          <!-- Radial Quota Gauge (Apple Watch Activity Ring Style) -->
-          <svg class="radial-gauge" id="radialGauge" viewBox="0 0 42 42">
-            <circle class="gauge-track" cx="21" cy="21" r="18.5" />
-            <circle class="gauge-fill" id="gaugeFill" cx="21" cy="21" r="18.5" />
-          </svg>
-          <div class="logo-aura" id="logoAura"></div>
-          <div class="logo-backdrop" id="logoBackdrop">
-            <img src="../../assets/antigravity-icon.png" alt="Antigravity Logo" class="agy-logo-img" id="agyLogoImg">
-          </div>
-        </div>
-
-        <!-- Waveform overlay for Thinking State -->
-        <div class="mini-waveform" id="miniWaveform">
-          <span class="bar bar-1"></span>
-          <span class="bar bar-2"></span>
-          <span class="bar bar-3"></span>
-        </div>
-      </div>
-
-      <!-- Center Typography Area (Horizontal Mode) -->
-      <div class="island-content" id="islandContent">
-        <div class="primary-label" id="primaryLabel">Antigravity</div>
-        <div class="secondary-label" id="secondaryLabel">Ready & listening</div>
-      </div>
-
-      <!-- Vertical Mode Stack (Antigravity Glyphs & Model Flyout Tooltip) -->
-      <div class="vertical-stack" id="verticalStack">
-        <div class="v-divider"></div>
-
-        <!-- Interactive State Glyph Button -->
-        <div class="v-glyph-btn" id="vGlyphBtn" tabindex="0" role="button" aria-label="Agent State & Model Info">
-          <!-- State Glyphs -->
-          <div class="v-glyph-icon glyph-idle active" id="glyphIdle" title="Standby">
-            <!-- Calm Antigravity Standby Diamond/Orb -->
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 2.5L19.5 12L12 21.5L4.5 12L12 2.5Z" fill="currentColor" fill-opacity="0.18" />
-              <circle cx="12" cy="12" r="2.5" fill="currentColor" />
+      <!-- 1. COMPACT VIEW (Notch Kecil - Ambient HUD) -->
+      <div class="compact-view" id="compactView">
+        <!-- Leading Dynamic Accessory (Official Antigravity Logo) -->
+        <div class="leading-accessory" id="leadingAccessory">
+          <div class="logo-orb" id="logoOrb">
+            <!-- Radial Quota Gauge (Apple Watch Activity Ring Style) -->
+            <svg class="radial-gauge" id="radialGauge" viewBox="0 0 42 42">
+              <circle class="gauge-track" cx="21" cy="21" r="18.5" />
+              <circle class="gauge-fill" id="gaugeFill" cx="21" cy="21" r="18.5" />
             </svg>
-          </div>
-
-          <div class="v-glyph-icon glyph-thinking" id="glyphThinking" title="Coding">
-            <!-- Antigravity / Gemini 4-Point AI Sparkle Star -->
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor">
-              <path d="M12 1.5C12 7.298 7.298 12 1.5 12C7.298 12 12 16.702 12 22.5C12 16.702 16.702 12 22.5 12C16.702 12 12 7.298 12 1.5Z" />
-            </svg>
-          </div>
-
-          <div class="v-glyph-icon glyph-waiting" id="glyphWaiting" title="Action Required">
-            <!-- Terminal CLI Prompt & Cursor -->
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="4 7 10 12 4 17" />
-              <line x1="12" y1="17" x2="20" y2="17" />
-            </svg>
-          </div>
-
-          <div class="v-glyph-icon glyph-done" id="glyphDone" title="Task Completed">
-            <!-- Apple-Grade Completion Checkmark -->
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-          </div>
-
-          <!-- Flyout Tooltip (Slides in smoothly towards the screen center) -->
-          <div class="v-flyout-tooltip" id="vFlyoutTooltip">
-            <div class="v-tooltip-header">
-              <span class="v-tooltip-dot dot-idle" id="vTooltipDot"></span>
-              <span class="v-tooltip-status" id="vTooltipStatus">Standby</span>
+            <div class="logo-aura" id="logoAura"></div>
+            <div class="logo-backdrop" id="logoBackdrop">
+              <img src="../../assets/antigravity-icon.png" alt="Antigravity Logo" class="agy-logo-img" id="agyLogoImg">
             </div>
-            <div class="v-tooltip-model" id="vTooltipModel">Antigravity</div>
+          </div>
+
+          <!-- Waveform overlay for Thinking State -->
+          <div class="mini-waveform" id="miniWaveform">
+            <span class="bar bar-1"></span>
+            <span class="bar bar-2"></span>
+            <span class="bar bar-3"></span>
           </div>
         </div>
 
-        <div class="v-divider"></div>
-      </div>
-
-      <!-- Trailing Controls (Metrics + Settings Button) -->
-      <div class="trailing-accessory" id="trailingAccessory">
-        <!-- Metric Capsule (Horizontal mode) -->
-        <div class="metric-capsule" id="metricCapsule">
-          <span class="metric-dot"></span>
-          <span class="metric-val" id="metricVal">READY</span>
+        <!-- Center Typography Area (Horizontal Mode) -->
+        <div class="island-content" id="islandContent">
+          <div class="primary-label" id="primaryLabel">Antigravity</div>
+          <div class="secondary-label" id="secondaryLabel">Ready & listening</div>
         </div>
 
-        <!-- Settings Icon Button -->
-        <button class="settings-btn" id="btnSettings" title="Settings">
-          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"></circle>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-          </svg>
-        </button>
+        <!-- Vertical Mode Stack (Antigravity Glyphs & Model Flyout Tooltip) -->
+        <div class="vertical-stack" id="verticalStack">
+          <div class="v-divider"></div>
 
-        <!-- Mini Force-Close / Sleep Button -->
-        <button class="settings-btn mini-close-btn" id="btnMiniClose" title="Retract to Bezel">
-          <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
+          <!-- Interactive State Glyph Button -->
+          <div class="v-glyph-btn" id="vGlyphBtn" tabindex="0" role="button" aria-label="Agent State & Model Info">
+            <!-- State Glyphs -->
+            <div class="v-glyph-icon glyph-idle active" id="glyphIdle" title="Standby">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2.5L19.5 12L12 21.5L4.5 12L12 2.5Z" fill="currentColor" fill-opacity="0.18" />
+                <circle cx="12" cy="12" r="2.5" fill="currentColor" />
+              </svg>
+            </div>
 
+            <div class="v-glyph-icon glyph-thinking" id="glyphThinking" title="Coding">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor">
+                <path d="M12 1.5C12 7.298 7.298 12 1.5 12C7.298 12 12 16.702 12 22.5C12 16.702 16.702 12 22.5 12C16.702 12 12 7.298 12 1.5Z" />
+              </svg>
+            </div>
+
+            <div class="v-glyph-icon glyph-waiting" id="glyphWaiting" title="Action Required">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="4 7 10 12 4 17" />
+                <line x1="12" y1="17" x2="20" y2="17" />
+              </svg>
+            </div>
+
+            <div class="v-glyph-icon glyph-done" id="glyphDone" title="Task Completed">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            </div>
+
+            <!-- Flyout Tooltip (Slides in smoothly towards the screen center) -->
+            <div class="v-flyout-tooltip" id="vFlyoutTooltip">
+              <div class="v-tooltip-header">
+                <span class="v-tooltip-dot dot-idle" id="vTooltipDot"></span>
+                <span class="v-tooltip-status" id="vTooltipStatus">Standby</span>
+              </div>
+              <div class="v-tooltip-model" id="vTooltipModel">Antigravity</div>
+            </div>
+          </div>
+
+          <div class="v-divider"></div>
+        </div>
+
+        <!-- Trailing Controls (Metrics + Settings Button) -->
+        <div class="trailing-accessory" id="trailingAccessory">
+          <!-- Metric Capsule (Horizontal mode) -->
+          <div class="metric-capsule" id="metricCapsule">
+            <span class="metric-dot"></span>
+            <span class="metric-val" id="metricVal">READY</span>
+          </div>
+
+          <!-- Settings Icon Button -->
+          <button class="settings-btn" id="btnSettings" title="Settings">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </button>
+
+          <!-- Mini Force-Close / Sleep Button -->
+          <button class="settings-btn mini-close-btn" id="btnMiniClose" title="Retract to Bezel">
+            <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. EXPANDED VIEW (Notch Gede - Multi-Agent Luxury Card ~620x185) -->
+      <div class="expanded-view" id="expandedView">
+        <!-- Header Bar (36px): Brand, Multi-Agent Tabs Deck, Trailing Utilities -->
+        <div class="expanded-header" id="expandedHeader">
+          <div class="header-brand">
+            <img src="../../assets/antigravity-icon.png" alt="AGY" class="brand-sparkle-img">
+            <span class="brand-label">AGY</span>
+          </div>
+          
+          <div class="agent-tabs-deck" id="agentTabsDeck">
+            <!-- Dynamic agent tabs rendered via JS -->
+          </div>
+
+          <div class="expanded-trailing">
+            <span class="expanded-quota-badge" id="expandedQuotaBadge">95% QTA</span>
+            <button class="settings-btn" id="btnExpandedSettings" title="Settings">
+              <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+              </svg>
+            </button>
+            <button class="settings-btn expanded-retract-btn" id="btnHeaderRetract" title="Ciutkan (Collapse)">
+              <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Body Area (~95px): Active Agent Detail & Glowing Mascot Orb -->
+        <div class="expanded-body" id="expandedBody">
+          <div class="expanded-orb-wrap">
+            <div class="expanded-orb orb-idle" id="expandedOrb">
+              <svg class="orb-icon" id="expandedOrbIcon" viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                <path d="M12 2.5L19.5 12L12 21.5L4.5 12L12 2.5Z" />
+              </svg>
+            </div>
+          </div>
+          <div class="expanded-details">
+            <div class="expanded-title-row">
+              <span class="expanded-agent-name" id="expandedAgentName">Antigravity</span>
+              <span class="expanded-status-badge badge-idle" id="expandedStatusBadge">Standby</span>
+              <span class="expanded-model-pill" id="expandedModelPill">Gemini 3.8 Flash</span>
+            </div>
+            <div class="expanded-message" id="expandedMessage">Ready & listening</div>
+            <div class="expanded-tool-row" id="expandedToolRow" style="display: none;">
+              <span class="tool-tag" id="expandedToolTag">Tool: replace_file_content</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Actions (40px): Quick Action Command Buttons -->
+        <div class="expanded-footer" id="expandedFooter">
+          <button class="action-btn action-primary" id="btnFocusAntigravity">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+              <polyline points="15 3 21 3 21 9"></polyline>
+              <line x1="10" y1="14" x2="21" y2="3"></line>
+            </svg>
+            <span>Fokus ke Antigravity</span>
+          </button>
+
+          <button class="action-btn action-secondary" id="btnDismissActive">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>Selesai / Dismiss</span>
+          </button>
+
+          <button class="action-btn action-ghost" id="btnRetractExpanded">
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="18 15 12 9 6 15"></polyline>
+            </svg>
+            <span>Ciutkan</span>
+          </button>
+        </div>
       </div>
 
       <!-- Visual Countdown Bar (Apple/Coucou style auto-dismiss bar) -->

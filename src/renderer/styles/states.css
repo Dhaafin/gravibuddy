@@ -119,3 +119,31 @@
   background: #ff9f0a;
   box-shadow: 0 0 10px rgba(255, 159, 10, 0.9);
 }
+
+/* Expanded State Glowing Auras */
+.island.state-thinking.is-expanded {
+  box-shadow: 
+    0 24px 64px -8px rgba(0, 0, 0, 0.96),
+    0 12px 36px -4px rgba(168, 85, 247, 0.35),
+    0 4px 14px rgba(168, 85, 247, 0.22),
+    inset 0 -1px 0.8px 0 rgba(191, 90, 242, 0.4),
+    inset 0 -1px 0.5px 0 rgba(255, 255, 255, 0.25);
+}
+
+.island.state-waiting.is-expanded {
+  box-shadow: 
+    0 24px 64px -8px rgba(0, 0, 0, 0.96),
+    0 14px 40px -4px rgba(245, 165, 36, 0.4),
+    0 4px 16px rgba(245, 165, 36, 0.26),
+    inset 0 -1px 0.8px 0 rgba(245, 165, 36, 0.45),
+    inset 0 -1px 0.5px 0 rgba(255, 255, 255, 0.25);
+}
+
+.island.state-done.is-expanded {
+  box-shadow: 
+    0 24px 64px -8px rgba(0, 0, 0, 0.96),
+    0 12px 36px -4px rgba(48, 209, 88, 0.35),
+    0 4px 14px rgba(48, 209, 88, 0.22),
+    inset 0 -1px 0.8px 0 rgba(48, 209, 88, 0.4),
+    inset 0 -1px 0.5px 0 rgba(255, 255, 255, 0.25);
+}
