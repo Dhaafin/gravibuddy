@@ -16,7 +16,7 @@ function inspectLastPlannerStep(transcriptPath) {
     if (!fs.existsSync(transcriptPath)) return null;
     const stat = fs.statSync(transcriptPath);
     if (!stat || stat.size === 0) return null;
-    const bufSize = Math.min(stat.size, 8192);
+    const bufSize = Math.min(stat.size, 131072);
     const fd = fs.openSync(transcriptPath, 'r');
     const buf = Buffer.alloc(bufSize);
     fs.readSync(fd, buf, 0, bufSize, stat.size - bufSize);
