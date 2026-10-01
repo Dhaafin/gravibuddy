@@ -26,7 +26,7 @@ function getWindowBoundsForPosition(pos) {
     return { width, height, x, y, orientation: 'vertical-right' };
   }
 
-  const width = 680;
+  const width = 920;
   const height = 240;
   const x = screenX + Math.round((screenWidth - width) / 2);
   const y = screenY;
