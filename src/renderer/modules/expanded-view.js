@@ -70,9 +70,10 @@ function createAgentRow(sess) {
 
   const bottomRow = document.createElement('div');
   bottomRow.className = 'agent-row-bottom';
+  const showTool = agentState === 'thinking' && sess.toolName;
   const msgSpan = document.createElement('span');
-  msgSpan.className = sess.toolName ? 'agent-message-text is-tool' : 'agent-message-text';
-  msgSpan.textContent = sess.toolName
+  msgSpan.className = showTool ? 'agent-message-text is-tool' : 'agent-message-text';
+  msgSpan.textContent = showTool
     ? `Tool: ${sess.toolName}`
     : (sess.message || getDefaultSessionMessage(agentState, modelName));
   bottomRow.appendChild(msgSpan);

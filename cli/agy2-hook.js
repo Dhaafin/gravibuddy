@@ -35,9 +35,27 @@ function inspectLastPlannerStep(transcriptPath) {
   return null;
 }
 
+function extractQuestionMessage(args) {
+  if (!args) return 'Question from Antigravity';
+  let qList = args.questions;
+  if (typeof qList === 'string') {
+    try {
+      qList = JSON.parse(qList);
+    } catch (e) {}
+  }
+  if (Array.isArray(qList) && qList[0]?.question) {
+    return qList[0].question;
+  }
+  return 'Question from Antigravity';
+}
+
 process.stdin.on('end', () => {
   // Always immediately output valid JSON to stdout so Antigravity 2.0 never blocks or waits
-  process.stdout.write('{}\n');
+  if (eventType === 'pre-tool-use') {
+    process.stdout.write('{"decision":"allow"}\n');
+  } else {
+    process.stdout.write('{}\n');
+  }
 
   let payload = {};
   try {
@@ -48,44 +66,54 @@ process.stdin.on('end', () => {
     payload = {};
   }
 
-  // Derive target agent state and descriptive message
   let state = 'thinking';
   let message = null;
   let toolName = null;
 
-  const lastStep = inspectLastPlannerStep(payload.transcriptPath);
-  if (lastStep?.tool_calls && lastStep.tool_calls.length > 0) {
-    toolName = lastStep.tool_calls[0].name;
-  }
-
-  if (eventType === 'stop') {
-    // 1. Check if background tasks/commands are still actively executing
-    if (payload.fullyIdle === false) {
-      state = 'thinking';
-      message = toolName ? `Executing ${toolName}...` : 'Running in background...';
+  if (eventType === 'pre-tool-use') {
+    const tc = payload.toolCall || {};
+    if (tc.name === 'ask_question' || !tc.name) {
+      state = 'waiting';
+      message = extractQuestionMessage(tc.args);
+      toolName = null;
     } else {
-      // 2. Check if the turn stopped because the agent asked a question
-      const questionTool = lastStep?.tool_calls?.find(t => t.name === 'ask_question');
-
-      if (questionTool) {
-        state = 'waiting';
-        const qList = questionTool.args?.questions;
-        message = Array.isArray(qList) && qList[0]?.question ? qList[0].question : 'Question from Antigravity';
-      } else if (payload.terminationReason === 'error') {
-        state = 'waiting';
-        message = payload.error || 'Execution stopped with error';
-      } else {
-        // Genuinely completed turn
-        state = 'done';
-        message = 'Task completed';
-      }
+      state = 'thinking';
+      toolName = tc.name;
+      message = `Running ${tc.name}...`;
     }
-  } else if (eventType === 'pre-invocation') {
+  } else if (eventType === 'post-tool-use') {
     state = 'thinking';
-    message = toolName ? `Running ${toolName}...` : 'Thinking & reasoning...';
+    toolName = null;
+    message = 'Processing your response...';
+  } else {
+    const lastStep = inspectLastPlannerStep(payload.transcriptPath);
+    const latestTool = lastStep?.tool_calls?.[0]?.name || null;
+
+    if (eventType === 'stop') {
+      if (payload.fullyIdle === false) {
+        state = 'thinking';
+        toolName = latestTool;
+        message = toolName ? `Executing ${toolName}...` : 'Running in background...';
+      } else {
+        const questionTool = lastStep?.tool_calls?.find(t => t.name === 'ask_question');
+        if (questionTool) {
+          state = 'waiting';
+          message = extractQuestionMessage(questionTool.args);
+        } else if (payload.terminationReason === 'error') {
+          state = 'waiting';
+          message = payload.error || 'Execution stopped with error';
+        } else {
+          state = 'done';
+          message = 'Task completed';
+        }
+      }
+    } else if (eventType === 'pre-invocation') {
+      state = 'thinking';
+      toolName = latestTool;
+      message = toolName ? `Running ${toolName}...` : 'Thinking & reasoning...';
+    }
   }
 
-  // Extract project name from workspacePaths if available
   let projectName = null;
   if (Array.isArray(payload.workspacePaths) && payload.workspacePaths.length > 0) {
     projectName = path.basename(payload.workspacePaths[0]);
@@ -94,15 +122,14 @@ process.stdin.on('end', () => {
   const postPayload = JSON.stringify({
     source: 'antigravity-2.0',
     conversationId: payload.conversationId || null,
-    state: state,
+    state,
     model: payload.modelName || 'Gemini',
     project: projectName,
-    message: message,
-    toolName: toolName,
+    message,
+    toolName,
     timestamp: Date.now()
   });
 
-  // Fire-and-forget HTTP POST to Gravibuddy
   try {
     const req = http.request({
       hostname: '127.0.0.1',
@@ -115,7 +142,7 @@ process.stdin.on('end', () => {
       },
       timeout: 250
     });
-    req.on('error', () => {}); // Silently ignore if Gravibuddy is not running
+    req.on('error', () => {});
     req.write(postPayload);
     req.end();
   } catch (e) {}
