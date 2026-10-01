@@ -1,4 +1,3 @@
-// Centralized reactive state store and helper accessors
 export const state = {
   // User Configurable Preferences
   soundEnabled: true,
@@ -22,7 +21,6 @@ export const state = {
   doneAutoDismissTimer: null,
   doneCountdownStartTimer: null,
   wakeHoverTimer: null,
-  retractTimer: null,
   waitingNudgeTimer: null,
   waitingNudgePeekTimer: null
 };
@@ -45,21 +43,13 @@ export function getActiveSession() {
 }
 
 export function hasAnyWaitingSession() {
-  if (state.currentState === 'waiting') return true;
-  return state.activeSessionsList.some(s => s.state === 'waiting');
+  return state.currentState === 'waiting' || state.activeSessionsList.some(s => s.state === 'waiting');
 }
 
 export function clearSleepTimer() {
   if (state.sleepTimer) {
     clearTimeout(state.sleepTimer);
     state.sleepTimer = null;
-  }
-}
-
-export function clearRetractTimer() {
-  if (state.retractTimer) {
-    clearTimeout(state.retractTimer);
-    state.retractTimer = null;
   }
 }
 
@@ -102,4 +92,3 @@ export function clearWaitingNudgeTimers() {
     state.waitingNudgePeekTimer = null;
   }
 }
-

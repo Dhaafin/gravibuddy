@@ -1,11 +1,10 @@
-// Gravibuddy Floating Dynamic Island HUD — Main Renderer Orchestrator
 import { dom } from './modules/dom.js';
 import { 
   state, 
   formatModelName, 
   hasAnyWaitingSession, 
   clearSleepTimer, 
-  clearRetractTimer, 
+  clearThinkingPreviewTimer, 
   cancelDoneAutoDismiss,
   clearWaitingNudgeTimers 
 } from './modules/state.js';
@@ -27,11 +26,7 @@ import { setupInteractions } from './modules/interaction.js';
 
 const api = window.graviAPI;
 
-// ==========================================================
-// Agent State Updates & State Machine Router
-// ==========================================================
 function updateIslandState(data) {
-  // Sync sessions list
   if (Array.isArray(data.sessions) && data.sessions.length > 0) {
     state.activeSessionsList = data.sessions;
   } else {
@@ -47,7 +42,6 @@ function updateIslandState(data) {
     }];
   }
 
-  // Priority bubbling: if any session is waiting, focus it automatically!
   const waitingSess = state.activeSessionsList.find(s => s.state === 'waiting');
   if (waitingSess) {
     state.selectedSessionId = waitingSess.id;
@@ -63,21 +57,14 @@ function updateIslandState(data) {
   const stateChanged = previousState !== targetState;
   state.currentState = targetState;
 
-  // Always update text and metrics in DOM quietly
   updateIslandLabels(data, modelLabel);
 
   if (targetState === 'waiting' || hasAnyWaitingSession()) {
-    // 🚨 ACTION REQUIRED: Notify clearly with amber aura and pulsing expand button
     cancelDoneAutoDismiss(dom.countdownBar);
-    clearTimeout(state.thinkingPreviewTimer);
-    state.thinkingPreviewTimer = null;
+    clearThinkingPreviewTimer();
     clearSleepTimer();
-    clearRetractTimer();
 
     wakeUpIsland('alert');
-    if (state.isExpanded) {
-      renderAgentList();
-    }
     dom.island.classList.remove('state-thinking', 'state-done');
     dom.island.classList.add('state-waiting');
     if (dom.btnExpandCard && !state.isExpanded) {
@@ -89,19 +76,12 @@ function updateIslandState(data) {
     }
   } else if (targetState === 'done') {
     clearWaitingNudgeTimers();
-    // 🌟 TASK COMPLETED: Ambient green chime and countdown
     cancelDoneAutoDismiss(dom.countdownBar);
-    clearTimeout(state.thinkingPreviewTimer);
-    state.thinkingPreviewTimer = null;
+    clearThinkingPreviewTimer();
     clearSleepTimer();
 
-    if (dom.btnExpandCard) {
-      dom.btnExpandCard.classList.remove('has-alert');
-    }
+    dom.btnExpandCard?.classList.remove('has-alert');
     wakeUpIsland('done');
-    if (state.isExpanded) {
-      renderAgentList();
-    }
     dom.island.classList.remove('state-thinking', 'state-waiting');
     dom.island.classList.add('state-done');
     if (stateChanged || data.completionTriggered) {
@@ -111,26 +91,18 @@ function updateIslandState(data) {
     }
   } else if (targetState === 'thinking') {
     clearWaitingNudgeTimers();
-    if (dom.btnExpandCard) {
-      dom.btnExpandCard.classList.remove('has-alert');
-    }
-    // 🟣 CODING / THINKING:
+    dom.btnExpandCard?.classList.remove('has-alert');
     cancelDoneAutoDismiss(dom.countdownBar);
     clearSleepTimer();
     dom.island.classList.remove('state-done', 'state-waiting');
     dom.island.classList.add('state-thinking');
 
-    if (state.isExpanded) {
-      renderAgentList();
-    }
-
     if (stateChanged) {
       triggerWateryMorph();
       if (state.stealthCodingEnabled) {
         if (state.thinkingPreviewEnabled) {
-          // Peek on task start: Pop up for 2.5s, then automatically sleep
           wakeUpIsland('thinking-peek');
-          clearTimeout(state.thinkingPreviewTimer);
+          clearThinkingPreviewTimer();
           state.thinkingPreviewTimer = setTimeout(() => {
             state.thinkingPreviewTimer = null;
             if (state.currentState === 'thinking' && !state.isInteractiveArea) {
@@ -138,9 +110,7 @@ function updateIslandState(data) {
             }
           }, 2500);
         } else {
-          // Immediate stealth: Stay tucked without popping up
-          clearTimeout(state.thinkingPreviewTimer);
-          state.thinkingPreviewTimer = null;
+          clearThinkingPreviewTimer();
           if (!state.isInteractiveArea) {
             enterSleepMode();
           }
@@ -148,51 +118,31 @@ function updateIslandState(data) {
       } else {
         wakeUpIsland('thinking');
       }
-    } else {
-      // Periodic update while still thinking: keep asleep if stealth mode active
-      if (state.stealthCodingEnabled && !state.thinkingPreviewTimer && !state.isInteractiveArea) {
-        enterSleepMode();
-      }
+    } else if (state.stealthCodingEnabled && !state.thinkingPreviewTimer && !state.isInteractiveArea) {
+      enterSleepMode();
     }
   } else {
     clearWaitingNudgeTimers();
-    // 🟢 NORMAL IDLE:
-    if (dom.btnExpandCard) {
-      dom.btnExpandCard.classList.remove('has-alert');
-    }
+    dom.btnExpandCard?.classList.remove('has-alert');
     cancelDoneAutoDismiss(dom.countdownBar);
-    clearTimeout(state.thinkingPreviewTimer);
-    state.thinkingPreviewTimer = null;
+    clearThinkingPreviewTimer();
     dom.island.classList.remove('state-thinking', 'state-done', 'state-waiting');
-
-    if (state.isExpanded) {
-      renderAgentList();
-    }
 
     if (stateChanged) {
       triggerWateryMorph();
       scheduleSleep(1200, true);
-    } else {
-      // Periodic idle telemetry from terminal
-      if (!dom.island.classList.contains('is-sleeping') && !state.isInteractiveArea) {
-        scheduleSleep(1400, false);
-      }
+    } else if (!dom.island.classList.contains('is-sleeping') && !state.isInteractiveArea) {
+      scheduleSleep(1400, false);
     }
   }
 }
 
-// ==========================================================
-// Initialization & IPC Synchronization
-// ==========================================================
-// Wire up user interactions & window listeners
 setupInteractions(api);
 
-// Bridge telemetry listener
 api.onAgentUpdate((data) => {
   updateIslandState(data);
 });
 
-// Position & Orientation Synchronization
 api.onPositionChanged((info) => {
   const pos = typeof info === 'string' ? info : info.position;
   const orientation = typeof info === 'object' ? info.orientation : null;
@@ -206,7 +156,6 @@ api.onPositionChanged((info) => {
   scheduleSleep(4000);
 });
 
-// Initial Config Synchronization
 api.getInitialConfig();
 api.onInitialConfig((cfg) => {
   if (cfg) {
@@ -221,7 +170,6 @@ api.onInitialConfig((cfg) => {
   }
 });
 
-// Restore saved expanded/collapse mode preference
 try {
   const savedExpanded = localStorage.getItem('gravi_deck_expanded') === 'true';
   if (savedExpanded && state.currentPosition === 'center') {
