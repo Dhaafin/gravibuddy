@@ -22,7 +22,9 @@ export const state = {
   doneAutoDismissTimer: null,
   doneCountdownStartTimer: null,
   wakeHoverTimer: null,
-  retractTimer: null
+  retractTimer: null,
+  waitingNudgeTimer: null,
+  waitingNudgePeekTimer: null
 };
 
 export function formatModelName(model) {
@@ -89,3 +91,15 @@ export function cancelDoneAutoDismiss(countdownBar) {
     countdownBar.style.removeProperty('--cd-duration');
   }
 }
+
+export function clearWaitingNudgeTimers() {
+  if (state.waitingNudgeTimer) {
+    clearTimeout(state.waitingNudgeTimer);
+    state.waitingNudgeTimer = null;
+  }
+  if (state.waitingNudgePeekTimer) {
+    clearTimeout(state.waitingNudgePeekTimer);
+    state.waitingNudgePeekTimer = null;
+  }
+}
+

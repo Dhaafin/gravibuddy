@@ -6,7 +6,8 @@ import {
   hasAnyWaitingSession, 
   clearSleepTimer, 
   clearRetractTimer, 
-  cancelDoneAutoDismiss 
+  cancelDoneAutoDismiss,
+  clearWaitingNudgeTimers 
 } from './modules/state.js';
 import { playChime, playPopSound } from './modules/audio.js';
 import { triggerWateryMorph } from './modules/effects.js';
@@ -85,6 +86,7 @@ function updateIslandState(data) {
     triggerWateryMorph();
     playChime('alert');
   } else if (targetState === 'done') {
+    clearWaitingNudgeTimers();
     // 🌟 TASK COMPLETED: Ambient green chime and countdown
     cancelDoneAutoDismiss(dom.countdownBar);
     clearTimeout(state.thinkingPreviewTimer);
@@ -104,6 +106,7 @@ function updateIslandState(data) {
     playChime('success');
     scheduleDoneAutoDismiss();
   } else if (targetState === 'thinking') {
+    clearWaitingNudgeTimers();
     if (dom.btnExpandCard) {
       dom.btnExpandCard.classList.remove('has-alert');
     }
@@ -148,6 +151,7 @@ function updateIslandState(data) {
       }
     }
   } else {
+    clearWaitingNudgeTimers();
     // 🟢 NORMAL IDLE:
     if (dom.btnExpandCard) {
       dom.btnExpandCard.classList.remove('has-alert');

@@ -4,17 +4,48 @@ import {
   state, 
   hasAnyWaitingSession, 
   clearSleepTimer, 
-  cancelDoneAutoDismiss 
+  cancelDoneAutoDismiss,
+  clearWaitingNudgeTimers 
 } from './state.js';
+import { playPopSound, playChime } from './audio.js';
 import { triggerWateryMorph } from './effects.js';
 import { updateIslandLabels } from './compact-view.js';
 import { renderAgentList } from './expanded-view.js';
+
+export function scheduleWaitingNudge(delayMs = 45000) {
+  clearWaitingNudgeTimers();
+  if (state.currentState !== 'waiting' && !hasAnyWaitingSession()) return;
+  if (!dom.island || !dom.island.classList.contains('is-sleeping')) return;
+
+  state.waitingNudgeTimer = setTimeout(() => {
+    state.waitingNudgeTimer = null;
+    if (state.currentState !== 'waiting' && !hasAnyWaitingSession()) return;
+    if (!dom.island || !dom.island.classList.contains('is-sleeping')) return;
+
+    // Wake up for 5s peek
+    wakeUpIsland('nudge');
+    playChime('alert');
+
+    // Auto re-tuck after 5s if user does not touch the island
+    state.waitingNudgePeekTimer = setTimeout(() => {
+      state.waitingNudgePeekTimer = null;
+      if (!state.isInteractiveArea) {
+        enterSleepMode(true);
+        // Reschedule next nudge in 45s
+        scheduleWaitingNudge(45000);
+      }
+    }, 5000);
+  }, delayMs);
+}
 
 export function wakeUpIsland(reason = 'interaction') {
   clearSleepTimer();
   if (state.wakeHoverTimer) {
     clearTimeout(state.wakeHoverTimer);
     state.wakeHoverTimer = null;
+  }
+  if (reason !== 'nudge') {
+    clearWaitingNudgeTimers();
   }
 
   if (dom.island && dom.island.classList.contains('is-sleeping')) {
@@ -61,6 +92,11 @@ export function enterSleepMode(force = false) {
   if (force) {
     state.isInteractiveArea = false;
     window.graviAPI?.setIgnoreMouseEvents(true, { forward: true });
+  }
+
+  // If a task is waiting for user action, initiate periodic 45s nudge cycle
+  if (state.currentState === 'waiting' || hasAnyWaitingSession()) {
+    scheduleWaitingNudge(45000);
   }
 }
 

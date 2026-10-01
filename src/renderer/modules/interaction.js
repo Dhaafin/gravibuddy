@@ -32,6 +32,12 @@ export function checkInteractiveHit(e, api) {
       api.setIgnoreMouseEvents(false);
       clearRetractTimer();
 
+      // If island was peeking during a waiting nudge, cancel the 5s auto re-tuck timer so user can interact
+      if (state.waitingNudgePeekTimer) {
+        clearTimeout(state.waitingNudgePeekTimer);
+        state.waitingNudgePeekTimer = null;
+      }
+
       // If in done state, pause countdown bar while user is reading/interacting
       if (state.currentState === 'done') {
         cancelDoneAutoDismiss(dom.countdownBar);
@@ -54,17 +60,16 @@ export function checkInteractiveHit(e, api) {
       }
       api.setIgnoreMouseEvents(true, { forward: true });
 
-      // Persistent open: never sleep if waiting!
-      if (state.currentState === 'waiting' || hasAnyWaitingSession()) {
-        return;
-      }
       // If done state, resume auto-dismiss countdown
       if (state.currentState === 'done') {
         scheduleDoneAutoDismiss();
         return;
       }
-      // If in stealth coding mode and thinking: tuck back to sleep after short delay
-      if (state.currentState === 'thinking' && state.stealthCodingEnabled) {
+
+      // If waiting, thinking, or idle: schedule sleep with comfortable delay
+      if (state.currentState === 'waiting' || hasAnyWaitingSession()) {
+        scheduleSleep(1200, true);
+      } else if (state.currentState === 'thinking' && state.stealthCodingEnabled) {
         scheduleSleep(1200, true);
       } else if (state.currentState === 'idle') {
         scheduleSleep(1400, true);
@@ -83,7 +88,7 @@ export function setupInteractions(api) {
   // Mouse move hit testing
   window.addEventListener('mousemove', e => checkInteractiveHit(e, api));
 
-  // Mouse leave window boundary
+  // Mouse leave window boundary: sweep out delay
   window.addEventListener('mouseleave', () => {
     if (state.wakeHoverTimer) {
       clearTimeout(state.wakeHoverTimer);
@@ -94,19 +99,20 @@ export function setupInteractions(api) {
       api.setIgnoreMouseEvents(true, { forward: true });
     }
 
-    if (state.currentState === 'waiting' || hasAnyWaitingSession()) return;
     if (state.currentState === 'done') {
       scheduleDoneAutoDismiss();
       return;
     }
-    if (state.currentState === 'thinking' && state.stealthCodingEnabled) {
+    if (state.currentState === 'waiting' || hasAnyWaitingSession()) {
+      scheduleSleep(1200, true);
+    } else if (state.currentState === 'thinking' && state.stealthCodingEnabled) {
       scheduleSleep(1200, true);
     } else if (state.currentState === 'idle') {
       scheduleSleep(1400, true);
     }
   });
 
-  // Window blur / unfocus
+  // Window blur / unfocus: User clicked outside on editor/terminal to lock in!
   window.addEventListener('blur', () => {
     if (state.wakeHoverTimer) {
       clearTimeout(state.wakeHoverTimer);
@@ -117,16 +123,13 @@ export function setupInteractions(api) {
       api.setIgnoreMouseEvents(true, { forward: true });
     }
 
-    if (state.currentState === 'waiting' || hasAnyWaitingSession()) return;
     if (state.currentState === 'done') {
       scheduleDoneAutoDismiss();
       return;
     }
-    if (state.currentState === 'thinking' && state.stealthCodingEnabled) {
-      enterSleepMode();
-    } else if (state.currentState === 'idle') {
-      scheduleSleep(1400, true);
-    }
+
+    // Instant minimize into the sleep tab for maximum lock-in focus
+    enterSleepMode(true);
   });
 
   // Mini Close / Retract button in compact mode
