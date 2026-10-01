@@ -30,39 +30,139 @@ export function getOrbIconSvg(agentState) {
   </svg>`;
 }
 
-export function renderAgentTabs() {
-  if (!dom.agentTabsDeck) return;
-  dom.agentTabsDeck.innerHTML = '';
+export function renderAgentList() {
+  if (!dom.agentListDeck) return;
+  dom.agentListDeck.innerHTML = '';
 
-  if (state.activeSessionsList.length === 0) return;
+  const sessions = state.activeSessionsList;
+  const count = sessions.length;
 
-  state.activeSessionsList.forEach(sess => {
-    const btn = document.createElement('button');
-    btn.className = `agent-tab ${sess.id === state.selectedSessionId ? 'active' : ''}`;
-    btn.dataset.id = sess.id;
-    btn.title = `${sess.project} (${sess.state || 'idle'})`;
+  // Header count badge (e.g., "1 AGENT" or "3 AGENTS")
+  if (dom.headerCountBadge) {
+    dom.headerCountBadge.textContent = count === 1 ? '1 AGENT' : `${count} AGENTS`;
+  }
 
+  // Header quota badge from active session or first session
+  if (dom.expandedQuotaBadge) {
+    const active = getActiveSession() || sessions[0];
+    const qPct = active?.quotaPercent ?? 95;
+    dom.expandedQuotaBadge.textContent = `${qPct}% QTA`;
+  }
+
+  if (count === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'agent-deck-empty';
+    empty.textContent = 'Standby & ready';
+    dom.agentListDeck.appendChild(empty);
+    updateCompactCycleIndicator();
+    return;
+  }
+
+  // Priority bubbling: waiting > thinking > done > idle
+  const sortedSessions = [...sessions].sort((a, b) => {
+    const pA = a.state === 'waiting' ? 4 : a.state === 'thinking' ? 3 : a.state === 'done' ? 2 : 1;
+    const pB = b.state === 'waiting' ? 4 : b.state === 'thinking' ? 3 : b.state === 'done' ? 2 : 1;
+    return pB - pA;
+  });
+
+  sortedSessions.forEach(sess => {
+    const agentState = sess.state || 'idle';
+    const modelName = formatModelName(sess.model);
+    const isSelected = sess.id === state.selectedSessionId;
+
+    const row = document.createElement('div');
+    row.className = `agent-row state-${agentState} ${isSelected ? 'is-active-session' : ''}`;
+    row.dataset.id = sess.id;
+    row.title = `Click to focus Antigravity (${sess.project || 'Agent'})`;
+
+    // 1. Leading Dot
+    const leading = document.createElement('div');
+    leading.className = 'agent-row-leading';
     const dot = document.createElement('span');
-    dot.className = `agent-tab-dot dot-${sess.state || 'idle'}`;
+    dot.className = `agent-row-dot dot-${agentState}`;
+    leading.appendChild(dot);
 
-    const label = document.createElement('span');
-    label.className = 'agent-tab-label';
-    label.textContent = sess.project || 'Agent';
+    // 2. Content: Top row (Title + Status Tag + Model) & Bottom row (Live Message or Tool)
+    const content = document.createElement('div');
+    content.className = 'agent-row-content';
 
-    btn.appendChild(dot);
-    btn.appendChild(label);
+    const topRow = document.createElement('div');
+    topRow.className = 'agent-row-top';
 
-    btn.addEventListener('click', (e) => {
+    const title = document.createElement('span');
+    title.className = 'agent-row-title';
+    title.textContent = sess.project || 'Antigravity';
+
+    const statusTag = document.createElement('span');
+    statusTag.className = `agent-status-tag tag-${agentState}`;
+    if (agentState === 'thinking') statusTag.textContent = 'Thinking';
+    else if (agentState === 'waiting') statusTag.textContent = 'Action Required';
+    else if (agentState === 'done') statusTag.textContent = 'Done';
+    else statusTag.textContent = 'Standby';
+
+    const modelTag = document.createElement('span');
+    modelTag.className = 'agent-model-tag';
+    modelTag.textContent = modelName;
+
+    topRow.appendChild(title);
+    topRow.appendChild(statusTag);
+    topRow.appendChild(modelTag);
+
+    const bottomRow = document.createElement('div');
+    bottomRow.className = 'agent-row-bottom';
+
+    const msgSpan = document.createElement('span');
+    if (sess.toolName) {
+      msgSpan.className = 'agent-message-text is-tool';
+      msgSpan.textContent = `Tool: ${sess.toolName}`;
+    } else {
+      msgSpan.className = 'agent-message-text';
+      let msg = sess.message;
+      if (!msg) {
+        if (agentState === 'thinking') msg = `Processing with ${modelName}...`;
+        else if (agentState === 'waiting') msg = 'Action or approval required';
+        else if (agentState === 'done') msg = 'Task completed successfully';
+        else msg = 'Ready & listening';
+      }
+      msgSpan.textContent = msg;
+    }
+    bottomRow.appendChild(msgSpan);
+
+    content.appendChild(topRow);
+    content.appendChild(bottomRow);
+
+    // 3. Trailing: Metric Pill
+    const trailing = document.createElement('div');
+    trailing.className = 'agent-row-trailing';
+
+    if (typeof sess.quotaPercent === 'number') {
+      const metric = document.createElement('span');
+      metric.className = 'agent-row-metric';
+      metric.textContent = `${sess.quotaPercent}% QTA`;
+      trailing.appendChild(metric);
+    }
+
+    row.appendChild(leading);
+    row.appendChild(content);
+    row.appendChild(trailing);
+
+    // Row Click: Focus Antigravity & Select Session
+    row.addEventListener('click', (e) => {
       e.stopPropagation();
       state.selectedSessionId = sess.id;
-      renderAgentTabs();
-      renderActiveSessionDetail();
+      renderAgentList();
+      window.graviAPI?.focusAntigravity();
     });
 
-    dom.agentTabsDeck.appendChild(btn);
+    dom.agentListDeck.appendChild(row);
   });
+
   updateCompactCycleIndicator();
 }
+
+// Aliases for compatibility
+export const renderAgentTabs = renderAgentList;
+export const renderActiveSessionDetail = renderAgentList;
 
 export function cycleNextSession() {
   if (state.activeSessionsList.length <= 1) return;
@@ -71,64 +171,9 @@ export function cycleNextSession() {
   state.selectedSessionId = state.activeSessionsList[nextIndex].id;
   const sess = state.activeSessionsList[nextIndex];
   updateIslandLabels(sess, formatModelName(sess.model));
-  renderAgentTabs();
-  renderActiveSessionDetail();
+  renderAgentList();
   triggerWateryMorph();
   playPopSound('blossom');
-}
-
-export function renderActiveSessionDetail() {
-  const sess = getActiveSession();
-  if (!sess) return;
-
-  const agentState = sess.state || 'idle';
-  const modelName = formatModelName(sess.model);
-
-  if (dom.expandedOrb) {
-    dom.expandedOrb.className = `expanded-orb orb-${agentState}`;
-    dom.expandedOrb.innerHTML = getOrbIconSvg(agentState);
-  }
-
-  if (dom.expandedAgentName) {
-    dom.expandedAgentName.textContent = sess.project || 'Antigravity';
-  }
-
-  if (dom.expandedStatusBadge) {
-    dom.expandedStatusBadge.className = `expanded-status-badge badge-${agentState}`;
-    if (agentState === 'thinking') dom.expandedStatusBadge.textContent = 'Thinking';
-    else if (agentState === 'waiting') dom.expandedStatusBadge.textContent = 'Action Required';
-    else if (agentState === 'done') dom.expandedStatusBadge.textContent = 'Done';
-    else dom.expandedStatusBadge.textContent = 'Standby';
-  }
-
-  if (dom.expandedModelPill) {
-    dom.expandedModelPill.textContent = modelName;
-  }
-
-  if (dom.expandedMessage) {
-    let msg = sess.message;
-    if (!msg) {
-      if (agentState === 'thinking') msg = `Processing with ${modelName}...`;
-      else if (agentState === 'waiting') msg = 'Action or approval required';
-      else if (agentState === 'done') msg = 'Task completed successfully';
-      else msg = 'Ready & listening';
-    }
-    dom.expandedMessage.textContent = msg;
-  }
-
-  if (dom.expandedToolRow && dom.expandedToolTag) {
-    if (sess.toolName) {
-      dom.expandedToolRow.style.display = 'flex';
-      dom.expandedToolTag.textContent = `Tool: ${sess.toolName}`;
-    } else {
-      dom.expandedToolRow.style.display = 'none';
-    }
-  }
-
-  if (dom.expandedQuotaBadge) {
-    const qPct = sess.quotaPercent ?? 95;
-    dom.expandedQuotaBadge.textContent = `${qPct}% QTA`;
-  }
 }
 
 export function expandToLuxuryCard() {
@@ -148,8 +193,7 @@ export function expandToLuxuryCard() {
     dom.btnExpandCard.title = 'Collapse Deck';
     dom.btnExpandCard.innerHTML = `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>`;
   }
-  renderAgentTabs();
-  renderActiveSessionDetail();
+  renderAgentList();
 }
 
 export function collapseToCompact(force = false) {

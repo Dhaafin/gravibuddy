@@ -12,8 +12,7 @@ import { playChime, playPopSound } from './modules/audio.js';
 import { triggerWateryMorph } from './modules/effects.js';
 import { updateIslandLabels, applyOrientationClasses } from './modules/compact-view.js';
 import { 
-  renderAgentTabs, 
-  renderActiveSessionDetail, 
+  renderAgentList, 
   expandToLuxuryCard, 
   collapseToCompact 
 } from './modules/expanded-view.js';
@@ -55,8 +54,7 @@ function updateIslandState(data) {
     state.selectedSessionId = data.heroId || state.activeSessionsList[0].id;
   }
 
-  renderAgentTabs();
-  renderActiveSessionDetail();
+  renderAgentList();
 
   const modelLabel = formatModelName(data.model);
   const previousState = state.currentState;
@@ -77,8 +75,7 @@ function updateIslandState(data) {
 
     wakeUpIsland('alert');
     if (state.isExpanded) {
-      renderActiveSessionDetail();
-      renderAgentTabs();
+      renderAgentList();
     }
     dom.island.classList.remove('state-thinking', 'state-done');
     dom.island.classList.add('state-waiting');
@@ -99,8 +96,7 @@ function updateIslandState(data) {
     }
     wakeUpIsland('done');
     if (state.isExpanded) {
-      renderActiveSessionDetail();
-      renderAgentTabs();
+      renderAgentList();
     }
     dom.island.classList.remove('state-thinking', 'state-waiting');
     dom.island.classList.add('state-done');
@@ -118,8 +114,7 @@ function updateIslandState(data) {
     dom.island.classList.add('state-thinking');
 
     if (state.isExpanded) {
-      renderActiveSessionDetail();
-      renderAgentTabs();
+      renderAgentList();
     }
 
     if (stateChanged) {
@@ -163,8 +158,7 @@ function updateIslandState(data) {
     dom.island.classList.remove('state-thinking', 'state-done', 'state-waiting');
 
     if (state.isExpanded) {
-      renderActiveSessionDetail();
-      renderAgentTabs();
+      renderAgentList();
     }
 
     if (stateChanged) {

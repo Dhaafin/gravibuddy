@@ -7,9 +7,8 @@ import {
   cancelDoneAutoDismiss 
 } from './state.js';
 import { triggerWateryMorph } from './effects.js';
-import { playPopSound } from './audio.js';
 import { updateIslandLabels } from './compact-view.js';
-import { renderActiveSessionDetail, renderAgentTabs } from './expanded-view.js';
+import { renderAgentList } from './expanded-view.js';
 
 export function wakeUpIsland(reason = 'interaction') {
   clearSleepTimer();
@@ -88,8 +87,7 @@ export function dismissDoneState() {
     triggerWateryMorph();
     updateIslandLabels({ state: 'idle' }, 'Antigravity');
     if (state.isExpanded) {
-      renderActiveSessionDetail();
-      renderAgentTabs();
+      renderAgentList();
     }
     scheduleSleep(600, true);
   }

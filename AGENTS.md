@@ -36,7 +36,7 @@ It renders an Apple-grade Dynamic Island attached directly to the top screen bez
 │       │   ├── audio.js         # Procedural Web Audio API synthesizer
 │       │   ├── effects.js       # Fluid watery morph & light sheen animations
 │       │   ├── compact-view.js  # Compact notch UI updates & orientation classes
-│       │   ├── expanded-view.js # Luxury expanded card UI & multi-agent tabs deck
+│       │   ├── expanded-view.js # Luxury expanded card UI & multi-agent stacked activity deck
 │       │   ├── lifecycle.js     # Sleep tab, wake logic & auto-dismiss countdown
 │       │   └── interaction.js   # Zero-padding click-through pass & event handlers
 │       ├── settings.html    # macOS / VisionOS Control Center modal
@@ -115,7 +115,7 @@ src/renderer/
     ├── audio.js        # Procedural Web Audio API synthesizer (sine chimes & bubble pops)
     ├── effects.js      # Fluid watery morph & specular light sheen triggers
     ├── compact-view.js # Compact notch UI (labels, radial quota gauge ring, state glyphs)
-    ├── expanded-view.js# Luxury expanded card (multi-agent tabs deck, session detail, sticky expand)
+    ├── expanded-view.js# Luxury expanded card (multi-agent activity deck, priority sorting, row focus)
     ├── lifecycle.js    # Sleep mode tab, deliberate wake triggers, & auto-dismiss countdown
     └── interaction.js  # Zero-padding click-through hit testing & event bindings
 ```

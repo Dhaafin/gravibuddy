@@ -27,15 +27,9 @@ export const dom = {
   btnMiniClose: document.getElementById('btnMiniClose'),
   countdownBar: document.getElementById('countdownBar'),
 
-  // Expanded View Luxury Card Elements
-  agentTabsDeck: document.getElementById('agentTabsDeck'),
-  expandedOrb: document.getElementById('expandedOrb'),
-  expandedAgentName: document.getElementById('expandedAgentName'),
-  expandedStatusBadge: document.getElementById('expandedStatusBadge'),
-  expandedModelPill: document.getElementById('expandedModelPill'),
-  expandedMessage: document.getElementById('expandedMessage'),
-  expandedToolRow: document.getElementById('expandedToolRow'),
-  expandedToolTag: document.getElementById('expandedToolTag'),
+  // Expanded View Activity Deck Elements
+  agentListDeck: document.getElementById('agentListDeck'),
+  headerCountBadge: document.getElementById('headerCountBadge'),
   expandedQuotaBadge: document.getElementById('expandedQuotaBadge'),
   btnExpandedSettings: document.getElementById('btnExpandedSettings'),
   btnHeaderRetract: document.getElementById('btnHeaderRetract'),
