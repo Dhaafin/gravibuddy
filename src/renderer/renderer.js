@@ -336,10 +336,13 @@ function expandToLuxuryCard() {
   if (!isExpanded) {
     isExpanded = true;
     island.classList.add('is-expanded');
+    try { localStorage.setItem('gravi_deck_expanded', 'true'); } catch (e) {}
     playPopSound('blossom');
   }
   if (btnExpandCard) {
     btnExpandCard.classList.remove('has-alert');
+    btnExpandCard.title = 'Collapse Deck';
+    btnExpandCard.innerHTML = `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>`;
   }
   renderAgentTabs();
   renderActiveSessionDetail();
@@ -351,18 +354,18 @@ function collapseToCompact(force = false) {
   if (isExpanded) {
     isExpanded = false;
     island.classList.remove('is-expanded');
+    try { localStorage.setItem('gravi_deck_expanded', 'false'); } catch (e) {}
     playPopSound('implode');
+  }
+  if (btnExpandCard) {
+    btnExpandCard.title = 'Expand Deck';
+    btnExpandCard.innerHTML = `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
   }
 }
 
-function scheduleRetraction(delay = 350) {
-  if (hasAnyWaitingSession()) return;
-  if (!isExpanded) return;
+function scheduleRetraction() {
+  // Retraction disabled: expand and collapse modes are sticky per user preference
   clearRetractTimer();
-  retractTimer = setTimeout(() => {
-    retractTimer = null;
-    collapseToCompact();
-  }, delay);
 }
 
 // ==========================================================
@@ -390,10 +393,10 @@ function wakeUpIsland(reason = 'interaction') {
 
 function enterSleepMode(force = false) {
   clearSleepTimer();
+  if (isExpanded) return; // Mode expand remains expanded continuously
   if (!sleepModeEnabled && !force) return;
   if (isSwitchingPosition) return;
   if (isInteractiveArea && !force) return; // Never sleep while user is hovering unless forced
-  if (isExpanded && !force) return; // Never sleep while luxury card is open unless forced
 
   if (!force) {
     if (currentState === 'waiting' || hasAnyWaitingSession()) return;
@@ -410,11 +413,11 @@ function enterSleepMode(force = false) {
 }
 
 function scheduleSleep(delay = 1400, force = false) {
+  if (isExpanded) return; // Mode expand remains expanded continuously
   if (!sleepModeEnabled && !force) return;
   if (isSwitchingPosition) return;
   if (island.classList.contains('is-sleeping')) return;
   if (!force && (currentState === 'waiting' || hasAnyWaitingSession() || currentState === 'done')) return;
-  if (isExpanded && !force) return;
 
   if (sleepTimer && !force) return;
 
@@ -448,7 +451,12 @@ function dismissDoneState() {
     island.classList.remove('state-done');
     triggerWateryMorph();
     updateIslandLabels({ state: 'idle' }, 'Antigravity');
-    scheduleSleep(600, true);
+    if (isExpanded) {
+      renderActiveSessionDetail();
+      renderAgentTabs();
+    } else {
+      scheduleSleep(600, true);
+    }
   }
 }
 
@@ -613,8 +621,10 @@ function checkInteractiveHit(e) {
       }
       api.setIgnoreMouseEvents(true, { forward: true });
 
-      // Trigger retraction with 350ms grace period if currently expanded (unless waiting)
-      scheduleRetraction(350);
+      // If currently expanded, maintain expanded mode continuously (sticky expand)
+      if (isExpanded) {
+        return;
+      }
 
       // Persistent open: never sleep if waiting!
       if (currentState === 'waiting' || hasAnyWaitingSession()) {
@@ -646,7 +656,8 @@ window.addEventListener('mouseleave', () => {
     isInteractiveArea = false;
     api.setIgnoreMouseEvents(true, { forward: true });
   }
-  scheduleRetraction(350);
+
+  if (isExpanded) return; // Mode expand remains expanded continuously
 
   if (currentState === 'waiting' || hasAnyWaitingSession()) return;
   if (currentState === 'done') {
@@ -669,7 +680,8 @@ window.addEventListener('blur', () => {
     isInteractiveArea = false;
     api.setIgnoreMouseEvents(true, { forward: true });
   }
-  scheduleRetraction(350);
+
+  if (isExpanded) return; // Mode expand remains expanded continuously
 
   if (currentState === 'waiting' || hasAnyWaitingSession()) return;
   if (currentState === 'done') {
@@ -807,10 +819,11 @@ function updateIslandState(data) {
     wakeUpIsland('alert');
     if (isExpanded) {
       renderActiveSessionDetail();
+      renderAgentTabs();
     }
     island.classList.remove('state-thinking', 'state-done');
     island.classList.add('state-waiting');
-    if (btnExpandCard) {
+    if (btnExpandCard && !isExpanded) {
       btnExpandCard.classList.add('has-alert');
     }
     triggerWateryMorph();
@@ -828,12 +841,15 @@ function updateIslandState(data) {
     wakeUpIsland('done');
     if (isExpanded) {
       renderActiveSessionDetail();
+      renderAgentTabs();
     }
     island.classList.remove('state-thinking', 'state-waiting');
     island.classList.add('state-done');
     triggerWateryMorph();
     playChime('success');
-    scheduleDoneAutoDismiss();
+    if (!isExpanded) {
+      scheduleDoneAutoDismiss();
+    }
   } else if (targetState === 'thinking') {
     if (btnExpandCard) {
       btnExpandCard.classList.remove('has-alert');
@@ -844,9 +860,14 @@ function updateIslandState(data) {
     island.classList.remove('state-done', 'state-waiting');
     island.classList.add('state-thinking');
 
+    if (isExpanded) {
+      renderActiveSessionDetail();
+      renderAgentTabs();
+    }
+
     if (stateChanged) {
       triggerWateryMorph();
-      if (stealthCodingEnabled) {
+      if (stealthCodingEnabled && !isExpanded) {
         if (thinkingPreviewEnabled) {
           // Peek on task start: Pop up for 2.5s, then automatically sleep
           wakeUpIsland('thinking-peek');
@@ -865,7 +886,7 @@ function updateIslandState(data) {
             enterSleepMode();
           }
         }
-      } else {
+      } else if (!isExpanded) {
         wakeUpIsland('thinking');
       }
     } else {
@@ -884,9 +905,16 @@ function updateIslandState(data) {
     thinkingPreviewTimer = null;
     island.classList.remove('state-thinking', 'state-done', 'state-waiting');
 
+    if (isExpanded) {
+      renderActiveSessionDetail();
+      renderAgentTabs();
+    }
+
     if (stateChanged) {
       triggerWateryMorph();
-      scheduleSleep(1200, true);
+      if (!isExpanded) {
+        scheduleSleep(1200, true);
+      }
     } else {
       // Periodic idle telemetry from terminal
       if (!island.classList.contains('is-sleeping') && !isInteractiveArea && !isExpanded) {
@@ -940,6 +968,16 @@ api.onInitialConfig((cfg) => {
     if (cfg.stealthMode !== undefined) stealthCodingEnabled = cfg.stealthMode;
     if (cfg.thinkingPreview !== undefined) thinkingPreviewEnabled = cfg.thinkingPreview;
     if (cfg.autoCloseDoneDuration !== undefined) autoCloseDoneDuration = cfg.autoCloseDoneDuration;
-    scheduleSleep(4000);
+    if (!isExpanded) {
+      scheduleSleep(4000);
+    }
   }
 });
+
+// Restore saved expanded/collapse mode preference
+try {
+  const savedExpanded = localStorage.getItem('gravi_deck_expanded') === 'true';
+  if (savedExpanded && currentPosition === 'center') {
+    expandToLuxuryCard();
+  }
+} catch (e) {}
