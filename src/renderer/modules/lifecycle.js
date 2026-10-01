@@ -19,7 +19,9 @@ export function wakeUpIsland(reason = 'interaction') {
   }
   if (dom.island && dom.island.classList.contains('is-sleeping')) {
     dom.island.classList.remove('is-sleeping');
-    triggerWateryMorph();
+    if (!state.isExpanded) {
+      triggerWateryMorph();
+    }
     playPopSound('blossom');
   }
 }
