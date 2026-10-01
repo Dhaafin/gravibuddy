@@ -241,6 +241,42 @@
   transform: scale(0.92);
 }
 
+.mini-close-btn {
+  opacity: 0.6;
+}
+
+.mini-close-btn:hover {
+  opacity: 1;
+  color: #ff453a;
+  background: rgba(255, 69, 58, 0.16);
+  border-color: rgba(255, 69, 58, 0.28);
+}
+
+.countdown-bar {
+  position: absolute;
+  bottom: 0px;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 2px;
+  width: 0px;
+  background: rgba(255, 255, 255, 0.42);
+  border-radius: 2px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 5;
+}
+
+.countdown-bar.active {
+  opacity: 1;
+  animation: countdownShrink var(--cd-duration, 2000ms) linear forwards;
+}
+
+@keyframes countdownShrink {
+  from { width: 120px; }
+  to { width: 0px; }
+}
+
 /* Sleep Mode: Hardware Tab */
 .island.is-sleeping {
   translate: 0 -34px;

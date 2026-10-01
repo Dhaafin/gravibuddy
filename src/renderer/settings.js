@@ -101,6 +101,31 @@ if (api && api.onPositionChanged) {
   });
 }
 
+// Auto-Dismiss Duration Control
+const durationBtns = [
+  document.getElementById('btnDuration0'),
+  document.getElementById('btnDuration3'),
+  document.getElementById('btnDuration5'),
+  document.getElementById('btnDuration10')
+];
+
+function setActiveDurationButton(dur) {
+  const durationNum = Number(dur);
+  durationBtns.forEach(btn => {
+    if (btn) btn.classList.toggle('active', Number(btn.dataset.duration) === durationNum);
+  });
+}
+
+durationBtns.forEach(btn => {
+  if (btn) {
+    btn.addEventListener('click', () => {
+      const duration = Number(btn.dataset.duration);
+      setActiveDurationButton(duration);
+      api.saveAutoCloseDoneConfig(duration);
+    });
+  }
+});
+
 // Sound Toggle
 if (btnToggleSound) {
   btnToggleSound.addEventListener('click', () => {
@@ -162,6 +187,9 @@ if (api && api.getInitialConfig) {
       if (cfg.thinkingPreview !== undefined && appleToggleThinkingPreview) {
         thinkingPreviewEnabled = cfg.thinkingPreview;
         appleToggleThinkingPreview.classList.toggle('active', thinkingPreviewEnabled);
+      }
+      if (cfg.autoCloseDoneDuration !== undefined) {
+        setActiveDurationButton(cfg.autoCloseDoneDuration);
       }
     }
   });

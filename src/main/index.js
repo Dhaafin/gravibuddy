@@ -11,7 +11,7 @@ const CONFIG_FILE = path.join(app.getPath('userData'), 'gravibuddy-config.json')
 const LEGACY_CONFIG_FILE = path.join(app.getPath('userData'), 'vibing-config.json');
 
 function loadConfig() {
-  let cfg = { position: 'center', sound: true, sleepMode: true, stealthMode: true, thinkingPreview: true };
+  let cfg = { position: 'center', sound: true, sleepMode: true, stealthMode: true, thinkingPreview: true, autoCloseDoneDuration: 5 };
   try {
     if (fs.existsSync(CONFIG_FILE)) {
       cfg = { ...cfg, ...JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8')) };
@@ -90,7 +90,7 @@ function createSettingsWindow() {
   const primaryDisplay = screen.getPrimaryDisplay();
   const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
   const width = 360;
-  const height = 390;
+  const height = 440;
 
   settingsWindow = new BrowserWindow({
     width,
@@ -344,6 +344,12 @@ ipcMain.on('save-thinking-preview-config', (event, previewEnabled) => {
   broadcastConfigChange();
 });
 
+ipcMain.on('save-auto-close-done-config', (event, duration) => {
+  userConfig.autoCloseDoneDuration = typeof duration === 'number' ? duration : 5;
+  saveConfig(userConfig);
+  broadcastConfigChange();
+});
+
 ipcMain.on('toggle-settings', () => {
   if (!settingsWindow || settingsWindow.isDestroyed()) {
     createSettingsWindow();
@@ -355,7 +361,7 @@ ipcMain.on('toggle-settings', () => {
     const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
     settingsWindow.setPosition(
       Math.round((screenWidth - 360) / 2),
-      Math.round((screenHeight - 390) / 2)
+      Math.round((screenHeight - 440) / 2)
     );
     settingsWindow.webContents.send('initial-config', {
       ...userConfig,

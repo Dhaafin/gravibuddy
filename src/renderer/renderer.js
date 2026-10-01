@@ -16,16 +16,21 @@ const vTooltipStatus = document.getElementById('vTooltipStatus');
 const vTooltipModel = document.getElementById('vTooltipModel');
 const vGlyphBtn = document.getElementById('vGlyphBtn');
 const btnSettings = document.getElementById('btnSettings');
+const btnMiniClose = document.getElementById('btnMiniClose');
+const countdownBar = document.getElementById('countdownBar');
 
 // State Variables
 let soundEnabled = true;
 let sleepModeEnabled = true;
 let stealthCodingEnabled = true; // Zen Mode: Stay tucked during thinking, emerge only on alerts/done
 let thinkingPreviewEnabled = true; // Peek on task start, then tuck into sleep
+let autoCloseDoneDuration = 5; // Seconds to auto-dismiss on done (0 = manual)
 let currentPosition = 'center'; // 'center' | 'left' | 'right'
 let currentState = 'idle';
 let sleepTimer = null;
 let thinkingPreviewTimer = null;
+let doneAutoDismissTimer = null;
+let doneCountdownStartTimer = null;
 let isSwitchingPosition = false;
 let isInteractiveArea = false;
 let wakeHoverTimer = null;
@@ -162,41 +167,104 @@ function wakeUpIsland(reason = 'interaction') {
   }
 }
 
-function enterSleepMode() {
+function enterSleepMode(force = false) {
   clearSleepTimer();
-  if (!sleepModeEnabled) return;
+  if (!sleepModeEnabled && !force) return;
   if (isSwitchingPosition) return;
-  if (isInteractiveArea) return; // Never sleep while user is hovering
+  if (isInteractiveArea && !force) return; // Never sleep while user is hovering unless forced
 
-  // In waiting or done states, keep visible so user sees the alert/result
-  if (currentState === 'waiting') return;
-  if (currentState === 'done') return;
-
-  // In thinking state: sleep only if stealth coding mode is enabled
-  if (currentState === 'thinking' && !stealthCodingEnabled) return;
+  if (!force) {
+    if (currentState === 'waiting') return;
+    if (currentState === 'done') return;
+    if (currentState === 'thinking' && !stealthCodingEnabled) return;
+  }
 
   island.classList.add('is-sleeping');
+  if (force) {
+    isInteractiveArea = false;
+    api.setIgnoreMouseEvents(true, { forward: true });
+  }
 }
 
 function scheduleSleep(delay = 1400, force = false) {
-  if (!sleepModeEnabled) return;
+  if (!sleepModeEnabled && !force) return;
   if (isSwitchingPosition) return;
-  if (island.classList.contains('is-sleeping')) return; // Already sleeping!
-  if (currentState === 'waiting' || currentState === 'done') return; // Persistent open until next action!
+  if (island.classList.contains('is-sleeping')) return;
+  if (!force && (currentState === 'waiting' || currentState === 'done')) return;
 
-  // If sleep timer is already actively counting down and not forced, let it finish!
   if (sleepTimer && !force) return;
 
   clearSleepTimer();
   sleepTimer = setTimeout(() => {
     sleepTimer = null;
-    enterSleepMode();
+    enterSleepMode(force);
   }, delay);
+}
+
+// Auto-Dismiss Helpers for Task Completion
+function cancelDoneAutoDismiss() {
+  if (doneAutoDismissTimer) {
+    clearTimeout(doneAutoDismissTimer);
+    doneAutoDismissTimer = null;
+  }
+  if (doneCountdownStartTimer) {
+    clearTimeout(doneCountdownStartTimer);
+    doneCountdownStartTimer = null;
+  }
+  if (countdownBar) {
+    countdownBar.classList.remove('active');
+    countdownBar.style.removeProperty('--cd-duration');
+  }
+}
+
+function dismissDoneState() {
+  cancelDoneAutoDismiss();
+  if (currentState === 'done') {
+    currentState = 'idle';
+    island.classList.remove('state-done');
+    triggerWateryMorph();
+    updateIslandLabels({ state: 'idle' }, 'Antigravity');
+    scheduleSleep(600, true);
+  }
+}
+
+function scheduleDoneAutoDismiss() {
+  cancelDoneAutoDismiss();
+  if (autoCloseDoneDuration <= 0) return; // 0 = manual dismissal only
+
+  const totalMs = autoCloseDoneDuration * 1000;
+  const countdownMs = Math.min(2000, totalMs);
+  const delayBeforeCountdown = Math.max(0, totalMs - countdownMs);
+
+  doneCountdownStartTimer = setTimeout(() => {
+    if (currentState === 'done' && countdownBar && !isInteractiveArea) {
+      countdownBar.style.setProperty('--cd-duration', `${countdownMs}ms`);
+      countdownBar.classList.add('active');
+    }
+  }, delayBeforeCountdown);
+
+  doneAutoDismissTimer = setTimeout(() => {
+    dismissDoneState();
+  }, totalMs);
+}
+
+// Mini Close / Retract button: Force immediate sleep without keyboard shortcut
+if (btnMiniClose) {
+  btnMiniClose.addEventListener('click', e => {
+    e.stopPropagation();
+    cancelDoneAutoDismiss();
+    if (currentState === 'done') {
+      currentState = 'idle';
+      island.classList.remove('state-done');
+      updateIslandLabels({ state: 'idle' }, 'Antigravity');
+    }
+    enterSleepMode(true);
+  });
 }
 
 // Click to wake immediately when sleeping or dismiss done state
 island.addEventListener('click', e => {
-  if (btnSettings.contains(e.target) || e.target.closest('button')) return;
+  if (btnSettings.contains(e.target) || (btnMiniClose && btnMiniClose.contains(e.target)) || e.target.closest('button')) return;
   if (island.classList.contains('is-sleeping')) {
     if (wakeHoverTimer) {
       clearTimeout(wakeHoverTimer);
@@ -206,12 +274,7 @@ island.addEventListener('click', e => {
     return;
   }
   if (currentState === 'done') {
-    // User acknowledged completed task: smoothly return to idle
-    currentState = 'idle';
-    island.classList.remove('state-done');
-    triggerWateryMorph();
-    updateIslandLabels({ state: 'idle' }, 'Antigravity');
-    scheduleSleep(1200, true);
+    dismissDoneState();
   }
 });
 
@@ -225,11 +288,15 @@ function checkInteractiveHit(e) {
   if (shouldBeInteractive !== isInteractiveArea) {
     isInteractiveArea = shouldBeInteractive;
     if (isInteractiveArea) {
-      // Mouse touched the island or settings card
+      // Mouse touched the island or controls
       api.setIgnoreMouseEvents(false);
 
+      // If in done state, pause countdown bar while user is reading/interacting
+      if (currentState === 'done') {
+        cancelDoneAutoDismiss();
+      }
+
       // If it was sleeping, check hover intent with debounce (160ms)
-      // This prevents rapid cursor flicks over browser tabs from accidentally popping open the notch!
       if (island.classList.contains('is-sleeping')) {
         if (wakeHoverTimer) clearTimeout(wakeHoverTimer);
         wakeHoverTimer = setTimeout(() => {
@@ -246,8 +313,13 @@ function checkInteractiveHit(e) {
       }
       api.setIgnoreMouseEvents(true, { forward: true });
 
-      // Persistent open: never sleep if waiting or done!
-      if (currentState === 'waiting' || currentState === 'done') {
+      // Persistent open: never sleep if waiting!
+      if (currentState === 'waiting') {
+        return;
+      }
+      // If done state, resume auto-dismiss countdown
+      if (currentState === 'done') {
+        scheduleDoneAutoDismiss();
         return;
       }
       // If in stealth coding mode and thinking: tuck back to sleep after short delay
@@ -271,7 +343,11 @@ window.addEventListener('mouseleave', () => {
     isInteractiveArea = false;
     api.setIgnoreMouseEvents(true, { forward: true });
   }
-  if (currentState === 'waiting' || currentState === 'done') return;
+  if (currentState === 'waiting') return;
+  if (currentState === 'done') {
+    scheduleDoneAutoDismiss();
+    return;
+  }
   if (currentState === 'thinking' && stealthCodingEnabled) {
     scheduleSleep(800, true);
   } else if (currentState === 'idle') {
@@ -288,7 +364,11 @@ window.addEventListener('blur', () => {
     isInteractiveArea = false;
     api.setIgnoreMouseEvents(true, { forward: true });
   }
-  if (currentState === 'waiting' || currentState === 'done') return;
+  if (currentState === 'waiting') return;
+  if (currentState === 'done') {
+    scheduleDoneAutoDismiss();
+    return;
+  }
   if (currentState === 'thinking' && stealthCodingEnabled) {
     enterSleepMode();
   } else if (currentState === 'idle') {
@@ -384,6 +464,7 @@ function updateIslandState(data) {
 
   if (targetState === 'waiting') {
     // 🚨 ACTION REQUIRED: Must bloom open immediately and STAY open until user proceeds!
+    cancelDoneAutoDismiss();
     clearTimeout(thinkingPreviewTimer);
     thinkingPreviewTimer = null;
     clearSleepTimer();
@@ -394,7 +475,8 @@ function updateIslandState(data) {
     triggerWateryMorph();
     playChime('alert');
   } else if (targetState === 'done') {
-    // 🌟 TASK COMPLETED: Bloom open and STAY open until user clicks or next command starts!
+    // 🌟 TASK COMPLETED: Bloom open and auto-retract according to user duration preference
+    cancelDoneAutoDismiss();
     clearTimeout(thinkingPreviewTimer);
     thinkingPreviewTimer = null;
     clearSleepTimer();
@@ -404,8 +486,10 @@ function updateIslandState(data) {
     island.classList.add('state-done');
     triggerWateryMorph();
     playChime('success');
+    scheduleDoneAutoDismiss();
   } else if (targetState === 'thinking') {
     // 🟣 CODING / THINKING:
+    cancelDoneAutoDismiss();
     clearSleepTimer();
     island.classList.remove('state-done', 'state-waiting');
     island.classList.add('state-thinking');
@@ -442,6 +526,7 @@ function updateIslandState(data) {
     }
   } else {
     // 🟢 NORMAL IDLE:
+    cancelDoneAutoDismiss();
     clearTimeout(thinkingPreviewTimer);
     thinkingPreviewTimer = null;
     island.classList.remove('state-thinking', 'state-done', 'state-waiting');
@@ -498,6 +583,7 @@ api.onInitialConfig((cfg) => {
     if (cfg.sleepMode !== undefined) sleepModeEnabled = cfg.sleepMode;
     if (cfg.stealthMode !== undefined) stealthCodingEnabled = cfg.stealthMode;
     if (cfg.thinkingPreview !== undefined) thinkingPreviewEnabled = cfg.thinkingPreview;
+    if (cfg.autoCloseDoneDuration !== undefined) autoCloseDoneDuration = cfg.autoCloseDoneDuration;
     scheduleSleep(4000);
   }
 });
