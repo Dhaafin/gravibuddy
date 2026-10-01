@@ -48,6 +48,12 @@ contextBridge.exposeInMainWorld('graviAPI', {
   closeSettings: () => {
     ipcRenderer.send('close-settings');
   },
+  focusAntigravity: () => {
+    ipcRenderer.send('focus-antigravity');
+  },
+  dismissSession: (sessionId) => {
+    ipcRenderer.send('dismiss-session', sessionId);
+  },
   quitApp: () => {
     ipcRenderer.send('quit-app');
   }

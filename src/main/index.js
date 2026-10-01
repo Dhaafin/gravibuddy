@@ -52,9 +52,9 @@ function getWindowBoundsForPosition(pos) {
     return { width, height, x, y, orientation: 'vertical-right' };
   }
 
-  // Default: Center Top Attached Hardware Notch (Flush with bezel, compact)
-  const width = 480;
-  const height = 75;
+  // Default: Center Top Attached Hardware Notch (Flush with bezel, accommodates 620x185 expanded card)
+  const width = 680;
+  const height = 240;
   const x = screenX + Math.round((screenWidth - width) / 2);
   const y = screenY; // 0px from physical top screen bezel!
   return { width, height, x, y, orientation: 'horizontal-center' };
@@ -225,6 +225,8 @@ function startServer() {
 }
 
 let watchdogTimer = null;
+const activeSessions = new Map();
+const STATE_PRIORITY = { waiting: 4, thinking: 3, done: 2, idle: 1 };
 
 function handleAgentEvent(payload) {
   if (!mainWindow || mainWindow.isDestroyed()) return;
@@ -253,17 +255,71 @@ function handleAgentEvent(payload) {
     projectName = path.basename(payload.workspacePaths[0]);
   }
 
+  const sessionId = payload.conversationId || projectName || 'default';
+  const modelName = extractModelName(payload.model);
+
+  const ctxUsed = payload.context_window?.used_percentage;
+  const contextPercent = typeof ctxUsed === 'number' ? Math.round(ctxUsed) : null;
+
+  let quotaFraction = payload.quota?.['gemini-5h']?.remaining_fraction ?? payload.quota?.['3p-5h']?.remaining_fraction;
+  const quotaPercent = typeof quotaFraction === 'number' ? Math.round(quotaFraction * 100) : null;
+
+  // Update or register session
+  activeSessions.set(sessionId, {
+    id: sessionId,
+    project: projectName || 'Antigravity',
+    state: state,
+    model: modelName,
+    message: payload.message || null,
+    toolName: payload.toolName || null,
+    quotaPercent,
+    contextPercent,
+    updatedAt: Date.now()
+  });
+
+  // Auto-expiry: Remove sessions that are idle/done and haven't updated for >5 minutes
+  const now = Date.now();
+  for (const [id, sess] of activeSessions.entries()) {
+    if ((sess.state === 'done' || sess.state === 'idle') && (now - sess.updatedAt > 300000)) {
+      activeSessions.delete(id);
+    }
+  }
+
+  // Priority Bubbling: waiting > thinking > done > idle
+  const sessionsList = Array.from(activeSessions.values());
+  sessionsList.sort((a, b) => {
+    const diff = (STATE_PRIORITY[b.state] || 1) - (STATE_PRIORITY[a.state] || 1);
+    if (diff !== 0) return diff;
+    return (b.updatedAt || 0) - (a.updatedAt || 0);
+  });
+
+  const heroSession = sessionsList[0] || {
+    id: sessionId,
+    project: projectName || 'Antigravity',
+    state,
+    model: modelName,
+    message: payload.message || null,
+    toolName: payload.toolName || null,
+    quotaPercent,
+    contextPercent
+  };
+
   // Safety watchdog to prevent ghost thinking states if connection drops abruptly
   if (state === 'thinking') {
     clearTimeout(watchdogTimer);
     watchdogTimer = setTimeout(() => {
       if (lastState === 'thinking') {
         lastState = 'idle';
+        if (activeSessions.has(sessionId)) {
+          activeSessions.get(sessionId).state = 'idle';
+        }
         mainWindow?.webContents?.send('agent-update', {
           state: 'idle',
-          model: extractModelName(payload.model),
+          model: modelName,
           project: projectName,
           quotaPercent: 95,
+          sessions: Array.from(activeSessions.values()),
+          heroId: sessionId,
           timestamp: Date.now()
         });
       }
@@ -273,26 +329,66 @@ function handleAgentEvent(payload) {
     watchdogTimer = null;
   }
 
-  const ctxUsed = payload.context_window?.used_percentage;
-  const contextPercent = typeof ctxUsed === 'number' ? Math.round(ctxUsed) : null;
-
-  let quotaFraction = payload.quota?.['gemini-5h']?.remaining_fraction ?? payload.quota?.['3p-5h']?.remaining_fraction;
-  const quotaPercent = typeof quotaFraction === 'number' ? Math.round(quotaFraction * 100) : null;
-
   const eventData = {
-    state,
-    project: projectName,
-    model: extractModelName(payload.model),
+    state: heroSession.state,
+    project: heroSession.project,
+    model: heroSession.model,
     plan: payload.plan_tier || 'Google AI Pro',
     cost: payload.cost?.total_usd ?? payload.cost ?? null,
-    contextPercent,
-    quotaPercent,
-    message: payload.message || null,
-    timestamp: Date.now()
+    contextPercent: heroSession.contextPercent,
+    quotaPercent: heroSession.quotaPercent,
+    message: heroSession.message,
+    toolName: heroSession.toolName,
+    timestamp: Date.now(),
+    sessions: sessionsList,
+    heroId: heroSession.id
   };
 
   mainWindow.webContents.send('agent-update', eventData);
 }
+
+ipcMain.on('focus-antigravity', () => {
+  try {
+    const { exec } = require('child_process');
+    const cmd = `powershell -NoProfile -Command "(Get-Process -Name 'Antigravity','Code','WindowsTerminal' -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowHandle -ne 0 } | Select-Object -First 1) | ForEach-Object { (New-Object -ComObject WScript.Shell).AppActivate($_.Id) }"`;
+    exec(cmd);
+  } catch (e) {}
+});
+
+ipcMain.on('dismiss-session', (event, sessionId) => {
+  if (sessionId && activeSessions.has(sessionId)) {
+    const sess = activeSessions.get(sessionId);
+    sess.state = 'idle';
+    sess.message = 'Acknowledged';
+    sess.updatedAt = Date.now();
+  } else if (!sessionId) {
+    for (const sess of activeSessions.values()) {
+      sess.state = 'idle';
+      sess.updatedAt = Date.now();
+    }
+  }
+  const sessionsList = Array.from(activeSessions.values());
+  sessionsList.sort((a, b) => {
+    const diff = (STATE_PRIORITY[b.state] || 1) - (STATE_PRIORITY[a.state] || 1);
+    if (diff !== 0) return diff;
+    return (b.updatedAt || 0) - (a.updatedAt || 0);
+  });
+  const heroSession = sessionsList[0];
+  if (heroSession && mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('agent-update', {
+      state: heroSession.state,
+      project: heroSession.project,
+      model: heroSession.model,
+      message: heroSession.message,
+      toolName: heroSession.toolName,
+      quotaPercent: heroSession.quotaPercent,
+      contextPercent: heroSession.contextPercent,
+      timestamp: Date.now(),
+      sessions: sessionsList,
+      heroId: heroSession.id
+    });
+  }
+});
 
 // IPC Handlers
 ipcMain.on('set-position', (event, pos) => {

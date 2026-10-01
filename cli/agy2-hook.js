@@ -51,15 +51,20 @@ process.stdin.on('end', () => {
   // Derive target agent state and descriptive message
   let state = 'thinking';
   let message = null;
+  let toolName = null;
+
+  const lastStep = inspectLastPlannerStep(payload.transcriptPath);
+  if (lastStep?.tool_calls && lastStep.tool_calls.length > 0) {
+    toolName = lastStep.tool_calls[0].name;
+  }
 
   if (eventType === 'stop') {
     // 1. Check if background tasks/commands are still actively executing
     if (payload.fullyIdle === false) {
       state = 'thinking';
-      message = 'Running in background...';
+      message = toolName ? `Executing ${toolName}...` : 'Running in background...';
     } else {
       // 2. Check if the turn stopped because the agent asked a question
-      const lastStep = inspectLastPlannerStep(payload.transcriptPath);
       const questionTool = lastStep?.tool_calls?.find(t => t.name === 'ask_question');
 
       if (questionTool) {
@@ -77,7 +82,7 @@ process.stdin.on('end', () => {
     }
   } else if (eventType === 'pre-invocation') {
     state = 'thinking';
-    message = 'Thinking & reasoning...';
+    message = toolName ? `Running ${toolName}...` : 'Thinking & reasoning...';
   }
 
   // Extract project name from workspacePaths if available
@@ -93,6 +98,7 @@ process.stdin.on('end', () => {
     model: payload.modelName || 'Gemini',
     project: projectName,
     message: message,
+    toolName: toolName,
     timestamp: Date.now()
   });
 
