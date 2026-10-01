@@ -54,11 +54,6 @@ export function checkInteractiveHit(e, api) {
       }
       api.setIgnoreMouseEvents(true, { forward: true });
 
-      // If currently expanded, maintain expanded mode continuously (sticky expand)
-      if (state.isExpanded) {
-        return;
-      }
-
       // Persistent open: never sleep if waiting!
       if (state.currentState === 'waiting' || hasAnyWaitingSession()) {
         return;
@@ -99,8 +94,6 @@ export function setupInteractions(api) {
       api.setIgnoreMouseEvents(true, { forward: true });
     }
 
-    if (state.isExpanded) return;
-
     if (state.currentState === 'waiting' || hasAnyWaitingSession()) return;
     if (state.currentState === 'done') {
       scheduleDoneAutoDismiss();
@@ -124,8 +117,6 @@ export function setupInteractions(api) {
       api.setIgnoreMouseEvents(true, { forward: true });
     }
 
-    if (state.isExpanded) return;
-
     if (state.currentState === 'waiting' || hasAnyWaitingSession()) return;
     if (state.currentState === 'done') {
       scheduleDoneAutoDismiss();
@@ -138,12 +129,11 @@ export function setupInteractions(api) {
     }
   });
 
-  // Mini Close / Retract button
+  // Mini Close / Retract button in compact mode
   if (dom.btnMiniClose) {
     dom.btnMiniClose.addEventListener('click', e => {
       e.stopPropagation();
       cancelDoneAutoDismiss(dom.countdownBar);
-      collapseToCompact(true);
       if (state.currentState === 'done') {
         state.currentState = 'idle';
         if (dom.island) dom.island.classList.remove('state-done');
@@ -170,6 +160,7 @@ export function setupInteractions(api) {
     });
   }
 
+  // Collapse back to compact mode
   if (dom.btnRetractExpanded) {
     dom.btnRetractExpanded.addEventListener('click', e => {
       e.stopPropagation();
@@ -177,10 +168,12 @@ export function setupInteractions(api) {
     });
   }
 
+  // Header "X" button minimizes into the bezel sleep tab
   if (dom.btnHeaderRetract) {
+    dom.btnHeaderRetract.title = 'Minimize';
     dom.btnHeaderRetract.addEventListener('click', e => {
       e.stopPropagation();
-      collapseToCompact(true);
+      enterSleepMode(true);
     });
   }
 

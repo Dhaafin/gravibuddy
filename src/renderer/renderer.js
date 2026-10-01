@@ -106,9 +106,7 @@ function updateIslandState(data) {
     dom.island.classList.add('state-done');
     triggerWateryMorph();
     playChime('success');
-    if (!state.isExpanded) {
-      scheduleDoneAutoDismiss();
-    }
+    scheduleDoneAutoDismiss();
   } else if (targetState === 'thinking') {
     if (dom.btnExpandCard) {
       dom.btnExpandCard.classList.remove('has-alert');
@@ -126,14 +124,14 @@ function updateIslandState(data) {
 
     if (stateChanged) {
       triggerWateryMorph();
-      if (state.stealthCodingEnabled && !state.isExpanded) {
+      if (state.stealthCodingEnabled) {
         if (state.thinkingPreviewEnabled) {
           // Peek on task start: Pop up for 2.5s, then automatically sleep
           wakeUpIsland('thinking-peek');
           clearTimeout(state.thinkingPreviewTimer);
           state.thinkingPreviewTimer = setTimeout(() => {
             state.thinkingPreviewTimer = null;
-            if (state.currentState === 'thinking' && !state.isInteractiveArea && !state.isExpanded) {
+            if (state.currentState === 'thinking' && !state.isInteractiveArea) {
               enterSleepMode();
             }
           }, 2500);
@@ -141,16 +139,16 @@ function updateIslandState(data) {
           // Immediate stealth: Stay tucked without popping up
           clearTimeout(state.thinkingPreviewTimer);
           state.thinkingPreviewTimer = null;
-          if (!state.isInteractiveArea && !state.isExpanded) {
+          if (!state.isInteractiveArea) {
             enterSleepMode();
           }
         }
-      } else if (!state.isExpanded) {
+      } else {
         wakeUpIsland('thinking');
       }
     } else {
       // Periodic update while still thinking: keep asleep if stealth mode active
-      if (state.stealthCodingEnabled && !state.thinkingPreviewTimer && !state.isInteractiveArea && !state.isExpanded) {
+      if (state.stealthCodingEnabled && !state.thinkingPreviewTimer && !state.isInteractiveArea) {
         enterSleepMode();
       }
     }
@@ -171,12 +169,10 @@ function updateIslandState(data) {
 
     if (stateChanged) {
       triggerWateryMorph();
-      if (!state.isExpanded) {
-        scheduleSleep(1200, true);
-      }
+      scheduleSleep(1200, true);
     } else {
       // Periodic idle telemetry from terminal
-      if (!dom.island.classList.contains('is-sleeping') && !state.isInteractiveArea && !state.isExpanded) {
+      if (!dom.island.classList.contains('is-sleeping') && !state.isInteractiveArea) {
         scheduleSleep(1400, false);
       }
     }
@@ -219,9 +215,7 @@ api.onInitialConfig((cfg) => {
     if (cfg.stealthMode !== undefined) state.stealthCodingEnabled = cfg.stealthMode;
     if (cfg.thinkingPreview !== undefined) state.thinkingPreviewEnabled = cfg.thinkingPreview;
     if (cfg.autoCloseDoneDuration !== undefined) state.autoCloseDoneDuration = cfg.autoCloseDoneDuration;
-    if (!state.isExpanded) {
-      scheduleSleep(4000);
-    }
+    scheduleSleep(4000);
   }
 });
 
