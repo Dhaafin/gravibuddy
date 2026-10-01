@@ -233,11 +233,13 @@ function handleAgentEvent(payload) {
   const isWaitingConfirmation = payload.tool_confirmation_pending === true;
   let state = 'idle';
 
-  if (isWaitingConfirmation || rawState.includes('wait') || rawState.includes('auth')) {
+  if (isWaitingConfirmation || rawState.includes('wait') || rawState.includes('auth') || rawState.includes('question')) {
     state = 'waiting';
   } else if (rawState.includes('think') || rawState.includes('work') || rawState.includes('run') || rawState.includes('coding') || rawState === 'tool_use') {
     state = 'thinking';
-  } else if (rawState === 'done' || (rawState === 'idle' && lastState === 'thinking')) {
+  } else if (rawState === 'done') {
+    state = 'done';
+  } else if (rawState === 'idle' && payload.source !== 'antigravity-2.0' && lastState === 'thinking') {
     state = 'done';
   } else {
     state = 'idle';

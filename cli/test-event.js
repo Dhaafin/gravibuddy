@@ -29,6 +29,10 @@ if (action === 'thinking') {
   sendEvent({ agent_state: 'waiting_for_input', tool_confirmation_pending: true, model: { display_name: 'Gemini 3.8 Flash (High)' }, message: 'Bash command requires confirmation' });
 } else if (action === 'agy2') {
   sendEvent({ source: 'antigravity-2.0', state: 'thinking', model: 'Gemini 3.8 Flash (High)', project: 'gravibuddy', message: 'Analyzing codebase with Antigravity 2.0' });
+} else if (action === 'agy2-bg') {
+  sendEvent({ source: 'antigravity-2.0', state: 'thinking', model: 'Gemini 3.8 Flash (High)', project: 'gravibuddy', message: 'Running npm test in background...' });
+} else if (action === 'agy2-question') {
+  sendEvent({ source: 'antigravity-2.0', state: 'waiting', model: 'Gemini 3.8 Flash (High)', project: 'gravibuddy', message: 'Mending kita ke Tauri in juga atau ngga?' });
 } else if (action === 'agy2-done') {
   sendEvent({ source: 'antigravity-2.0', state: 'done', model: 'Gemini 3.8 Flash (High)', project: 'gravibuddy', message: 'Turn complete' });
 } else {

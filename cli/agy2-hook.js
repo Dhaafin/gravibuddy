@@ -1,5 +1,6 @@
 const http = require('http');
 const path = require('path');
+const fs = require('fs');
 
 const eventType = process.argv[2] || 'pre-invocation';
 let inputData = '';
@@ -8,6 +9,31 @@ process.stdin.setEncoding('utf8');
 process.stdin.on('data', chunk => {
   inputData += chunk;
 });
+
+function inspectLastPlannerStep(transcriptPath) {
+  if (!transcriptPath || typeof transcriptPath !== 'string') return null;
+  try {
+    if (!fs.existsSync(transcriptPath)) return null;
+    const stat = fs.statSync(transcriptPath);
+    if (!stat || stat.size === 0) return null;
+    const bufSize = Math.min(stat.size, 8192);
+    const fd = fs.openSync(transcriptPath, 'r');
+    const buf = Buffer.alloc(bufSize);
+    fs.readSync(fd, buf, 0, bufSize, stat.size - bufSize);
+    fs.closeSync(fd);
+
+    const lines = buf.toString('utf8').trim().split('\n').filter(Boolean);
+    for (let i = lines.length - 1; i >= 0; i--) {
+      try {
+        const entry = JSON.parse(lines[i]);
+        if (entry.type === 'PLANNER_RESPONSE') {
+          return entry;
+        }
+      } catch (e) {}
+    }
+  } catch (e) {}
+  return null;
+}
 
 process.stdin.on('end', () => {
   // Always immediately output valid JSON to stdout so Antigravity 2.0 never blocks or waits
@@ -22,12 +48,36 @@ process.stdin.on('end', () => {
     payload = {};
   }
 
-  // Derive target agent state
+  // Derive target agent state and descriptive message
   let state = 'thinking';
+  let message = null;
+
   if (eventType === 'stop') {
-    state = 'done';
+    // 1. Check if background tasks/commands are still actively executing
+    if (payload.fullyIdle === false) {
+      state = 'thinking';
+      message = 'Running in background...';
+    } else {
+      // 2. Check if the turn stopped because the agent asked a question
+      const lastStep = inspectLastPlannerStep(payload.transcriptPath);
+      const questionTool = lastStep?.tool_calls?.find(t => t.name === 'ask_question');
+
+      if (questionTool) {
+        state = 'waiting';
+        const qList = questionTool.args?.questions;
+        message = Array.isArray(qList) && qList[0]?.question ? qList[0].question : 'Question from Antigravity';
+      } else if (payload.terminationReason === 'error') {
+        state = 'waiting';
+        message = payload.error || 'Execution stopped with error';
+      } else {
+        // Genuinely completed turn
+        state = 'done';
+        message = 'Task completed';
+      }
+    }
   } else if (eventType === 'pre-invocation') {
     state = 'thinking';
+    message = 'Thinking & reasoning...';
   }
 
   // Extract project name from workspacePaths if available
@@ -42,6 +92,7 @@ process.stdin.on('end', () => {
     state: state,
     model: payload.modelName || 'Gemini',
     project: projectName,
+    message: message,
     timestamp: Date.now()
   });
 
