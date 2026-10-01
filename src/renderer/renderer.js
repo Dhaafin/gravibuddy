@@ -83,8 +83,10 @@ function updateIslandState(data) {
     if (dom.btnExpandCard && !state.isExpanded) {
       dom.btnExpandCard.classList.add('has-alert');
     }
-    triggerWateryMorph();
-    playChime('alert');
+    if (stateChanged || previousState !== 'waiting') {
+      triggerWateryMorph();
+      playChime('alert');
+    }
   } else if (targetState === 'done') {
     clearWaitingNudgeTimers();
     // 🌟 TASK COMPLETED: Ambient green chime and countdown
@@ -102,9 +104,11 @@ function updateIslandState(data) {
     }
     dom.island.classList.remove('state-thinking', 'state-waiting');
     dom.island.classList.add('state-done');
-    triggerWateryMorph();
-    playChime('success');
-    scheduleDoneAutoDismiss();
+    if (stateChanged || data.completionTriggered) {
+      triggerWateryMorph();
+      playChime('success');
+      scheduleDoneAutoDismiss();
+    }
   } else if (targetState === 'thinking') {
     clearWaitingNudgeTimers();
     if (dom.btnExpandCard) {

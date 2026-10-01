@@ -127,6 +127,9 @@ export function setupInteractions(api) {
       scheduleDoneAutoDismiss();
       return;
     }
+    if (state.currentState === 'waiting' || hasAnyWaitingSession()) {
+      return;
+    }
 
     // Instant minimize into the sleep tab for maximum lock-in focus
     enterSleepMode(true);
