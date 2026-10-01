@@ -1,56 +1,52 @@
-/* Liquid Sheen */
+/* Liquid Sheen (Confined inside capsule bounds) */
 .island::after {
   content: '';
   position: absolute;
   top: 0;
-  left: -120%;
-  width: 50%;
+  left: 4%;
+  width: 36%;
   height: 100%;
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.13) 50%,
+    rgba(255, 255, 255, 0.09) 50%,
     transparent 100%
   );
   border-radius: inherit;
   pointer-events: none;
-  transform: skewX(-25deg);
+  transform: skewX(-20deg);
   opacity: 0;
 }
 
 .island.sheen-active::after {
-  animation: liquidSheen 0.72s ease-out forwards;
+  animation: liquidSheen 0.54s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @keyframes liquidSheen {
-  0% { left: -60%; opacity: 0; }
-  35% { opacity: 1; }
-  100% { left: 160%; opacity: 0; }
+  0%   { left: 4%; opacity: 0; }
+  35%  { opacity: 1; }
+  100% { left: 58%; opacity: 0; }
 }
 
-/* Watery Jelly Morph */
+/* Liquid Surface-Tension Swell */
 .island.watery-morph {
-  animation: wateryJellyHorizontal 0.62s cubic-bezier(0.19, 1.45, 0.26, 1) forwards;
+  animation: wateryJellyHorizontal 0.48s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @keyframes wateryJellyHorizontal {
-  0%   { scale: 1 1; }
-  24%  { scale: 1.07 0.93; }
-  52%  { scale: 0.97 1.03; }
-  76%  { scale: 1.018 0.99; }
+  0%   { scale: 0.96 0.94; }
+  46%  { scale: 1.024 1.012; }
   100% { scale: 1 1; }
 }
 
 .island-root.vertical-left .island.watery-morph,
 .island-root.vertical-right .island.watery-morph {
-  animation: wateryJellyVertical 0.62s cubic-bezier(0.19, 1.45, 0.26, 1) forwards;
+  animation: wateryJellyVertical 0.48s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @keyframes wateryJellyVertical {
-  0%   { scale: 1 1; }
-  24%  { scale: 0.93 1.07; }
-  52%  { scale: 1.03 0.97; }
-  76%  { scale: 0.99 1.018; }
+  0%   { scale: 0.94 0.96; }
+  46%  { scale: 1.012 1.024; }
   100% { scale: 1 1; }
 }
 

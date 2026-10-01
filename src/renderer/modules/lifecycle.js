@@ -49,26 +49,8 @@ export function wakeUpIsland(reason = 'interaction') {
   }
 
   if (dom.island && dom.island.classList.contains('is-sleeping')) {
-    if (state.isExpanded) {
-      // Snap to 620px behind the top bezel without horizontal transition
-      dom.island.classList.add('slide-prep');
-      dom.island.classList.remove('is-sleeping');
-      void dom.island.offsetHeight; // Force reflow at -185px
-
-      // Animate: Drop down with micro-elastic magnetic settle
-      requestAnimationFrame(() => {
-        if (dom.island) {
-          dom.island.classList.remove('slide-prep');
-          dom.island.classList.add('dropping-down');
-          setTimeout(() => {
-            if (dom.island) dom.island.classList.remove('dropping-down');
-          }, 320);
-        }
-      });
-    } else {
-      dom.island.classList.remove('is-sleeping');
-      triggerWateryMorph();
-    }
+    dom.island.classList.remove('is-sleeping');
+    triggerWateryMorph();
     playPopSound('blossom');
   }
 }
@@ -86,7 +68,6 @@ export function enterSleepMode(force = false) {
   }
 
   if (dom.island) {
-    dom.island.classList.remove('dropping-down', 'slide-prep');
     dom.island.classList.add('is-sleeping');
   }
   if (force) {

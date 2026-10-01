@@ -10,10 +10,18 @@
   align-items: center;
   width: 50px;
   min-width: 50px;
+  max-width: 50px;
   height: 168px;
   min-height: 168px;
+  max-height: 168px;
   padding: 6px 4px;
   gap: 6px;
+}
+
+.island-root.vertical-left .compact-view,
+.island-root.vertical-right .compact-view {
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 /* Left Dock */
@@ -83,8 +91,10 @@
   translate: -44px 0;
   width: 50px;
   min-width: 50px;
+  max-width: 50px;
   height: 96px;
   min-height: 96px;
+  max-height: 96px;
   border-radius: 0 10px 10px 0 !important;
   cursor: pointer;
   box-shadow: 
@@ -111,8 +121,10 @@
   translate: 44px 0;
   width: 50px;
   min-width: 50px;
+  max-width: 50px;
   height: 96px;
   min-height: 96px;
+  max-height: 96px;
   border-radius: 10px 0 0 10px !important;
   cursor: pointer;
   box-shadow: 

@@ -196,14 +196,18 @@ export function cycleNextSession() {
 export function expandToLuxuryCard() {
   if (state.currentPosition !== 'center') return;
   clearRetractTimer();
-  if (dom.island && dom.island.classList.contains('is-sleeping')) {
+  const wasSleeping = dom.island && dom.island.classList.contains('is-sleeping');
+  if (wasSleeping) {
     wakeUpIsland('expand');
   }
   if (!state.isExpanded) {
     state.isExpanded = true;
     if (dom.island) dom.island.classList.add('is-expanded');
     try { localStorage.setItem('gravi_deck_expanded', 'true'); } catch (e) {}
-    playPopSound('blossom');
+    if (!wasSleeping) {
+      triggerWateryMorph();
+      playPopSound('blossom');
+    }
   }
   if (dom.btnExpandCard) {
     dom.btnExpandCard.classList.remove('has-alert');
@@ -220,6 +224,7 @@ export function collapseToCompact(force = false) {
     state.isExpanded = false;
     if (dom.island) dom.island.classList.remove('is-expanded');
     try { localStorage.setItem('gravi_deck_expanded', 'false'); } catch (e) {}
+    triggerWateryMorph();
     playPopSound('implode');
   }
   if (dom.btnExpandCard) {

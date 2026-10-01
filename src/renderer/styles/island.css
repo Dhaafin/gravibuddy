@@ -9,6 +9,8 @@
 }
 
 .island {
+  --liquid-spring: cubic-bezier(0.22, 1.2, 0.32, 1);
+  --liquid-retract: cubic-bezier(0.32, 0.94, 0.42, 1);
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -16,8 +18,13 @@
   border-radius: 0 0 20px 20px;
   border-top: none;
   padding: 4px 14px 6px 12px;
-  min-width: 300px;
+  width: 360px;
+  min-width: 360px;
+  max-width: 360px;
   height: 40px;
+  min-height: 40px;
+  max-height: 40px;
+  box-sizing: border-box;
   position: relative;
   cursor: default;
   margin-top: 0;
@@ -29,20 +36,22 @@
   translate: 0 0;
   scale: 1 1;
   transform-origin: center top;
-  will-change: translate, width, height, border-radius;
+  will-change: translate, scale, width, height, border-radius;
   backface-visibility: hidden;
   transform: translateZ(0);
   transition: 
-    translate 0.36s cubic-bezier(0.16, 1, 0.3, 1),
-    scale 0.36s cubic-bezier(0.16, 1, 0.3, 1),
-    width 0.36s cubic-bezier(0.16, 1, 0.3, 1),
-    min-width 0.36s cubic-bezier(0.16, 1, 0.3, 1),
-    height 0.36s cubic-bezier(0.16, 1, 0.3, 1),
-    min-height 0.36s cubic-bezier(0.16, 1, 0.3, 1),
-    border-radius 0.3s ease,
-    padding 0.3s ease,
-    box-shadow 0.36s ease,
-    opacity 0.22s ease;
+    translate 0.48s var(--liquid-spring),
+    scale 0.48s var(--liquid-spring),
+    width 0.48s var(--liquid-spring),
+    min-width 0.48s var(--liquid-spring),
+    max-width 0.48s var(--liquid-spring),
+    height 0.48s var(--liquid-spring),
+    min-height 0.48s var(--liquid-spring),
+    max-height 0.48s var(--liquid-spring),
+    border-radius 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+    padding 0.42s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.44s ease,
+    opacity 0.25s ease;
 }
 
 /* Compact View (Notch Kecil) */
@@ -53,22 +62,26 @@
   width: 100%;
   height: 100%;
   opacity: 1;
-  transform: scale(1);
-  transition: opacity 0.18s ease, transform 0.2s ease;
+  transform: translateY(0) scale(1);
+  filter: blur(0px);
+  transform-origin: center top;
+  will-change: opacity, transform, filter;
+  transition: 
+    opacity 0.26s ease-out 0.05s,
+    transform 0.44s var(--liquid-spring) 0.02s,
+    filter 0.26s ease-out 0.04s;
 }
 
-.island.is-expanded .compact-view {
-  opacity: 0;
-  transform: scale(0.96);
-  pointer-events: none;
-  position: absolute;
-  visibility: hidden;
-}
-
+.island.is-expanded .compact-view,
 .island.is-sleeping .compact-view {
   opacity: 0;
+  transform: translateY(-6px) scale(0.9);
+  filter: blur(6px);
   pointer-events: none;
-  transition: opacity 0.18s ease;
+  transition: 
+    opacity 0.15s ease-out,
+    transform 0.26s cubic-bezier(0.32, 0, 0.67, 0),
+    filter 0.15s ease-out;
 }
 
 .notch-ear {
@@ -80,7 +93,7 @@
   z-index: 1;
   background-repeat: no-repeat;
   background-size: 100% 100%;
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition: opacity 0.35s ease, transform 0.44s var(--liquid-spring);
 }
 
 .notch-ear-left {
@@ -346,14 +359,15 @@
 .island.is-sleeping,
 .island.is-expanded.is-sleeping {
   translate: 0 -34px;
-  min-width: 108px;
-  width: 108px;
-  max-width: 108px;
+  min-width: 112px;
+  width: 112px;
+  max-width: 112px;
   height: 40px;
   min-height: 40px;
   max-height: 40px;
+  scale: 0.96 0.92;
   padding: 0 8px;
-  border-radius: 0 0 10px 10px;
+  border-radius: 0 0 11px 11px;
   cursor: pointer;
   flex-direction: row;
   align-items: center;
@@ -363,14 +377,17 @@
     inset 0 -1.5px 1px 0 rgba(48, 209, 88, 0.5),
     0 4px 14px rgba(48, 209, 88, 0.22);
   transition: 
-    translate 0.26s cubic-bezier(0.3, 0, 0.2, 1),
-    width 0.26s cubic-bezier(0.3, 0, 0.2, 1),
-    min-width 0.26s cubic-bezier(0.3, 0, 0.2, 1),
-    height 0.26s cubic-bezier(0.3, 0, 0.2, 1),
-    min-height 0.26s cubic-bezier(0.3, 0, 0.2, 1),
-    border-radius 0.24s ease,
-    padding 0.24s ease,
-    box-shadow 0.26s ease;
+    translate 0.38s var(--liquid-retract),
+    scale 0.38s var(--liquid-retract),
+    width 0.38s var(--liquid-retract),
+    min-width 0.38s var(--liquid-retract),
+    max-width 0.38s var(--liquid-retract),
+    height 0.38s var(--liquid-retract),
+    min-height 0.38s var(--liquid-retract),
+    max-height 0.38s var(--liquid-retract),
+    border-radius 0.34s ease,
+    padding 0.34s ease,
+    box-shadow 0.36s ease;
 }
 
 .island.is-sleeping .notch-ear,
@@ -382,12 +399,9 @@
 .island.is-sleeping .island-content,
 .island.is-sleeping .trailing-accessory,
 .island.is-sleeping .vertical-stack,
-.island.is-sleeping .leading-accessory,
-.island.is-sleeping .expanded-view,
-.island.is-expanded.is-sleeping .expanded-view {
+.island.is-sleeping .leading-accessory {
   opacity: 0;
   pointer-events: none;
-  visibility: hidden;
   transition: opacity 0.14s ease-out;
 }
 
@@ -418,75 +432,66 @@
   animation: sleepBreathing 3.2s infinite ease-in-out;
 }
 
-/* Micro-Elastic Magnetic Settle Choreography */
-@keyframes dropAndSettle {
-  0% {
-    translate: 0 -185px;
-  }
-  76% {
-    translate: 0 2.5px;
-  }
-  100% {
-    translate: 0 0px;
-  }
-}
-
-.island.slide-prep {
-  translate: 0 -185px !important;
-  transition: none !important;
-}
-
-.island.dropping-down {
-  animation: dropAndSettle 0.30s cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
-}
-
 /* ==========================================================
-   Expanded View (Notch Gede ~620x185 Luxury Card)
+   Expanded View (Notch Gede ~620x195 Luxury Card)
    ========================================================== */
 .expanded-view {
+  position: absolute;
+  inset: 0;
+  padding: 10px 16px;
+  box-sizing: border-box;
+  overflow: hidden;
+  border-radius: inherit;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  width: 100%;
-  min-width: 588px;
-  height: 100%;
-  box-sizing: border-box;
+  align-items: center;
   opacity: 0;
   pointer-events: none;
-  position: absolute;
-  visibility: hidden;
-  will-change: opacity;
-  transition: opacity 0.2s ease-out;
+  transform: translateY(-12px) scale(0.92);
+  filter: blur(8px);
+  transform-origin: center top;
+  will-change: opacity, transform, filter;
+  transition: 
+    opacity 0.16s ease-out,
+    transform 0.3s cubic-bezier(0.32, 0, 0.67, 0),
+    filter 0.16s ease-out;
+}
+
+.expanded-header,
+.agent-list-deck,
+.expanded-footer {
+  width: 588px;
+  max-width: 100%;
 }
 
 .island.is-expanded:not(.is-sleeping) .expanded-view {
   opacity: 1;
   pointer-events: auto;
-  position: relative;
-  visibility: visible;
-  transition: opacity 0.22s ease-out 0.04s;
+  transform: translateY(0) scale(1);
+  filter: blur(0px);
+  transition: 
+    opacity 0.28s ease-out 0.05s,
+    transform 0.48s var(--liquid-spring) 0.02s,
+    filter 0.28s ease-out 0.04s;
 }
 
 /* Expanded State for Attached Notch Capsule */
 .island.is-expanded:not(.is-sleeping) {
   width: 620px;
   min-width: 620px;
+  max-width: 620px;
   height: 195px;
   min-height: 195px;
+  max-height: 195px;
   border-radius: 0 0 28px 28px;
-  padding: 10px 16px 10px 16px;
-  flex-direction: column;
-  align-items: stretch;
+  padding: 10px 16px;
+  scale: 1 1;
+  translate: 0 0;
   box-shadow: 
     0 24px 64px -8px rgba(0, 0, 0, 0.96),
     0 8px 24px rgba(0, 0, 0, 0.7),
     inset 0 -1px 0.6px 0 rgba(255, 255, 255, 0.22);
-  transition: 
-    translate 0.28s cubic-bezier(0.25, 1, 0.5, 1),
-    border-radius 0.28s ease,
-    padding 0.28s ease,
-    box-shadow 0.28s ease,
-    opacity 0.2s ease;
 }
 
 /* Header Bar (36px) */
