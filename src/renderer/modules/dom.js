@@ -28,6 +28,7 @@ export const dom = {
   countdownBar: document.getElementById('countdownBar'),
 
   // Expanded View Activity Deck Elements
+  headerStatusOrb: document.getElementById('headerStatusOrb'),
   agentListDeck: document.getElementById('agentListDeck'),
   headerCountBadge: document.getElementById('headerCountBadge'),
   expandedQuotaBadge: document.getElementById('expandedQuotaBadge'),

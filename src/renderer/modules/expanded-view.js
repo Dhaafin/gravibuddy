@@ -42,6 +42,30 @@ export function renderAgentList() {
     dom.headerCountBadge.textContent = count === 1 ? '1 AGENT' : `${count} AGENTS`;
   }
 
+  // Representative Header Status Orb:
+  // - If any agent is waiting -> AMBER (Action required)
+  // - Else if any agent is free / ready (idle or done) -> GREEN
+  // - Else if all active agents are thinking -> PURPLE
+  if (dom.headerStatusOrb) {
+    dom.headerStatusOrb.className = 'header-status-orb';
+    const hasWaiting = sessions.some(s => s.state === 'waiting');
+    const hasFree = sessions.some(s => s.state === 'idle' || s.state === 'done');
+    const allBusy = count > 0 && sessions.every(s => s.state === 'thinking');
+
+    if (hasWaiting) {
+      dom.headerStatusOrb.classList.add('orb-waiting');
+      dom.headerStatusOrb.title = 'Action required on an agent';
+    } else if (hasFree || count === 0) {
+      dom.headerStatusOrb.classList.add('orb-ready');
+      dom.headerStatusOrb.title = 'Agents available / ready';
+    } else if (allBusy) {
+      dom.headerStatusOrb.classList.add('orb-thinking');
+      dom.headerStatusOrb.title = 'All agents currently busy';
+    } else {
+      dom.headerStatusOrb.classList.add('orb-ready');
+    }
+  }
+
   // Header quota badge from active session or first session
   if (dom.expandedQuotaBadge) {
     const active = getActiveSession() || sessions[0];
@@ -75,14 +99,15 @@ export function renderAgentList() {
     row.dataset.id = sess.id;
     row.title = `Click to focus Antigravity (${sess.project || 'Agent'})`;
 
-    // 1. Leading Dot
+    // 1. Leading Dot (Green if free/idle/done, Purple if thinking, Amber if waiting)
     const leading = document.createElement('div');
     leading.className = 'agent-row-leading';
     const dot = document.createElement('span');
-    dot.className = `agent-row-dot dot-${agentState}`;
+    const dotClass = agentState === 'thinking' ? 'dot-thinking' : agentState === 'waiting' ? 'dot-waiting' : 'dot-ready';
+    dot.className = `agent-row-dot ${dotClass}`;
     leading.appendChild(dot);
 
-    // 2. Content: Top row (Title + Status Tag + Model) & Bottom row (Live Message or Tool)
+    // 2. Content: Top row (Title + Model) & Bottom row (Live Message or Tool) - No pill tags for minimal simplicity
     const content = document.createElement('div');
     content.className = 'agent-row-content';
 
@@ -93,19 +118,11 @@ export function renderAgentList() {
     title.className = 'agent-row-title';
     title.textContent = sess.project || 'Antigravity';
 
-    const statusTag = document.createElement('span');
-    statusTag.className = `agent-status-tag tag-${agentState}`;
-    if (agentState === 'thinking') statusTag.textContent = 'Thinking';
-    else if (agentState === 'waiting') statusTag.textContent = 'Action Required';
-    else if (agentState === 'done') statusTag.textContent = 'Done';
-    else statusTag.textContent = 'Standby';
-
     const modelTag = document.createElement('span');
     modelTag.className = 'agent-model-tag';
     modelTag.textContent = modelName;
 
     topRow.appendChild(title);
-    topRow.appendChild(statusTag);
     topRow.appendChild(modelTag);
 
     const bottomRow = document.createElement('div');

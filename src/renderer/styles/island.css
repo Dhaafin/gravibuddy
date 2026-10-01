@@ -502,8 +502,33 @@
 .header-brand {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   flex-shrink: 0;
+}
+
+.header-status-orb {
+  width: 7.5px;
+  height: 7.5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.header-status-orb.orb-ready {
+  background: #30d158;
+  box-shadow: 0 0 7px rgba(48, 209, 88, 0.7);
+}
+
+.header-status-orb.orb-thinking {
+  background: #bf5af2;
+  box-shadow: 0 0 8px rgba(191, 90, 242, 0.75);
+  animation: dotPulse 1.6s infinite ease-in-out;
+}
+
+.header-status-orb.orb-waiting {
+  background: #f5a524;
+  box-shadow: 0 0 9px rgba(245, 165, 36, 0.85);
+  animation: dotPulse 1.2s infinite ease-in-out;
 }
 
 .brand-sparkle-img {
@@ -634,12 +659,11 @@
   box-shadow: 0 0 8px #f5a524;
   animation: dotPulse 1.2s infinite ease-in-out;
 }
-.agent-row-dot.dot-done {
+.agent-row-dot.dot-done,
+.agent-row-dot.dot-idle,
+.agent-row-dot.dot-ready {
   background: #30d158;
-  box-shadow: 0 0 6px #30d158;
-}
-.agent-row-dot.dot-idle {
-  background: #71717a;
+  box-shadow: 0 0 6px rgba(48, 209, 88, 0.7);
 }
 
 .agent-row-content {
