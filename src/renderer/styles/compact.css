@@ -54,11 +54,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.05) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 
-    inset 0 1px 1.5px rgba(255, 255, 255, 0.3),
-    0 2px 8px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.05) 100%);
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
   transition: all 0.4s ease;
 }
 
@@ -88,10 +86,10 @@
   right: -4px;
   gap: 1.5px;
   height: 11px;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.85);
   padding: 1.5px 3px;
   border-radius: 6px;
-  border: 0.5px solid rgba(255, 255, 255, 0.18);
+  border: none;
 }
 
 .mini-waveform .bar {
@@ -162,8 +160,8 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  background: rgba(255, 255, 255, 0.07);
-  border: 0.5px solid rgba(255, 255, 255, 0.11);
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
   border-radius: 9999px;
   padding: 3.5px 9px;
   font-size: 10.5px;
@@ -171,7 +169,6 @@
   color: #e5e5ea;
   letter-spacing: -0.015em;
   transition: all 0.35s ease;
-  box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.12);
 }
 
 .metric-dot {
@@ -182,8 +179,8 @@
 }
 
 .settings-btn {
-  background: rgba(255, 255, 255, 0.06);
-  border: 0.5px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.07);
+  border: none;
   width: 25px;
   height: 25px;
   border-radius: 50%;
@@ -194,7 +191,6 @@
   cursor: pointer;
   outline: none;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.15);
 }
 
 .settings-btn .gear-icon {
@@ -204,7 +200,6 @@
 .settings-btn:hover {
   color: #ffffff;
   background: rgba(255, 255, 255, 0.16);
-  border-color: rgba(255, 255, 255, 0.2);
   transform: scale(1.05);
 }
 
@@ -224,7 +219,6 @@
   opacity: 1;
   color: #ff453a;
   background: rgba(255, 69, 58, 0.16);
-  border-color: rgba(255, 69, 58, 0.28);
 }
 
 .expand-card-btn {
@@ -235,14 +229,12 @@
   opacity: 1;
   color: #ffffff;
   background: rgba(255, 255, 255, 0.18);
-  border-color: rgba(255, 255, 255, 0.28);
   transform: scale(1.06);
 }
 
 .expand-card-btn.has-alert {
   color: #ff9f0a;
   background: rgba(255, 159, 10, 0.22);
-  border-color: rgba(255, 159, 10, 0.48);
   box-shadow: 0 0 10px rgba(255, 159, 10, 0.5);
   animation: expandAlertPulse 1.4s infinite ease-in-out;
 }
