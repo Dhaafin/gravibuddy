@@ -29,7 +29,16 @@ It renders an Apple-grade Dynamic Island attached directly to the top screen bez
 │   │   └── index.js         # Secure contextBridge API (`window.graviAPI`)
 │   └── renderer/
 │       ├── index.html       # Attached Hardware Notch & Dynamic Island canvas
-│       ├── renderer.js      # HUD state machine, procedural Web Audio synthesizer, zero-padding click-through
+│       ├── renderer.js      # Thin HUD state machine router & orchestrator
+│       ├── modules/         # Domain-specific ES modules
+│       │   ├── dom.js           # Centralized DOM element registry
+│       │   ├── state.js         # Reactive state store, session helpers & timers
+│       │   ├── audio.js         # Procedural Web Audio API synthesizer
+│       │   ├── effects.js       # Fluid watery morph & light sheen animations
+│       │   ├── compact-view.js  # Compact notch UI updates & orientation classes
+│       │   ├── expanded-view.js # Luxury expanded card UI & multi-agent tabs deck
+│       │   ├── lifecycle.js     # Sleep tab, wake logic & auto-dismiss countdown
+│       │   └── interaction.js   # Zero-padding click-through pass & event handlers
 │       ├── settings.html    # macOS / VisionOS Control Center modal
 │       ├── settings.js      # Modal controls (docking positions, toggles, quit)
 │       ├── style.css        # Modular CSS entry point (@import aggregator)
