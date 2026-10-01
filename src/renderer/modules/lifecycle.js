@@ -1,4 +1,4 @@
-// Sleep Mode & HUD Lifecycle State Machine
+// Sleep Mode & HUD Lifecycle State Machine (Dual-Mode: Compact & Expanded)
 import { dom } from './dom.js';
 import { 
   state, 
@@ -9,7 +9,7 @@ import {
 import { triggerWateryMorph } from './effects.js';
 import { playPopSound } from './audio.js';
 import { updateIslandLabels } from './compact-view.js';
-import { collapseToCompact, renderActiveSessionDetail, renderAgentTabs } from './expanded-view.js';
+import { renderActiveSessionDetail, renderAgentTabs } from './expanded-view.js';
 
 export function wakeUpIsland(reason = 'interaction') {
   clearSleepTimer();
@@ -26,7 +26,6 @@ export function wakeUpIsland(reason = 'interaction') {
 
 export function enterSleepMode(force = false) {
   clearSleepTimer();
-  if (state.isExpanded) return; // Mode expand remains expanded continuously
   if (!state.sleepModeEnabled && !force) return;
   if (state.isSwitchingPosition) return;
   if (state.isInteractiveArea && !force) return; // Never sleep while user is hovering unless forced
@@ -37,7 +36,6 @@ export function enterSleepMode(force = false) {
     if (state.currentState === 'thinking' && !state.stealthCodingEnabled) return;
   }
 
-  collapseToCompact(true);
   if (dom.island) dom.island.classList.add('is-sleeping');
   if (force) {
     state.isInteractiveArea = false;
@@ -46,7 +44,6 @@ export function enterSleepMode(force = false) {
 }
 
 export function scheduleSleep(delay = 1400, force = false) {
-  if (state.isExpanded) return; // Mode expand remains expanded continuously
   if (!state.sleepModeEnabled && !force) return;
   if (state.isSwitchingPosition) return;
   if (dom.island && dom.island.classList.contains('is-sleeping')) return;
@@ -71,9 +68,8 @@ export function dismissDoneState() {
     if (state.isExpanded) {
       renderActiveSessionDetail();
       renderAgentTabs();
-    } else {
-      scheduleSleep(600, true);
     }
+    scheduleSleep(600, true);
   }
 }
 
