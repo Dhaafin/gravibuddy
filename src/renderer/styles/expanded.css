@@ -2,17 +2,16 @@
    Expanded View (Flush Top Grey Main Notch + Black Side Wings)
    ========================================================== */
 .expanded-view {
-  position: absolute;
-  inset: 0;
+  width: 100%;
   padding: 12px 18px 10px;
   box-sizing: border-box;
   overflow: hidden;
   background: #161618;
   border: none;
   border-radius: 0 0 26px 26px;
-  display: flex;
+  display: none;
   flex-direction: column;
-  justify-content: space-between;
+  gap: 8px;
   align-items: stretch;
   opacity: 0;
   pointer-events: none;
@@ -31,7 +30,12 @@
   width: 100%;
 }
 
+.island.is-expanded:not(.is-sleeping) .compact-view {
+  display: none;
+}
+
 .island.is-expanded:not(.is-sleeping) .expanded-view {
+  display: flex;
   opacity: 1;
   pointer-events: auto;
   transform: translateY(0) scale(1);
@@ -47,14 +51,14 @@
   opacity: 0;
 }
 
-/* Expanded State for Attached Notch Capsule */
+/* Expanded State for Attached Notch Capsule (Dynamic Height) */
 .island.is-expanded:not(.is-sleeping) {
   width: 620px;
   min-width: 620px;
   max-width: 620px;
-  height: 160px;
-  min-height: 160px;
-  max-height: 160px;
+  height: auto;
+  min-height: 98px;
+  max-height: 166px;
   background: #161618;
   border-radius: 0 0 26px 26px;
   padding: 0;
@@ -307,7 +311,7 @@
   50% { transform: scale(1.08); filter: brightness(1.14); }
 }
 
-/* Stacked Agent Activity Deck (Unified Container) */
+/* Stacked Agent Activity Deck (Unified Dynamic Container) */
 .agent-list-deck {
   display: flex;
   flex-direction: column;
@@ -315,8 +319,8 @@
   padding: 0;
   flex: 1;
   min-width: 0;
-  height: 102px;
-  min-height: 102px;
+  height: auto;
+  min-height: 38px;
   max-height: 102px;
   overflow-y: auto;
   overflow-x: hidden;
@@ -334,8 +338,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  height: 34px;
-  min-height: 34px;
+  height: 36px;
+  min-height: 36px;
   padding: 0 12px;
   box-sizing: border-box;
   background: transparent;
@@ -466,7 +470,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100%;
+  height: 38px;
   color: #71717a;
   font-size: 11px;
   font-weight: 450;
