@@ -1,0 +1,118 @@
+/* Liquid Sheen */
+.island::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.13) 50%,
+    transparent 100%
+  );
+  border-radius: inherit;
+  pointer-events: none;
+  transform: skewX(-25deg);
+  opacity: 0;
+}
+
+.island.sheen-active::after {
+  animation: liquidSheen 0.72s ease-out forwards;
+}
+
+@keyframes liquidSheen {
+  0% { left: -60%; opacity: 0; }
+  35% { opacity: 1; }
+  100% { left: 160%; opacity: 0; }
+}
+
+/* Watery Jelly Morph */
+.island.watery-morph {
+  animation: wateryJellyHorizontal 0.62s cubic-bezier(0.19, 1.45, 0.26, 1) forwards;
+}
+
+@keyframes wateryJellyHorizontal {
+  0%   { scale: 1 1; }
+  24%  { scale: 1.07 0.93; }
+  52%  { scale: 0.97 1.03; }
+  76%  { scale: 1.018 0.99; }
+  100% { scale: 1 1; }
+}
+
+.island-root.vertical-left .island.watery-morph,
+.island-root.vertical-right .island.watery-morph {
+  animation: wateryJellyVertical 0.62s cubic-bezier(0.19, 1.45, 0.26, 1) forwards;
+}
+
+@keyframes wateryJellyVertical {
+  0%   { scale: 1 1; }
+  24%  { scale: 0.93 1.07; }
+  52%  { scale: 1.03 0.97; }
+  76%  { scale: 0.99 1.018; }
+  100% { scale: 1 1; }
+}
+
+/* Position Switching Choreography */
+.island.switching-implode {
+  scale: 0.15 !important;
+  opacity: 0 !important;
+  filter: blur(12px) !important;
+  transition: 
+    scale 0.22s cubic-bezier(0.4, 0, 1, 1),
+    opacity 0.2s ease,
+    filter 0.2s ease !important;
+}
+
+.island.switching-prep {
+  scale: 0.2 !important;
+  opacity: 0 !important;
+  filter: blur(8px) !important;
+  transition: none !important;
+}
+
+.island.island-blossom {
+  animation: liquidBlossom 0.48s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes liquidBlossom {
+  0% {
+    scale: 0.2;
+    opacity: 0;
+    filter: blur(8px);
+  }
+  40% {
+    opacity: 1;
+    filter: blur(0px);
+  }
+  72% {
+    scale: 1.08;
+  }
+  100% {
+    scale: 1;
+    opacity: 1;
+    filter: blur(0px);
+  }
+}
+
+/* Procedural Breathing & Pulses */
+@keyframes logoBreathe {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.35)); }
+  50% { transform: scale(1.08); filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.65)); }
+}
+
+@keyframes auraPulse {
+  0%, 100% { transform: scale(0.9); opacity: 0.35; }
+  50% { transform: scale(1.35); opacity: 0.75; }
+}
+
+@keyframes sleepBreathing {
+  0%, 100% { opacity: 0.45; transform: scaleX(0.85); }
+  50% { opacity: 1; transform: scaleX(1.18); box-shadow: 0 0 12px rgba(48, 209, 88, 1); }
+}
+
+@keyframes waveBar {
+  0% { transform: scaleY(0.35); }
+  100% { transform: scaleY(1.35); }
+}

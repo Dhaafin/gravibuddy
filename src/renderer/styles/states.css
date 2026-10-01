@@ -1,0 +1,121 @@
+/* Thinking State */
+.island.state-thinking {
+  min-width: 380px;
+  box-shadow: 
+    0 16px 36px -4px rgba(0, 0, 0, 0.88),
+    0 10px 28px -4px rgba(168, 85, 247, 0.28),
+    0 3px 10px rgba(168, 85, 247, 0.2),
+    inset 0 -1px 0.8px 0 rgba(191, 90, 242, 0.4),
+    inset 0 -1px 0.5px 0 rgba(255, 255, 255, 0.25);
+}
+
+.island.state-thinking .logo-backdrop {
+  background: linear-gradient(145deg, rgba(168, 85, 247, 0.22) 0%, rgba(255, 255, 255, 0.05) 100%);
+  border-color: rgba(191, 90, 242, 0.45);
+}
+.island.state-thinking .logo-aura {
+  background: rgba(168, 85, 247, 0.32);
+}
+.island.state-thinking .agy-logo-img {
+  animation: logoBreatheThinking 2s infinite ease-in-out;
+}
+.island.state-thinking .mini-waveform {
+  display: flex;
+}
+.island.state-thinking .metric-capsule {
+  background: linear-gradient(180deg, rgba(191, 90, 242, 0.2) 0%, rgba(191, 90, 242, 0.1) 100%);
+  border-color: rgba(191, 90, 242, 0.38);
+  color: #f3e8ff;
+  box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.15);
+}
+.island.state-thinking .metric-dot {
+  background: #bf5af2;
+  box-shadow: 0 0 6px #bf5af2;
+}
+
+@keyframes logoBreatheThinking {
+  0%, 100% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 5px #bf5af2); }
+  50% { transform: scale(1.15) rotate(5deg); filter: drop-shadow(0 0 14px #bf5af2); }
+}
+
+.island.state-thinking.is-sleeping {
+  box-shadow: 
+    0 10px 24px -2px rgba(0, 0, 0, 0.9),
+    0 0 0 1px rgba(255, 255, 255, 0.09),
+    inset 0 -1.5px 1px 0 rgba(191, 90, 242, 0.55),
+    0 6px 20px rgba(191, 90, 242, 0.3);
+}
+.island.state-thinking .sleep-bar {
+  background: #bf5af2;
+  box-shadow: 0 0 10px rgba(191, 90, 242, 0.9);
+}
+
+/* Done State */
+.island.state-done {
+  min-width: 360px;
+  box-shadow: 
+    0 16px 36px -4px rgba(0, 0, 0, 0.88),
+    0 10px 28px -4px rgba(48, 209, 88, 0.28),
+    0 3px 10px rgba(48, 209, 88, 0.2),
+    inset 0 -1px 0.8px 0 rgba(48, 209, 88, 0.4),
+    inset 0 -1px 0.5px 0 rgba(255, 255, 255, 0.25);
+}
+
+.island.state-done .logo-backdrop {
+  background: linear-gradient(145deg, rgba(48, 209, 88, 0.22) 0%, rgba(255, 255, 255, 0.05) 100%);
+  border-color: rgba(48, 209, 88, 0.48);
+}
+.island.state-done .logo-aura {
+  background: rgba(48, 209, 88, 0.32);
+}
+.island.state-done .metric-capsule {
+  background: linear-gradient(180deg, rgba(48, 209, 88, 0.2) 0%, rgba(48, 209, 88, 0.1) 100%);
+  border-color: rgba(48, 209, 88, 0.38);
+  color: #d1fae5;
+  box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.15);
+}
+.island.state-done .metric-dot {
+  background: #30d158;
+  box-shadow: 0 0 8px #30d158;
+}
+
+/* Waiting State */
+.island.state-waiting {
+  min-width: 370px;
+  box-shadow: 
+    0 16px 36px -4px rgba(0, 0, 0, 0.88),
+    0 10px 28px -4px rgba(255, 159, 10, 0.28),
+    0 3px 10px rgba(255, 159, 10, 0.2),
+    inset 0 -1px 0.8px 0 rgba(255, 159, 10, 0.4),
+    inset 0 -1px 0.5px 0 rgba(255, 255, 255, 0.25);
+}
+
+.island.state-waiting .logo-backdrop {
+  background: linear-gradient(145deg, rgba(255, 159, 10, 0.22) 0%, rgba(255, 255, 255, 0.05) 100%);
+  border-color: rgba(255, 159, 10, 0.48);
+}
+.island.state-waiting .logo-aura {
+  background: rgba(255, 159, 10, 0.32);
+}
+.island.state-waiting .metric-capsule {
+  background: linear-gradient(180deg, rgba(255, 159, 10, 0.2) 0%, rgba(255, 159, 10, 0.1) 100%);
+  border-color: rgba(255, 159, 10, 0.4);
+  color: #fef3c7;
+  box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.15);
+}
+.island.state-waiting .metric-dot {
+  background: #ff9f0a;
+  box-shadow: 0 0 8px #ff9f0a;
+}
+
+.island.state-waiting.is-sleeping {
+  box-shadow: 
+    0 10px 24px -2px rgba(0, 0, 0, 0.9),
+    0 0 0 1px rgba(255, 255, 255, 0.09),
+    inset 0 -1.5px 1px 0 rgba(255, 159, 10, 0.55),
+    0 6px 20px rgba(255, 159, 10, 0.3);
+}
+.island.state-waiting .sleep-bar {
+  background: #ff9f0a;
+  box-shadow: 0 0 10px rgba(255, 159, 10, 0.9);
+}
