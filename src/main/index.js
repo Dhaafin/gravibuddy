@@ -90,7 +90,7 @@ function createSettingsWindow() {
   const primaryDisplay = screen.getPrimaryDisplay();
   const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
   const width = 360;
-  const height = 450;
+  const height = 390;
 
   settingsWindow = new BrowserWindow({
     width,
@@ -117,8 +117,8 @@ function createSettingsWindow() {
   settingsWindow.loadFile(path.join(__dirname, '../renderer/settings.html'));
 
   settingsWindow.on('blur', () => {
-    if (settingsWindow && !settingsWindow.isDestroyed()) {
-      settingsWindow.hide();
+    if (settingsWindow && !settingsWindow.isDestroyed() && settingsWindow.isVisible()) {
+      settingsWindow.webContents.send('request-close-card');
     }
   });
 
@@ -224,6 +224,8 @@ function startServer() {
   });
 }
 
+let watchdogTimer = null;
+
 function handleAgentEvent(payload) {
   if (!mainWindow || mainWindow.isDestroyed()) return;
 
@@ -235,15 +237,39 @@ function handleAgentEvent(payload) {
     state = 'waiting';
   } else if (rawState.includes('think') || rawState.includes('work') || rawState.includes('run') || rawState.includes('coding') || rawState === 'tool_use') {
     state = 'thinking';
+  } else if (rawState === 'done' || (rawState === 'idle' && lastState === 'thinking')) {
+    state = 'done';
   } else {
-    if (lastState === 'thinking') {
-      state = 'done';
-    } else {
-      state = 'idle';
-    }
+    state = 'idle';
   }
 
   lastState = (state === 'done') ? 'idle' : state;
+
+  // Extract project name from payload or workspacePaths if available
+  let projectName = payload.project || payload.projectName || null;
+  if (!projectName && Array.isArray(payload.workspacePaths) && payload.workspacePaths.length > 0) {
+    projectName = path.basename(payload.workspacePaths[0]);
+  }
+
+  // Safety watchdog to prevent ghost thinking states if connection drops abruptly
+  if (state === 'thinking') {
+    clearTimeout(watchdogTimer);
+    watchdogTimer = setTimeout(() => {
+      if (lastState === 'thinking') {
+        lastState = 'idle';
+        mainWindow?.webContents?.send('agent-update', {
+          state: 'idle',
+          model: extractModelName(payload.model),
+          project: projectName,
+          quotaPercent: 95,
+          timestamp: Date.now()
+        });
+      }
+    }, 180000);
+  } else {
+    clearTimeout(watchdogTimer);
+    watchdogTimer = null;
+  }
 
   const ctxUsed = payload.context_window?.used_percentage;
   const contextPercent = typeof ctxUsed === 'number' ? Math.round(ctxUsed) : null;
@@ -253,6 +279,7 @@ function handleAgentEvent(payload) {
 
   const eventData = {
     state,
+    project: projectName,
     model: extractModelName(payload.model),
     plan: payload.plan_tier || 'Google AI Pro',
     cost: payload.cost?.total_usd ?? payload.cost ?? null,
@@ -322,13 +349,13 @@ ipcMain.on('toggle-settings', () => {
     createSettingsWindow();
   }
   if (settingsWindow.isVisible()) {
-    settingsWindow.hide();
+    settingsWindow.webContents.send('request-close-card');
   } else {
     const primaryDisplay = screen.getPrimaryDisplay();
     const { width: screenWidth, height: screenHeight } = primaryDisplay.workAreaSize;
     settingsWindow.setPosition(
       Math.round((screenWidth - 360) / 2),
-      Math.round((screenHeight - 450) / 2)
+      Math.round((screenHeight - 390) / 2)
     );
     settingsWindow.webContents.send('initial-config', {
       ...userConfig,
@@ -337,6 +364,7 @@ ipcMain.on('toggle-settings', () => {
     });
     settingsWindow.show();
     settingsWindow.focus();
+    settingsWindow.webContents.send('request-open-card');
   }
 });
 

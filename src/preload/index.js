@@ -11,6 +11,12 @@ contextBridge.exposeInMainWorld('graviAPI', {
   onInitialConfig: (callback) => {
     ipcRenderer.on('initial-config', (_, data) => callback(data));
   },
+  onRequestClose: (callback) => {
+    ipcRenderer.on('request-close-card', () => callback());
+  },
+  onRequestOpen: (callback) => {
+    ipcRenderer.on('request-open-card', () => callback());
+  },
   // Actions
   getInitialConfig: () => {
     ipcRenderer.send('get-initial-config');

@@ -22,11 +22,44 @@ let sleepModeEnabled = true;
 let stealthCodingEnabled = true;
 let thinkingPreviewEnabled = true;
 
+const settingsCard = document.getElementById('settingsCard');
+let isClosing = false;
+
+function triggerOpen() {
+  isClosing = false;
+  settingsCard.classList.remove('closing');
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      settingsCard.classList.add('opened');
+    });
+  });
+}
+
+function triggerClose() {
+  if (isClosing) return;
+  isClosing = true;
+  settingsCard.classList.remove('opened');
+  settingsCard.classList.add('closing');
+  setTimeout(() => {
+    api.closeSettings();
+    isClosing = false;
+  }, 200);
+}
+
+// Initial mount trigger
+triggerOpen();
+
+if (api && api.onRequestOpen) {
+  api.onRequestOpen(triggerOpen);
+}
+
+if (api && api.onRequestClose) {
+  api.onRequestClose(triggerClose);
+}
+
 // Close button & Esc key
 if (btnCloseSettings) {
-  btnCloseSettings.addEventListener('click', () => {
-    api.closeSettings();
-  });
+  btnCloseSettings.addEventListener('click', triggerClose);
 }
 
 // Quit Gravibuddy completely
@@ -38,7 +71,7 @@ if (btnQuitGravibuddy) {
 
 window.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
-    api.closeSettings();
+    triggerClose();
   }
 });
 
@@ -111,6 +144,7 @@ if (btnToggleThinkingPreview && appleToggleThinkingPreview) {
 if (api && api.getInitialConfig) {
   api.getInitialConfig();
   api.onInitialConfig((cfg) => {
+    triggerOpen();
     if (cfg) {
       if (cfg.position) setActivePositionButton(cfg.position);
       if (cfg.sound !== undefined && appleToggleSound) {
