@@ -1,10 +1,8 @@
-.island-root.vertical-left,
-.island-root.vertical-right {
+.island-root:is(.vertical-left, .vertical-right) {
   display: block;
 }
 
-.island-root.vertical-left .island,
-.island-root.vertical-right .island {
+.island-root:is(.vertical-left, .vertical-right) .island {
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
@@ -18,10 +16,25 @@
   gap: 6px;
 }
 
-.island-root.vertical-left .compact-view,
-.island-root.vertical-right .compact-view {
+.island-root:is(.vertical-left, .vertical-right) .compact-view {
   flex-direction: column;
   justify-content: space-between;
+}
+
+.island-root:is(.vertical-left, .vertical-right) .notch-ear {
+  display: block !important;
+  width: 12px;
+  height: 14px;
+}
+
+.island-root:is(.vertical-left, .vertical-right) .notch-ear-left {
+  top: -12px;
+  bottom: auto;
+}
+
+.island-root:is(.vertical-left, .vertical-right) .notch-ear-right {
+  top: auto;
+  bottom: -12px;
 }
 
 /* Left Dock */
@@ -38,20 +51,13 @@
 }
 
 .island-root.vertical-left .notch-ear {
-  display: block !important;
-  width: 12px;
-  height: 14px;
   left: 0;
   right: auto;
 }
 .island-root.vertical-left .notch-ear-left {
-  top: -12px;
-  bottom: auto;
   background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2012%2014%22%3E%3Cpath%20d%3D%22M0%2C0%20L0%2C14%20L12%2C14%20L12%2C12%20A12%2C12%200%200%2C0%200%2C0%20Z%22%20fill%3D%22%23000000%22%2F%3E%3C%2Fsvg%3E");
 }
 .island-root.vertical-left .notch-ear-right {
-  top: auto;
-  bottom: -12px;
   background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2012%2014%22%3E%3Cpath%20d%3D%22M0%2C14%20L0%2C0%20L12%2C0%20L12%2C2%20A12%2C12%200%200%2C1%200%2C14%20Z%22%20fill%3D%22%23000000%22%2F%3E%3C%2Fsvg%3E");
 }
 
@@ -69,34 +75,30 @@
 }
 
 .island-root.vertical-right .notch-ear {
-  display: block !important;
-  width: 12px;
-  height: 14px;
   right: 0;
   left: auto;
 }
 .island-root.vertical-right .notch-ear-left {
-  top: -12px;
-  bottom: auto;
   background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2012%2014%22%3E%3Cpath%20d%3D%22M12%2C0%20L12%2C14%20L0%2C14%20L0%2C12%20A12%2C12%200%200%2C1%2012%2C0%20Z%22%20fill%3D%22%23000000%22%2F%3E%3C%2Fsvg%3E");
 }
 .island-root.vertical-right .notch-ear-right {
-  top: auto;
-  bottom: -12px;
   background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2012%2014%22%3E%3Cpath%20d%3D%22M12%2C14%20L12%2C0%20L0%2C0%20L0%2C2%20A12%2C12%200%200%2C0%2012%2C14%20Z%22%20fill%3D%22%23000000%22%2F%3E%3C%2Fsvg%3E");
 }
 
 /* Vertical Sleep States */
-.island-root.vertical-left .island.is-sleeping {
-  translate: -44px 0;
+.island-root:is(.vertical-left, .vertical-right) .island.is-sleeping {
   width: 50px;
   min-width: 50px;
   max-width: 50px;
   height: 96px;
   min-height: 96px;
   max-height: 96px;
-  border-radius: 0 10px 10px 0 !important;
   cursor: pointer;
+}
+
+.island-root.vertical-left .island.is-sleeping {
+  translate: -44px 0;
+  border-radius: 0 10px 10px 0 !important;
   box-shadow: 
     8px 0 20px -2px rgba(0, 0, 0, 0.9),
     0 0 0 1px rgba(255, 255, 255, 0.09),
@@ -104,29 +106,9 @@
     6px 0 18px rgba(48, 209, 88, 0.22);
 }
 
-.island-root.vertical-left .island.is-sleeping .sleep-indicator {
-  bottom: auto;
-  top: 0;
-  right: 2px;
-  left: auto;
-  width: 6px;
-  height: 100%;
-}
-.island-root.vertical-left .island.is-sleeping .sleep-bar {
-  width: 2.5px;
-  height: 28px;
-}
-
 .island-root.vertical-right .island.is-sleeping {
   translate: 44px 0;
-  width: 50px;
-  min-width: 50px;
-  max-width: 50px;
-  height: 96px;
-  min-height: 96px;
-  max-height: 96px;
   border-radius: 10px 0 0 10px !important;
-  cursor: pointer;
   box-shadow: 
     -8px 0 20px -2px rgba(0, 0, 0, 0.9),
     0 0 0 1px rgba(255, 255, 255, 0.09),
@@ -134,28 +116,30 @@
     -6px 0 18px rgba(48, 209, 88, 0.22);
 }
 
-.island-root.vertical-right .island.is-sleeping .sleep-indicator {
+.island-root:is(.vertical-left, .vertical-right) .island.is-sleeping .sleep-indicator {
   bottom: auto;
   top: 0;
-  left: 2px;
-  right: auto;
   width: 6px;
   height: 100%;
 }
-.island-root.vertical-right .island.is-sleeping .sleep-bar {
+.island-root.vertical-left .island.is-sleeping .sleep-indicator {
+  right: 2px;
+  left: auto;
+}
+.island-root.vertical-right .island.is-sleeping .sleep-indicator {
+  left: 2px;
+  right: auto;
+}
+.island-root:is(.vertical-left, .vertical-right) .island.is-sleeping .sleep-bar {
   width: 2.5px;
   height: 28px;
 }
 
-.island-root.vertical-left .island-content,
-.island-root.vertical-right .island-content,
-.island-root.vertical-left .metric-capsule,
-.island-root.vertical-right .metric-capsule {
+.island-root:is(.vertical-left, .vertical-right) :is(.island-content, .metric-capsule) {
   display: none;
 }
 
-.island-root.vertical-left .leading-accessory,
-.island-root.vertical-right .leading-accessory {
+.island-root:is(.vertical-left, .vertical-right) .leading-accessory {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -163,14 +147,12 @@
   height: 48px;
 }
 
-.island-root.vertical-left .logo-orb,
-.island-root.vertical-right .logo-orb {
+.island-root:is(.vertical-left, .vertical-right) .logo-orb {
   width: 34px;
   height: 34px;
 }
 
-.island-root.vertical-left .agy-logo-img,
-.island-root.vertical-right .agy-logo-img {
+.island-root:is(.vertical-left, .vertical-right) .agy-logo-img {
   width: 21px;
   height: 21px;
 }
@@ -188,8 +170,7 @@
   z-index: 10;
 }
 
-.island-root.vertical-left .radial-gauge,
-.island-root.vertical-right .radial-gauge {
+.island-root:is(.vertical-left, .vertical-right) .radial-gauge {
   display: block;
 }
 
@@ -210,8 +191,7 @@
   filter: drop-shadow(0 0 3px rgba(16, 185, 129, 0.5));
 }
 
-.island-root.vertical-left .vertical-stack,
-.island-root.vertical-right .vertical-stack {
+.island-root:is(.vertical-left, .vertical-right) .vertical-stack {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -242,15 +222,13 @@
   box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.12);
 }
 
-.island-root.vertical-left .v-glyph-btn,
-.island-root.vertical-right .v-glyph-btn {
+.island-root:is(.vertical-left, .vertical-right) .v-glyph-btn {
   width: 42px;
   height: 48px;
   border-radius: 14px;
 }
 
-.island-root.vertical-left .v-glyph-icon svg,
-.island-root.vertical-right .v-glyph-icon svg {
+.island-root:is(.vertical-left, .vertical-right) .v-glyph-icon svg {
   width: 18px;
   height: 18px;
 }
@@ -350,19 +328,13 @@
   transform-origin: left center;
 }
 
-.island-root.vertical-left .v-glyph-btn:hover .v-flyout-tooltip {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(-50%) translateX(0) scale(1);
-}
-
 .island-root.vertical-right .v-flyout-tooltip {
   right: calc(100% + 10px);
   transform: translateY(-50%) translateX(8px) scale(0.92);
   transform-origin: right center;
 }
 
-.island-root.vertical-right .v-glyph-btn:hover .v-flyout-tooltip {
+.island-root:is(.vertical-left, .vertical-right) .v-glyph-btn:hover .v-flyout-tooltip {
   opacity: 1;
   visibility: visible;
   transform: translateY(-50%) translateX(0) scale(1);
@@ -400,8 +372,7 @@
   padding-left: 11px;
 }
 
-.island-root.vertical-left .trailing-accessory,
-.island-root.vertical-right .trailing-accessory {
+.island-root:is(.vertical-left, .vertical-right) .trailing-accessory {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -409,8 +380,7 @@
   width: 100%;
 }
 
-.island-root.vertical-left .settings-btn,
-.island-root.vertical-right .settings-btn {
+.island-root:is(.vertical-left, .vertical-right) .settings-btn {
   width: 42px;
   height: 48px;
   border-radius: 14px;
@@ -419,21 +389,18 @@
   box-shadow: inset 0 0.5px 0 rgba(255, 255, 255, 0.12);
 }
 
-.island-root.vertical-left .settings-btn:hover,
-.island-root.vertical-right .settings-btn:hover {
+.island-root:is(.vertical-left, .vertical-right) .settings-btn:hover {
   background: rgba(255, 255, 255, 0.12);
   border-color: rgba(255, 255, 255, 0.24);
   transform: scale(1.04);
   color: #ffffff;
 }
 
-.island-root.vertical-left .settings-btn:active,
-.island-root.vertical-right .settings-btn:active {
+.island-root:is(.vertical-left, .vertical-right) .settings-btn:active {
   transform: scale(0.95);
 }
 
-.island-root.vertical-left .settings-btn svg,
-.island-root.vertical-right .settings-btn svg {
+.island-root:is(.vertical-left, .vertical-right) .settings-btn svg {
   width: 17px;
   height: 17px;
 }

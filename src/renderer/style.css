@@ -1,5 +1,7 @@
 @import url('./styles/base.css');
 @import url('./styles/island.css');
+@import url('./styles/compact.css');
+@import url('./styles/expanded.css');
 @import url('./styles/animations.css');
 @import url('./styles/states.css');
 @import url('./styles/vertical.css');

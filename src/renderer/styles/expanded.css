@@ -1,0 +1,386 @@
+/* ==========================================================
+   Expanded View (Notch Gede ~620x195 Luxury Card)
+   ========================================================== */
+.expanded-view {
+  position: absolute;
+  inset: 0;
+  padding: 10px 16px;
+  box-sizing: border-box;
+  overflow: hidden;
+  border-radius: inherit;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-12px) scale(0.92);
+  filter: blur(8px);
+  transform-origin: center top;
+  will-change: opacity, transform, filter;
+  transition: 
+    opacity 0.16s ease-out,
+    transform 0.3s cubic-bezier(0.32, 0, 0.67, 0),
+    filter 0.16s ease-out;
+}
+
+.expanded-header,
+.agent-list-deck,
+.expanded-footer {
+  width: 588px;
+  max-width: 100%;
+}
+
+.island.is-expanded:not(.is-sleeping) .expanded-view {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+  filter: blur(0px);
+  transition: 
+    opacity 0.28s ease-out 0.05s,
+    transform 0.48s var(--liquid-spring) 0.02s,
+    filter 0.28s ease-out 0.04s;
+}
+
+/* Expanded State for Attached Notch Capsule */
+.island.is-expanded:not(.is-sleeping) {
+  width: 620px;
+  min-width: 620px;
+  max-width: 620px;
+  height: 195px;
+  min-height: 195px;
+  max-height: 195px;
+  border-radius: 0 0 28px 28px;
+  padding: 10px 16px;
+  scale: 1 1;
+  translate: 0 0;
+  box-shadow: 
+    0 24px 64px -8px rgba(0, 0, 0, 0.96),
+    0 8px 24px rgba(0, 0, 0, 0.7),
+    inset 0 -1px 0.6px 0 rgba(255, 255, 255, 0.22);
+}
+
+/* Header Bar (36px) */
+.expanded-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 36px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 4px;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+}
+
+.header-status-orb {
+  width: 7.5px;
+  height: 7.5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.header-status-orb.orb-ready {
+  background: #30d158;
+  box-shadow: 0 0 7px rgba(48, 209, 88, 0.7);
+}
+
+.header-status-orb.orb-thinking {
+  background: #bf5af2;
+  box-shadow: 0 0 8px rgba(191, 90, 242, 0.75);
+  animation: dotPulse 1.6s infinite ease-in-out;
+}
+
+.header-status-orb.orb-waiting {
+  background: #f5a524;
+  box-shadow: 0 0 9px rgba(245, 165, 36, 0.85);
+  animation: dotPulse 1.2s infinite ease-in-out;
+}
+
+.brand-sparkle-img {
+  width: 17px;
+  height: 17px;
+  object-fit: contain;
+}
+
+.brand-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #a1a1aa;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.header-count-badge {
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #a1a1aa;
+  background: rgba(255, 255, 255, 0.07);
+  border: 0.5px solid rgba(255, 255, 255, 0.12);
+  padding: 1.5px 7px;
+  border-radius: 9999px;
+  margin-left: 6px;
+  text-transform: uppercase;
+}
+
+.expanded-trailing {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.expanded-quota-badge {
+  background: rgba(255, 255, 255, 0.08);
+  border: 0.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #d1d5db;
+  letter-spacing: -0.01em;
+}
+
+.expanded-retract-btn {
+  opacity: 0.7;
+}
+.expanded-retract-btn:hover {
+  opacity: 1;
+}
+
+/* Body Area: Stacked Agent Activity Deck */
+.agent-list-deck {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 6px 0;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 114px;
+  scrollbar-width: none;
+}
+.agent-list-deck::-webkit-scrollbar {
+  display: none;
+}
+
+/* Agent Card Row */
+.agent-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6.5px 11px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 0.5px solid rgba(255, 255, 255, 0.07);
+  cursor: pointer;
+  transition: background 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
+  user-select: none;
+}
+.agent-row:hover {
+  background: rgba(255, 255, 255, 0.075);
+  border-color: rgba(255, 255, 255, 0.14);
+  transform: translateY(-0.5px);
+}
+.agent-row:active {
+  transform: scale(0.99);
+  background: rgba(255, 255, 255, 0.09);
+}
+.agent-row.is-active-session {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.055);
+}
+.agent-row.state-waiting {
+  border-color: rgba(245, 165, 36, 0.35);
+  background: rgba(245, 165, 36, 0.06);
+}
+.agent-row.state-waiting:hover {
+  background: rgba(245, 165, 36, 0.1);
+  border-color: rgba(245, 165, 36, 0.45);
+}
+
+.agent-row-leading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  flex-shrink: 0;
+}
+
+.agent-row-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.agent-row-dot.dot-thinking {
+  background: #bf5af2;
+  box-shadow: 0 0 7px #bf5af2;
+  animation: dotPulse 1.6s infinite ease-in-out;
+}
+.agent-row-dot.dot-waiting {
+  background: #f5a524;
+  box-shadow: 0 0 8px #f5a524;
+  animation: dotPulse 1.2s infinite ease-in-out;
+}
+.agent-row-dot.dot-done,
+.agent-row-dot.dot-idle,
+.agent-row-dot.dot-ready {
+  background: #30d158;
+  box-shadow: 0 0 6px rgba(48, 209, 88, 0.7);
+}
+
+.agent-row-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.agent-row-top {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.agent-row-title {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 240px;
+}
+
+.agent-model-tag {
+  font-size: 10px;
+  color: #9ca3af;
+  font-weight: 400;
+  white-space: nowrap;
+  margin-left: 2px;
+}
+
+.agent-row-bottom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.agent-message-text {
+  font-size: 10.5px;
+  color: #a1a1aa;
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 440px;
+}
+.agent-message-text.is-tool {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: #c084fc;
+}
+
+.agent-row-trailing {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.agent-row-metric {
+  font-size: 10px;
+  color: #9ca3af;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 6px;
+  border-radius: 6px;
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
+}
+
+.agent-deck-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #71717a;
+  font-size: 11px;
+  font-weight: 450;
+  letter-spacing: -0.01em;
+}
+
+/* Footer Actions (40px) */
+.expanded-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 9px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 29px;
+  padding: 0 11px;
+  border-radius: 8px;
+  font-size: 11.5px;
+  font-weight: 550;
+  cursor: pointer;
+  outline: none;
+  border: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.action-primary {
+  background: rgba(255, 255, 255, 0.13);
+  border: 0.5px solid rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+}
+.action-primary:hover {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.32);
+  transform: translateY(-1px);
+}
+.action-primary:active {
+  transform: scale(0.97);
+}
+
+.action-secondary {
+  background: rgba(255, 255, 255, 0.06);
+  border: 0.5px solid rgba(255, 255, 255, 0.1);
+  color: #e5e5ea;
+}
+.action-secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+.action-secondary:active {
+  transform: scale(0.97);
+}
+
+.action-ghost {
+  background: transparent;
+  border: 0.5px solid transparent;
+  color: #9ca3af;
+}
+.action-ghost:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+.action-ghost:active {
+  transform: scale(0.97);
+}
