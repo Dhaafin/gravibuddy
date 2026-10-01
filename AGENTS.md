@@ -101,7 +101,34 @@ It renders an Apple-grade Dynamic Island attached directly to the top screen bez
 
 ---
 
-## 5. Coding Principles (Ponytail Ladder)
+## 5. Renderer Process Architecture (Native ESM)
+
+The renderer process utilizes **native ECMAScript Modules (`<script type="module">`)** supported out-of-the-box by Chromium in Electron. No bundlers (Webpack, Vite, Rollup) or build steps are required.
+
+```text
+src/renderer/
+├── index.html          # Entry HTML (<script type="module" src="renderer.js">)
+├── renderer.js         # Thin state machine router & IPC subscriber (~190 lines)
+└── modules/            # Single-responsibility domain modules
+    ├── dom.js          # Centralized DOM query selector cache & element registry
+    ├── state.js        # Reactive state store, active session accessors, & timer cleanup
+    ├── audio.js        # Procedural Web Audio API synthesizer (sine chimes & bubble pops)
+    ├── effects.js      # Fluid watery morph & specular light sheen triggers
+    ├── compact-view.js # Compact notch UI (labels, radial quota gauge ring, state glyphs)
+    ├── expanded-view.js# Luxury expanded card (multi-agent tabs deck, session detail, sticky expand)
+    ├── lifecycle.js    # Sleep mode tab, deliberate wake triggers, & auto-dismiss countdown
+    └── interaction.js  # Zero-padding click-through hit testing & event bindings
+```
+
+### Module Responsibilities & Flow:
+1. **`dom.js`**: Single source of truth for all cached DOM elements. Prevents duplicate `document.getElementById` queries.
+2. **`state.js`**: Shared state container (`activeSessionsList`, `selectedSessionId`, preference toggles, active timers). Pure accessors: `getActiveSession()`, `hasAnyWaitingSession()`.
+3. **`lifecycle.js` & `interaction.js`**: Decoupled hit-testing (`elementFromPoint`) and sleep/wake timers so mouse pass-through remains snappy and glitch-free.
+4. **`renderer.js`**: High-level orchestrator that subscribes to `window.graviAPI` IPC channels and delegates rendering to `compact-view.js` and `expanded-view.js`.
+
+---
+
+## 6. Coding Principles (Ponytail Ladder)
 
 Whenever contributing or refactoring Gravibuddy:
 
@@ -118,7 +145,7 @@ Whenever contributing or refactoring Gravibuddy:
 
 ---
 
-## 6. Development & Testing Commands
+## 7. Development & Testing Commands
 
 ```bash
 # Start Gravibuddy
