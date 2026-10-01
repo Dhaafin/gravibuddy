@@ -5,9 +5,11 @@ const islandRoot = document.getElementById('islandRoot');
 const island = document.getElementById('island');
 const compactView = document.getElementById('compactView');
 const expandedView = document.getElementById('expandedView');
+const islandContent = document.getElementById('islandContent');
 const primaryLabel = document.getElementById('primaryLabel');
 const secondaryLabel = document.getElementById('secondaryLabel');
 const metricVal = document.getElementById('metricVal');
+const btnExpandCard = document.getElementById('btnExpandCard');
 const gaugeFill = document.getElementById('gaugeFill');
 const glyphIdle = document.getElementById('glyphIdle');
 const glyphThinking = document.getElementById('glyphThinking');
@@ -237,6 +239,31 @@ function renderAgentTabs() {
 
     agentTabsDeck.appendChild(btn);
   });
+  updateCompactCycleIndicator();
+}
+
+function updateCompactCycleIndicator() {
+  if (!islandContent) return;
+  if (activeSessionsList.length > 1) {
+    islandContent.classList.add('can-cycle');
+    islandContent.title = `Click to switch agent (${activeSessionsList.length} active)`;
+  } else {
+    islandContent.classList.remove('can-cycle');
+    islandContent.removeAttribute('title');
+  }
+}
+
+function cycleNextSession() {
+  if (activeSessionsList.length <= 1) return;
+  const currentIndex = activeSessionsList.findIndex(s => s.id === selectedSessionId);
+  const nextIndex = (currentIndex + 1) % activeSessionsList.length;
+  selectedSessionId = activeSessionsList[nextIndex].id;
+  const sess = activeSessionsList[nextIndex];
+  updateIslandLabels(sess, formatModelName(sess.model));
+  renderAgentTabs();
+  renderActiveSessionDetail();
+  triggerWateryMorph();
+  playPopSound('blossom');
 }
 
 function renderActiveSessionDetail() {
@@ -310,6 +337,9 @@ function expandToLuxuryCard() {
     isExpanded = true;
     island.classList.add('is-expanded');
     playPopSound('blossom');
+  }
+  if (btnExpandCard) {
+    btnExpandCard.classList.remove('has-alert');
   }
   renderAgentTabs();
   renderActiveSessionDetail();
@@ -496,18 +526,44 @@ if (btnExpandedSettings) {
   });
 }
 
+// Click to expand / collapse deck explicitly
+if (btnExpandCard) {
+  btnExpandCard.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (isExpanded) {
+      collapseToCompact(true);
+    } else {
+      expandToLuxuryCard();
+    }
+  });
+}
+
+// Click on compact content: cycles next active agent if multiple, or expands card
+if (islandContent) {
+  islandContent.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (activeSessionsList.length > 1 && !isExpanded) {
+      cycleNextSession();
+    } else if (!isExpanded) {
+      expandToLuxuryCard();
+    }
+  });
+}
+
 // Click to wake immediately when sleeping or expand to luxury card
 island.addEventListener('click', e => {
-  if (btnSettings.contains(e.target) || (btnMiniClose && btnMiniClose.contains(e.target)) || e.target.closest('button')) return;
+  if (btnSettings.contains(e.target) || 
+      (btnMiniClose && btnMiniClose.contains(e.target)) || 
+      (btnExpandCard && btnExpandCard.contains(e.target)) || 
+      (islandContent && islandContent.contains(e.target)) || 
+      e.target.closest('button')) return;
+
   if (island.classList.contains('is-sleeping')) {
     if (wakeHoverTimer) {
       clearTimeout(wakeHoverTimer);
       wakeHoverTimer = null;
     }
     wakeUpIsland('click');
-    if (currentPosition === 'center') {
-      expandToLuxuryCard();
-    }
     return;
   }
   if (!isExpanded && currentPosition === 'center') {
@@ -529,7 +585,7 @@ function checkInteractiveHit(e) {
   if (shouldBeInteractive !== isInteractiveArea) {
     isInteractiveArea = shouldBeInteractive;
     if (isInteractiveArea) {
-      // Mouse touched the island or controls
+      // Mouse touched the island or controls: enable clicks
       api.setIgnoreMouseEvents(false);
       clearRetractTimer();
 
@@ -538,22 +594,17 @@ function checkInteractiveHit(e) {
         cancelDoneAutoDismiss();
       }
 
-      // If it was sleeping, check hover intent with debounce (160ms)
+      // If it was sleeping, wake up on deliberate hover (160ms)
       if (island.classList.contains('is-sleeping')) {
         if (wakeHoverTimer) clearTimeout(wakeHoverTimer);
         wakeHoverTimer = setTimeout(() => {
           if (isInteractiveArea && island.classList.contains('is-sleeping')) {
             wakeUpIsland('hover');
-            if (currentPosition === 'center') {
-              expandToLuxuryCard();
-            }
           }
         }, 160);
-      } else {
-        if (currentPosition === 'center') {
-          expandToLuxuryCard();
-        }
       }
+      // Notice: hover does NOT auto-expand the 185px card!
+      // Expansion requires an explicit click on the notch or expand button.
     } else {
       // Mouse left the interactive surfaces: clicks pass right through immediately!
       if (wakeHoverTimer) {
@@ -562,7 +613,7 @@ function checkInteractiveHit(e) {
       }
       api.setIgnoreMouseEvents(true, { forward: true });
 
-      // Trigger retraction with 350ms grace period (unless waiting)
+      // Trigger retraction with 350ms grace period if currently expanded (unless waiting)
       scheduleRetraction(350);
 
       // Persistent open: never sleep if waiting!
@@ -746,7 +797,7 @@ function updateIslandState(data) {
   updateIslandLabels(data, modelLabel);
 
   if (targetState === 'waiting' || hasAnyWaitingSession()) {
-    // 🚨 ACTION REQUIRED: Must bloom open immediately and STAY open until user proceeds!
+    // 🚨 ACTION REQUIRED: Notify clearly with amber aura and pulsing expand button (notification only)
     cancelDoneAutoDismiss();
     clearTimeout(thinkingPreviewTimer);
     thinkingPreviewTimer = null;
@@ -754,25 +805,39 @@ function updateIslandState(data) {
     clearRetractTimer();
 
     wakeUpIsland('alert');
-    expandToLuxuryCard();
+    if (isExpanded) {
+      renderActiveSessionDetail();
+    }
     island.classList.remove('state-thinking', 'state-done');
     island.classList.add('state-waiting');
+    if (btnExpandCard) {
+      btnExpandCard.classList.add('has-alert');
+    }
     triggerWateryMorph();
     playChime('alert');
   } else if (targetState === 'done') {
-    // 🌟 TASK COMPLETED: Bloom open and auto-retract according to user duration preference
+    // 🌟 TASK COMPLETED: Ambient green chime and countdown
     cancelDoneAutoDismiss();
     clearTimeout(thinkingPreviewTimer);
     thinkingPreviewTimer = null;
     clearSleepTimer();
 
+    if (btnExpandCard) {
+      btnExpandCard.classList.remove('has-alert');
+    }
     wakeUpIsland('done');
+    if (isExpanded) {
+      renderActiveSessionDetail();
+    }
     island.classList.remove('state-thinking', 'state-waiting');
     island.classList.add('state-done');
     triggerWateryMorph();
     playChime('success');
     scheduleDoneAutoDismiss();
   } else if (targetState === 'thinking') {
+    if (btnExpandCard) {
+      btnExpandCard.classList.remove('has-alert');
+    }
     // 🟣 CODING / THINKING:
     cancelDoneAutoDismiss();
     clearSleepTimer();
@@ -811,6 +876,9 @@ function updateIslandState(data) {
     }
   } else {
     // 🟢 NORMAL IDLE:
+    if (btnExpandCard) {
+      btnExpandCard.classList.remove('has-alert');
+    }
     cancelDoneAutoDismiss();
     clearTimeout(thinkingPreviewTimer);
     thinkingPreviewTimer = null;
