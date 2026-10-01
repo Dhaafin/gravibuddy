@@ -11,7 +11,7 @@ export const dom = {
   metricVal: document.getElementById('metricVal'),
   btnExpandCard: document.getElementById('btnExpandCard'),
   gaugeFill: document.getElementById('gaugeFill'),
-  
+
   // Vertical Mode Glyphs & Tooltip
   glyphIdle: document.getElementById('glyphIdle'),
   glyphThinking: document.getElementById('glyphThinking'),
@@ -21,14 +21,14 @@ export const dom = {
   vTooltipStatus: document.getElementById('vTooltipStatus'),
   vTooltipModel: document.getElementById('vTooltipModel'),
   vGlyphBtn: document.getElementById('vGlyphBtn'),
-  
+
   // Compact Accessory Controls
   btnSettings: document.getElementById('btnSettings'),
   btnMiniClose: document.getElementById('btnMiniClose'),
   countdownBar: document.getElementById('countdownBar'),
 
   // Expanded View Activity Deck Elements
-  headerStatusOrb: document.getElementById('headerStatusOrb'),
+  globalStatusOrb: document.getElementById('globalStatusOrb'),
   agentListDeck: document.getElementById('agentListDeck'),
   headerCountBadge: document.getElementById('headerCountBadge'),
   expandedQuotaBadge: document.getElementById('expandedQuotaBadge'),

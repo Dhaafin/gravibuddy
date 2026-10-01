@@ -9,25 +9,25 @@ const STATE_WEIGHT = { waiting: 4, thinking: 3, done: 2, idle: 1 };
 const CHEVRON_UP_SVG = `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>`;
 const CHEVRON_DOWN_SVG = `<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
 
-function updateHeaderStatusOrb(sessions) {
-  if (!dom.headerStatusOrb) return;
-  dom.headerStatusOrb.className = 'header-status-orb';
+function updateGlobalStatusOrb(sessions) {
+  if (!dom.globalStatusOrb) return;
+  dom.globalStatusOrb.className = 'global-status-orb';
 
   const hasWaiting = sessions.some(s => s.state === 'waiting');
   const hasFree = sessions.some(s => s.state === 'idle' || s.state === 'done');
   const allBusy = sessions.length > 0 && sessions.every(s => s.state === 'thinking');
 
   if (hasWaiting) {
-    dom.headerStatusOrb.classList.add('orb-waiting');
-    dom.headerStatusOrb.title = 'Action required on an agent';
+    dom.globalStatusOrb.classList.add('orb-waiting');
+    dom.globalStatusOrb.title = 'Action required on an agent';
   } else if (hasFree || sessions.length === 0) {
-    dom.headerStatusOrb.classList.add('orb-ready');
-    dom.headerStatusOrb.title = 'Agents available / ready';
+    dom.globalStatusOrb.classList.add('orb-ready');
+    dom.globalStatusOrb.title = 'Agents available / ready';
   } else if (allBusy) {
-    dom.headerStatusOrb.classList.add('orb-thinking');
-    dom.headerStatusOrb.title = 'All agents currently busy';
+    dom.globalStatusOrb.classList.add('orb-thinking');
+    dom.globalStatusOrb.title = 'All agents currently busy';
   } else {
-    dom.headerStatusOrb.classList.add('orb-ready');
+    dom.globalStatusOrb.classList.add('orb-ready');
   }
 }
 
@@ -110,7 +110,7 @@ export function renderAgentList() {
     dom.headerCountBadge.textContent = count === 1 ? '1 AGENT' : `${count} AGENTS`;
   }
 
-  updateHeaderStatusOrb(sessions);
+  updateGlobalStatusOrb(sessions);
 
   if (dom.expandedQuotaBadge) {
     const active = getActiveSession() || sessions[0];

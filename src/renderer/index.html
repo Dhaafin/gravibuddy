@@ -132,7 +132,6 @@
         <!-- Header Bar (34px): Brand, Agent Count Badge, Trailing Utilities -->
         <div class="expanded-header" id="expandedHeader">
           <div class="header-brand">
-            <span class="header-status-orb orb-ready" id="headerStatusOrb" title="Agent Pool Status"></span>
             <img src="../../assets/antigravity-icon.png" alt="AGY" class="brand-sparkle-img">
             <span class="brand-label">AGY</span>
             <span class="header-count-badge" id="headerCountBadge">1 AGENT</span>
@@ -143,7 +142,7 @@
             <button class="settings-btn" id="btnExpandedSettings" title="Settings">
               <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="3"></circle>
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0-2.83l-.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
               </svg>
             </button>
             <button class="settings-btn expanded-retract-btn" id="btnHeaderRetract" title="Minimize">
@@ -155,9 +154,14 @@
           </div>
         </div>
 
-        <!-- Body Area: Stacked Agent Activity Deck (Displays all concurrent agents simultaneously) -->
-        <div class="agent-list-deck" id="agentListDeck">
-          <!-- Dynamically populated rows via renderAgentList() -->
+        <!-- Body Area: Left Global State Orb + Right Stacked Agent Activity Deck -->
+        <div class="expanded-body">
+          <div class="global-orb-column">
+            <div class="global-status-orb orb-ready" id="globalStatusOrb" title="Agents available / ready"></div>
+          </div>
+          <div class="agent-list-deck" id="agentListDeck">
+            <!-- Dynamically populated rows via renderAgentList() -->
+          </div>
         </div>
 
         <!-- Footer Actions (36px): Minimal Command Bar (Uncluttered) -->
