@@ -226,10 +226,21 @@ function startServer() {
 
 let watchdogTimer = null;
 const activeSessions = new Map();
-const STATE_PRIORITY = { waiting: 4, thinking: 3, done: 2, idle: 1 };
+// Weight hierarchy: waiting (action needed) > done (task completed) > thinking (active work) > idle (standby/ready)
+const STATE_PRIORITY = { waiting: 4, done: 3, thinking: 2, idle: 1 };
 
 function handleAgentEvent(payload) {
   if (!mainWindow || mainWindow.isDestroyed()) return;
+
+  // Extract project name from payload or workspacePaths if available
+  let projectName = payload.project || payload.projectName || null;
+  if (!projectName && Array.isArray(payload.workspacePaths) && payload.workspacePaths.length > 0) {
+    projectName = path.basename(payload.workspacePaths[0]);
+  }
+
+  const sessionId = payload.conversationId || projectName || 'default';
+  const existingSess = activeSessions.get(sessionId);
+  const prevSessState = existingSess ? existingSess.state : 'idle';
 
   const rawState = (payload.agent_state || payload.state || 'idle').toLowerCase();
   const isWaitingConfirmation = payload.tool_confirmation_pending === true;
@@ -241,21 +252,14 @@ function handleAgentEvent(payload) {
     state = 'thinking';
   } else if (rawState === 'done') {
     state = 'done';
-  } else if (rawState === 'idle' && payload.source !== 'antigravity-2.0' && lastState === 'thinking') {
+  } else if (rawState === 'idle' && payload.source !== 'antigravity-2.0' && prevSessState === 'thinking') {
     state = 'done';
   } else {
     state = 'idle';
   }
 
+  const isFreshCompletion = (state === 'done' && prevSessState !== 'done');
   lastState = (state === 'done') ? 'idle' : state;
-
-  // Extract project name from payload or workspacePaths if available
-  let projectName = payload.project || payload.projectName || null;
-  if (!projectName && Array.isArray(payload.workspacePaths) && payload.workspacePaths.length > 0) {
-    projectName = path.basename(payload.workspacePaths[0]);
-  }
-
-  const sessionId = payload.conversationId || projectName || 'default';
   const modelName = extractModelName(payload.model);
 
   const ctxUsed = payload.context_window?.used_percentage;
@@ -285,7 +289,7 @@ function handleAgentEvent(payload) {
     }
   }
 
-  // Priority Bubbling: waiting > thinking > done > idle
+  // Priority Bubbling: waiting (4) > done (3) > thinking (2) > idle (1)
   const sessionsList = Array.from(activeSessions.values());
   sessionsList.sort((a, b) => {
     const diff = (STATE_PRIORITY[b.state] || 1) - (STATE_PRIORITY[a.state] || 1);
@@ -340,6 +344,7 @@ function handleAgentEvent(payload) {
     message: heroSession.message,
     toolName: heroSession.toolName,
     timestamp: Date.now(),
+    completionTriggered: isFreshCompletion,
     sessions: sessionsList,
     heroId: heroSession.id
   };
