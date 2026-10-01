@@ -14,11 +14,7 @@ const appleToggleStealth = document.getElementById('appleToggleStealth');
 const btnToggleThinkingPreview = document.getElementById('btnToggleThinkingPreview');
 const appleToggleThinkingPreview = document.getElementById('appleToggleThinkingPreview');
 
-const testThinking = document.getElementById('testThinking');
-const testDone = document.getElementById('testDone');
-const testWait = document.getElementById('testWait');
-const testSleep = document.getElementById('testSleep');
-const testIdle = document.getElementById('testIdle');
+
 const btnQuitGravibuddy = document.getElementById('btnQuitGravibuddy');
 
 let soundEnabled = true;
@@ -109,37 +105,7 @@ if (btnToggleThinkingPreview && appleToggleThinkingPreview) {
 }
 
 
-// Test State buttons
-if (testThinking) {
-  testThinking.addEventListener('click', () => {
-    api.testState({ state: 'thinking', model: 'Gemini 3.8 Flash (High)' });
-  });
-}
 
-if (testDone) {
-  testDone.addEventListener('click', () => {
-    api.testState({ state: 'done', model: 'Gemini 3.8 Flash (High)' });
-  });
-}
-
-if (testWait) {
-  testWait.addEventListener('click', () => {
-    api.testState({ state: 'waiting', model: 'Gemini 3.8 Flash (High)' });
-  });
-}
-
-if (testSleep) {
-  testSleep.addEventListener('click', () => {
-    api.testState({ state: 'idle', model: 'Gemini 3.8 Flash (High)' });
-    api.closeSettings();
-  });
-}
-
-if (testIdle) {
-  testIdle.addEventListener('click', () => {
-    api.resetToIdle();
-  });
-}
 
 // Initial Config Restoration
 if (api && api.getInitialConfig) {
