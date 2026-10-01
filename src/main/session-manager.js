@@ -1,3 +1,4 @@
+const fs = require('fs');
 const path = require('path');
 const { sendAgentUpdate, isMainWindowReady } = require('./windows');
 
@@ -17,6 +18,86 @@ function extractModelName(model) {
   return String(model);
 }
 
+function extractQuestionMessage(args) {
+  if (!args) return 'Question from Antigravity';
+  let qList = args.questions;
+  if (typeof qList === 'string') {
+    try {
+      qList = JSON.parse(qList);
+    } catch (e) {}
+  }
+  if (Array.isArray(qList) && qList[0]?.question) {
+    return qList[0].question;
+  }
+  return 'Question from Antigravity';
+}
+
+function inspectTranscriptState(transcriptPath) {
+  if (!transcriptPath || typeof transcriptPath !== 'string') return null;
+  try {
+    if (!fs.existsSync(transcriptPath)) return null;
+    const stat = fs.statSync(transcriptPath);
+    if (!stat || stat.size === 0) return null;
+
+    const bufSize = Math.min(stat.size, 131072);
+    const fd = fs.openSync(transcriptPath, 'r');
+    const buf = Buffer.alloc(bufSize);
+    fs.readSync(fd, buf, 0, bufSize, stat.size - bufSize);
+    fs.closeSync(fd);
+
+    const lines = buf.toString('utf8').trim().split('\n').filter(Boolean);
+    const entries = [];
+    for (const line of lines) {
+      try {
+        entries.push(JSON.parse(line));
+      } catch (e) {}
+    }
+
+    let lastPlannerIdx = -1;
+    for (let i = entries.length - 1; i >= 0; i--) {
+      if (entries[i].type === 'PLANNER_RESPONSE') {
+        lastPlannerIdx = i;
+        break;
+      }
+    }
+    if (lastPlannerIdx === -1) return null;
+
+    const planner = entries[lastPlannerIdx];
+    const toolCalls = Array.isArray(planner.tool_calls) ? planner.tool_calls : [];
+    const questionTool = toolCalls.find(t => t.name === 'ask_question');
+
+    // Check if tool step after lastPlannerIdx has already finished
+    const subsequentEntries = entries.slice(lastPlannerIdx + 1);
+    const hasCompletedStepAfter = subsequentEntries.some(
+      e => (e.type === 'GENERIC' || e.type === 'USER_INPUT') && e.status === 'DONE'
+    );
+
+    if (questionTool && !hasCompletedStepAfter) {
+      return {
+        state: 'waiting',
+        message: extractQuestionMessage(questionTool.args),
+        toolName: null
+      };
+    }
+
+    if (toolCalls.length > 0 && !hasCompletedStepAfter) {
+      return {
+        state: 'thinking',
+        message: `Running ${toolCalls[0].name}...`,
+        toolName: toolCalls[0].name
+      };
+    }
+
+    return {
+      state: 'thinking',
+      message: 'Thinking & reasoning...',
+      toolName: null
+    };
+  } catch (e) {
+    return null;
+  }
+}
+
 function getSortedSessions() {
   const sessionsList = Array.from(activeSessions.values());
   sessionsList.sort((a, b) => {
@@ -26,6 +107,72 @@ function getSortedSessions() {
   });
   return sessionsList;
 }
+
+function broadcastSessions(completionTriggered = false) {
+  const sessionsList = getSortedSessions();
+  const heroSession = sessionsList[0];
+  if (!heroSession) return;
+
+  sendAgentUpdate({
+    state: heroSession.state,
+    project: heroSession.project,
+    model: heroSession.model,
+    plan: 'Google AI Pro',
+    contextPercent: heroSession.contextPercent,
+    quotaPercent: heroSession.quotaPercent,
+    message: heroSession.message,
+    toolName: heroSession.toolName,
+    timestamp: Date.now(),
+    completionTriggered,
+    sessions: sessionsList,
+    heroId: heroSession.id
+  });
+}
+
+// Live transcript watcher for mid-turn blocking tools (e.g. ask_question)
+setInterval(() => {
+  if (!isMainWindowReady() || activeSessions.size === 0) return;
+
+  let changed = false;
+  for (const sess of activeSessions.values()) {
+    if (!sess.transcriptPath || (sess.state !== 'thinking' && sess.state !== 'waiting')) continue;
+
+    try {
+      const stat = fs.statSync(sess.transcriptPath);
+      if (sess.lastTranscriptMtime === stat.mtimeMs) continue;
+      sess.lastTranscriptMtime = stat.mtimeMs;
+
+      const inspected = inspectTranscriptState(sess.transcriptPath);
+      if (!inspected) continue;
+
+      if (inspected.state === 'waiting' && sess.state !== 'waiting') {
+        sess.state = 'waiting';
+        sess.message = inspected.message;
+        sess.toolName = null;
+        sess.updatedAt = Date.now();
+        changed = true;
+      } else if (inspected.state === 'thinking' && sess.state === 'waiting') {
+        sess.state = 'thinking';
+        sess.message = inspected.message;
+        sess.toolName = inspected.toolName;
+        sess.updatedAt = Date.now();
+        changed = true;
+      } else if (
+        inspected.state === 'thinking' &&
+        sess.state === 'thinking' &&
+        inspected.toolName !== sess.toolName
+      ) {
+        sess.toolName = inspected.toolName;
+        sess.message = inspected.message;
+        changed = true;
+      }
+    } catch (e) {}
+  }
+
+  if (changed) {
+    broadcastSessions(false);
+  }
+}, 600);
 
 function resolveSessionState(payload, prevSessState) {
   const rawState = (payload.agent_state || payload.state || 'idle').toLowerCase();
@@ -76,6 +223,8 @@ function handleAgentEvent(payload) {
     model: modelName,
     message: payload.message || null,
     toolName: payload.toolName || null,
+    transcriptPath: payload.transcriptPath || existingSess?.transcriptPath || null,
+    lastTranscriptMtime: existingSess?.lastTranscriptMtime || 0,
     quotaPercent,
     contextPercent,
     updatedAt: Date.now()
@@ -89,9 +238,6 @@ function handleAgentEvent(payload) {
     }
   }
 
-  const sessionsList = getSortedSessions();
-  const heroSession = sessionsList[0] || activeSessions.get(sessionId);
-
   if (state === 'thinking') {
     clearTimeout(watchdogTimer);
     watchdogTimer = setTimeout(() => {
@@ -100,15 +246,7 @@ function handleAgentEvent(payload) {
         if (activeSessions.has(sessionId)) {
           activeSessions.get(sessionId).state = 'idle';
         }
-        sendAgentUpdate({
-          state: 'idle',
-          model: modelName,
-          project: projectName,
-          quotaPercent: 95,
-          sessions: getSortedSessions(),
-          heroId: sessionId,
-          timestamp: Date.now()
-        });
+        broadcastSessions(false);
       }
     }, 180000);
   } else {
@@ -116,21 +254,7 @@ function handleAgentEvent(payload) {
     watchdogTimer = null;
   }
 
-  sendAgentUpdate({
-    state: heroSession.state,
-    project: heroSession.project,
-    model: heroSession.model,
-    plan: payload.plan_tier || 'Google AI Pro',
-    cost: payload.cost?.total_usd ?? payload.cost ?? null,
-    contextPercent: heroSession.contextPercent,
-    quotaPercent: heroSession.quotaPercent,
-    message: heroSession.message,
-    toolName: heroSession.toolName,
-    timestamp: Date.now(),
-    completionTriggered: isFreshCompletion,
-    sessions: sessionsList,
-    heroId: heroSession.id
-  });
+  broadcastSessions(isFreshCompletion);
 }
 
 function dismissSession(sessionId) {
@@ -146,22 +270,7 @@ function dismissSession(sessionId) {
     }
   }
 
-  const sessionsList = getSortedSessions();
-  const heroSession = sessionsList[0];
-  if (heroSession) {
-    sendAgentUpdate({
-      state: heroSession.state,
-      project: heroSession.project,
-      model: heroSession.model,
-      message: heroSession.message,
-      toolName: heroSession.toolName,
-      quotaPercent: heroSession.quotaPercent,
-      contextPercent: heroSession.contextPercent,
-      timestamp: Date.now(),
-      sessions: sessionsList,
-      heroId: heroSession.id
-    });
-  }
+  broadcastSessions(false);
 }
 
 module.exports = {

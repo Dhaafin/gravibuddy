@@ -50,7 +50,6 @@ function extractQuestionMessage(args) {
 }
 
 process.stdin.on('end', () => {
-  // Always immediately output valid JSON to stdout so Antigravity 2.0 never blocks or waits
   if (eventType === 'pre-tool-use') {
     process.stdout.write('{"decision":"allow"}\n');
   } else {
@@ -70,48 +69,46 @@ process.stdin.on('end', () => {
   let message = null;
   let toolName = null;
 
+  const lastStep = inspectLastPlannerStep(payload.transcriptPath);
+  const latestTool = lastStep?.tool_calls?.[0]?.name || null;
+  const questionToolInStep = lastStep?.tool_calls?.find(t => t.name === 'ask_question');
+
   if (eventType === 'pre-tool-use') {
     const tc = payload.toolCall || {};
-    if (tc.name === 'ask_question' || !tc.name) {
+    const resolvedToolName = (tc.name && tc.name !== 'generic') ? tc.name : latestTool;
+
+    if (tc.name === 'ask_question' || resolvedToolName === 'ask_question' || questionToolInStep) {
       state = 'waiting';
-      message = extractQuestionMessage(tc.args);
+      message = extractQuestionMessage(tc.args?.questions ? tc.args : questionToolInStep?.args);
       toolName = null;
     } else {
       state = 'thinking';
-      toolName = tc.name;
-      message = `Running ${tc.name}...`;
+      toolName = resolvedToolName;
+      message = resolvedToolName ? `Running ${resolvedToolName}...` : 'Thinking & reasoning...';
     }
   } else if (eventType === 'post-tool-use') {
     state = 'thinking';
     toolName = null;
-    message = 'Processing your response...';
-  } else {
-    const lastStep = inspectLastPlannerStep(payload.transcriptPath);
-    const latestTool = lastStep?.tool_calls?.[0]?.name || null;
-
-    if (eventType === 'stop') {
-      if (payload.fullyIdle === false) {
-        state = 'thinking';
-        toolName = latestTool;
-        message = toolName ? `Executing ${toolName}...` : 'Running in background...';
-      } else {
-        const questionTool = lastStep?.tool_calls?.find(t => t.name === 'ask_question');
-        if (questionTool) {
-          state = 'waiting';
-          message = extractQuestionMessage(questionTool.args);
-        } else if (payload.terminationReason === 'error') {
-          state = 'waiting';
-          message = payload.error || 'Execution stopped with error';
-        } else {
-          state = 'done';
-          message = 'Task completed';
-        }
-      }
-    } else if (eventType === 'pre-invocation') {
+    message = 'Thinking & reasoning...';
+  } else if (eventType === 'stop') {
+    if (payload.fullyIdle === false) {
       state = 'thinking';
       toolName = latestTool;
-      message = toolName ? `Running ${toolName}...` : 'Thinking & reasoning...';
+      message = toolName ? `Executing ${toolName}...` : 'Running in background...';
+    } else if (questionToolInStep) {
+      state = 'waiting';
+      message = extractQuestionMessage(questionToolInStep.args);
+    } else if (payload.terminationReason === 'error') {
+      state = 'waiting';
+      message = payload.error || 'Execution stopped with error';
+    } else {
+      state = 'done';
+      message = 'Task completed';
     }
+  } else if (eventType === 'pre-invocation') {
+    state = 'thinking';
+    toolName = latestTool;
+    message = toolName ? `Running ${toolName}...` : 'Thinking & reasoning...';
   }
 
   let projectName = null;
@@ -122,6 +119,7 @@ process.stdin.on('end', () => {
   const postPayload = JSON.stringify({
     source: 'antigravity-2.0',
     conversationId: payload.conversationId || null,
+    transcriptPath: payload.transcriptPath || null,
     state,
     model: payload.modelName || 'Gemini',
     project: projectName,
