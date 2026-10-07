@@ -10,7 +10,7 @@ process.stdin.on('data', chunk => {
   inputData += chunk;
 });
 
-function inspectLastPlannerStep(transcriptPath) {
+function inspectTranscript(transcriptPath) {
   if (!transcriptPath || typeof transcriptPath !== 'string') return null;
   try {
     if (!fs.existsSync(transcriptPath)) return null;
@@ -23,14 +23,30 @@ function inspectLastPlannerStep(transcriptPath) {
     fs.closeSync(fd);
 
     const lines = buf.toString('utf8').trim().split('\n').filter(Boolean);
-    for (let i = lines.length - 1; i >= 0; i--) {
+    const entries = [];
+    for (const line of lines) {
       try {
-        const entry = JSON.parse(lines[i]);
-        if (entry.type === 'PLANNER_RESPONSE') {
-          return entry;
-        }
+        entries.push(JSON.parse(line));
       } catch (e) {}
     }
+
+    let latestPlanner = null;
+    for (const entry of entries) {
+      if (
+        entry.type === 'PLANNER_RESPONSE' &&
+        (!latestPlanner || (entry.step_index ?? 0) >= (latestPlanner.step_index ?? 0))
+      ) {
+        latestPlanner = entry;
+      }
+    }
+    if (!latestPlanner) return null;
+
+    const plannerStep = latestPlanner.step_index ?? -1;
+    const hasCompletedStepAfter = entries.some(
+      e => (e.step_index ?? -1) > plannerStep && e.status === 'DONE'
+    );
+
+    return { latestPlanner, hasCompletedStepAfter };
   } catch (e) {}
   return null;
 }
@@ -69,9 +85,13 @@ process.stdin.on('end', () => {
   let message = null;
   let toolName = null;
 
-  const lastStep = inspectLastPlannerStep(payload.transcriptPath);
-  const latestTool = lastStep?.tool_calls?.[0]?.name || null;
-  const questionToolInStep = lastStep?.tool_calls?.find(t => t.name === 'ask_question');
+  const inspected = inspectTranscript(payload.transcriptPath);
+  const lastStep = inspected?.latestPlanner || null;
+  const isPendingStep = inspected ? !inspected.hasCompletedStepAfter : false;
+  const latestTool = isPendingStep ? (lastStep?.tool_calls?.[0]?.name || null) : null;
+  const questionToolInStep = isPendingStep
+    ? lastStep?.tool_calls?.find(t => t.name === 'ask_question')
+    : null;
 
   if (eventType === 'pre-tool-use') {
     const tc = payload.toolCall || {};
@@ -91,10 +111,10 @@ process.stdin.on('end', () => {
     toolName = null;
     message = 'Thinking & reasoning...';
   } else if (eventType === 'stop') {
-    if (payload.fullyIdle === false) {
+    if (payload.fullyIdle === false && latestTool) {
       state = 'thinking';
       toolName = latestTool;
-      message = toolName ? `Executing ${toolName}...` : 'Running in background...';
+      message = `Executing ${toolName}...`;
     } else if (questionToolInStep) {
       state = 'waiting';
       message = extractQuestionMessage(questionToolInStep.args);
