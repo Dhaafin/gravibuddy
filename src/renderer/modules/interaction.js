@@ -115,6 +115,7 @@ export function setupInteractions(api) {
       state.currentState = 'idle';
       dom.island?.classList.remove('state-done');
       updateIslandLabels({ state: 'idle' }, 'Antigravity');
+      api.dismissSession('done');
     }
     enterSleepMode(true);
   });

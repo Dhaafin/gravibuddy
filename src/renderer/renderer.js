@@ -49,6 +49,15 @@ function updateIslandState(data) {
     state.selectedSessionId = data.heroId || state.activeSessionsList[0].id;
   }
 
+  if (data.wake === true) {
+    wakeUpIsland('manual');
+  }
+  if (data.expand === true) {
+    expandToLuxuryCard();
+  } else if (data.expand === false) {
+    collapseToCompact(true);
+  }
+
   renderAgentList();
 
   const modelLabel = formatModelName(data.model);
@@ -76,15 +85,15 @@ function updateIslandState(data) {
     }
   } else if (targetState === 'done') {
     clearWaitingNudgeTimers();
-    cancelDoneAutoDismiss(dom.countdownBar);
     clearThinkingPreviewTimer();
     clearSleepTimer();
 
     dom.btnExpandCard?.classList.remove('has-alert');
-    wakeUpIsland('done');
     dom.island.classList.remove('state-thinking', 'state-waiting');
     dom.island.classList.add('state-done');
     if (stateChanged || data.completionTriggered) {
+      cancelDoneAutoDismiss(dom.countdownBar);
+      wakeUpIsland('done');
       triggerWateryMorph();
       playChime('success');
       scheduleDoneAutoDismiss();
@@ -97,10 +106,12 @@ function updateIslandState(data) {
     dom.island.classList.remove('state-done', 'state-waiting');
     dom.island.classList.add('state-thinking');
 
-    if (stateChanged) {
+    const shouldPeekThinking = Boolean(data.thinkingTriggered);
+
+    if (stateChanged || data.thinkingTriggered) {
       triggerWateryMorph();
       if (state.stealthCodingEnabled) {
-        if (state.thinkingPreviewEnabled) {
+        if (state.thinkingPreviewEnabled && shouldPeekThinking) {
           wakeUpIsland('thinking-peek');
           clearThinkingPreviewTimer();
           state.thinkingPreviewTimer = setTimeout(() => {

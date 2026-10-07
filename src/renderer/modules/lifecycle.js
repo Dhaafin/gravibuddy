@@ -62,6 +62,7 @@ export function enterSleepMode(force = false) {
   if (state.isInteractiveArea && !force) return; // Never sleep while user is hovering unless forced
 
   if (!force) {
+    if (state.isExpanded) return;
     if (state.currentState === 'waiting' || hasAnyWaitingSession()) return;
     if (state.currentState === 'done') return;
     if (state.currentState === 'thinking' && !state.stealthCodingEnabled) return;
@@ -103,6 +104,7 @@ export function dismissDoneState() {
     if (dom.island) dom.island.classList.remove('state-done');
     triggerWateryMorph();
     updateIslandLabels({ state: 'idle' }, 'Antigravity');
+    window.graviAPI?.dismissSession('done');
     if (state.isExpanded) {
       renderAgentList();
     }
