@@ -32,18 +32,25 @@ function extractQuestionMessage(args) {
   return 'Question from Antigravity';
 }
 
-function inspectTranscriptState(transcriptPath) {
+function inspectTranscriptState(transcriptPath, lastKnownMtime = 0) {
   if (!transcriptPath || typeof transcriptPath !== 'string') return null;
+  let fd = null;
   try {
     if (!fs.existsSync(transcriptPath)) return null;
     const stat = fs.statSync(transcriptPath);
     if (!stat || stat.size === 0) return null;
 
-    const bufSize = Math.min(stat.size, 131072);
-    const fd = fs.openSync(transcriptPath, 'r');
-    const buf = Buffer.alloc(bufSize);
+    // Fast-path: if file mtime hasn't changed, don't re-read or re-parse JSON
+    if (lastKnownMtime && stat.mtimeMs <= lastKnownMtime) {
+      return { unchanged: true, mtimeMs: stat.mtimeMs };
+    }
+
+    const bufSize = Math.min(stat.size, 65536);
+    fd = fs.openSync(transcriptPath, 'r');
+    const buf = Buffer.allocUnsafe(bufSize);
     fs.readSync(fd, buf, 0, bufSize, stat.size - bufSize);
     fs.closeSync(fd);
+    fd = null;
 
     const lines = buf.toString('utf8').trim().split('\n').filter(Boolean);
     const entries = [];
@@ -111,6 +118,12 @@ function inspectTranscriptState(transcriptPath) {
     };
   } catch (e) {
     return null;
+  } finally {
+    if (fd !== null) {
+      try {
+        fs.closeSync(fd);
+      } catch (e) {}
+    }
   }
 }
 
@@ -166,7 +179,10 @@ setInterval(() => {
 
     if (sess.state !== 'thinking' && sess.state !== 'waiting') continue;
 
-    const inspected = sess.transcriptPath ? inspectTranscriptState(sess.transcriptPath) : null;
+    const inspected = sess.transcriptPath
+      ? inspectTranscriptState(sess.transcriptPath, sess.lastTranscriptMtime || 0)
+      : null;
+
     if (inspected && inspected.mtimeMs && inspected.mtimeMs > (sess.lastTranscriptMtime || 0)) {
       sess.lastTranscriptMtime = inspected.mtimeMs;
       sess.lastActivityAt = now;
@@ -187,7 +203,7 @@ setInterval(() => {
       }
     }
 
-    if (!inspected) continue;
+    if (!inspected || inspected.unchanged) continue;
 
     if (inspected.state === 'waiting' && (sess.state !== 'waiting' || sess.message !== inspected.message)) {
       sess.state = 'waiting';
