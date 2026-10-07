@@ -2,12 +2,12 @@ const fs = require('fs');
 const path = require('path');
 const { sendAgentUpdate, isMainWindowReady } = require('./windows');
 
-let watchdogTimer = null;
-let lastState = 'idle';
 const activeSessions = new Map();
 
 // Weight hierarchy: waiting (action needed) > done (task completed) > thinking (active work) > idle (standby/ready)
 const STATE_PRIORITY = { waiting: 4, done: 3, thinking: 2, idle: 1 };
+const THINKING_STALE_TIMEOUT_MS = 90000;
+const SESSION_EXPIRY_MS = 300000;
 
 function extractModelName(model) {
   if (!model) return 'Antigravity';
@@ -54,10 +54,15 @@ function inspectTranscriptState(transcriptPath) {
     }
 
     let latestPlanner = null;
+    let latestUserInputStep = -1;
     for (const entry of entries) {
+      const stepIdx = entry.step_index ?? 0;
+      if (entry.type === 'USER_INPUT' && stepIdx >= latestUserInputStep) {
+        latestUserInputStep = stepIdx;
+      }
       if (
         entry.type === 'PLANNER_RESPONSE' &&
-        (!latestPlanner || (entry.step_index ?? 0) >= (latestPlanner.step_index ?? 0))
+        (!latestPlanner || stepIdx >= (latestPlanner.step_index ?? 0))
       ) {
         latestPlanner = entry;
       }
@@ -77,7 +82,8 @@ function inspectTranscriptState(transcriptPath) {
       return {
         state: 'waiting',
         message: extractQuestionMessage(questionTool.args),
-        toolName: null
+        toolName: null,
+        mtimeMs: stat.mtimeMs
       };
     }
 
@@ -85,14 +91,23 @@ function inspectTranscriptState(transcriptPath) {
       return {
         state: 'thinking',
         message: `Running ${toolCalls[0].name}...`,
-        toolName: toolCalls[0].name
+        toolName: toolCalls[0].name,
+        mtimeMs: stat.mtimeMs
       };
     }
+
+    const isTurnReplyDone =
+      plannerStep > latestUserInputStep &&
+      latestPlanner.status === 'DONE' &&
+      toolCalls.length === 0 &&
+      !hasCompletedStepAfter;
 
     return {
       state: 'thinking',
       message: 'Thinking & reasoning...',
-      toolName: null
+      toolName: null,
+      mtimeMs: stat.mtimeMs,
+      isTurnReplyDone
     };
   } catch (e) {
     return null;
@@ -109,7 +124,7 @@ function getSortedSessions() {
   return sessionsList;
 }
 
-function broadcastSessions(completionTriggered = false) {
+function broadcastSessions(completionTriggered = false, thinkingTriggered = false, expand = null, wake = null) {
   const sessionsList = getSortedSessions();
   const heroSession = sessionsList[0];
   if (!heroSession) return;
@@ -125,34 +140,69 @@ function broadcastSessions(completionTriggered = false) {
     toolName: heroSession.toolName,
     timestamp: Date.now(),
     completionTriggered,
+    thinkingTriggered,
     sessions: sessionsList,
-    heroId: heroSession.id
+    heroId: heroSession.id,
+    expand,
+    wake
   });
 }
 
-// Live transcript watcher for mid-turn blocking tools (e.g. ask_question)
+// Live transcript watcher for mid-turn blocking tools & per-session stale watchdog
 setInterval(() => {
   if (!isMainWindowReady() || activeSessions.size === 0) return;
 
+  const now = Date.now();
   let changed = false;
-  for (const sess of activeSessions.values()) {
-    if (!sess.transcriptPath || (sess.state !== 'thinking' && sess.state !== 'waiting')) continue;
 
-    const inspected = inspectTranscriptState(sess.transcriptPath);
+  for (const [id, sess] of activeSessions.entries()) {
+    if ((sess.state === 'done' || sess.state === 'idle') && (now - sess.updatedAt > SESSION_EXPIRY_MS)) {
+      if (activeSessions.size > 1) {
+        activeSessions.delete(id);
+        changed = true;
+        continue;
+      }
+    }
+
+    if (sess.state !== 'thinking' && sess.state !== 'waiting') continue;
+
+    const inspected = sess.transcriptPath ? inspectTranscriptState(sess.transcriptPath) : null;
+    if (inspected && inspected.mtimeMs && inspected.mtimeMs > (sess.lastTranscriptMtime || 0)) {
+      sess.lastTranscriptMtime = inspected.mtimeMs;
+      sess.lastActivityAt = now;
+    }
+
+    // Per-session watchdog: if stuck in thinking with no hook or transcript activity, or turn reply already finished
+    if (sess.state === 'thinking') {
+      const inactiveMs = now - (sess.lastActivityAt || sess.updatedAt || now);
+      const replyFinishedAndSettled = Boolean(inspected?.isTurnReplyDone && inactiveMs > 6000);
+      if (inactiveMs > THINKING_STALE_TIMEOUT_MS || replyFinishedAndSettled) {
+        sess.state = 'idle';
+        sess.toolName = null;
+        sess.message = 'Ready & listening';
+        sess.updatedAt = now;
+        changed = true;
+        console.log(`[gravibuddy] Session "${sess.project}" -> auto-reset stale thinking to idle`);
+        continue;
+      }
+    }
+
     if (!inspected) continue;
 
     if (inspected.state === 'waiting' && (sess.state !== 'waiting' || sess.message !== inspected.message)) {
       sess.state = 'waiting';
       sess.message = inspected.message;
       sess.toolName = null;
-      sess.updatedAt = Date.now();
+      sess.updatedAt = now;
+      sess.lastActivityAt = now;
       changed = true;
       console.log(`[gravibuddy] Session "${sess.project}" -> waiting: ${sess.message}`);
     } else if (inspected.state === 'thinking' && sess.state === 'waiting') {
       sess.state = 'thinking';
       sess.message = inspected.message;
       sess.toolName = inspected.toolName;
-      sess.updatedAt = Date.now();
+      sess.updatedAt = now;
+      sess.lastActivityAt = now;
       changed = true;
       console.log(`[gravibuddy] Session "${sess.project}" -> resumed thinking`);
     } else if (
@@ -167,7 +217,7 @@ setInterval(() => {
   }
 
   if (changed) {
-    broadcastSessions(false);
+    broadcastSessions(false, false);
   }
 }, 450);
 
@@ -198,78 +248,113 @@ function handleAgentEvent(payload) {
     projectName = path.basename(payload.workspacePaths[0]);
   }
 
+  const now = Date.now();
   const sessionId = payload.conversationId || projectName || 'default';
   const existingSess = activeSessions.get(sessionId);
   const prevSessState = existingSess ? existingSess.state : 'idle';
 
   const state = resolveSessionState(payload, prevSessState);
   const isFreshCompletion = (state === 'done' && prevSessState !== 'done');
-  lastState = (state === 'done') ? 'idle' : state;
+  const isFreshThinking = (state === 'thinking' && prevSessState !== 'thinking');
   const modelName = extractModelName(payload.model);
 
   const ctxUsed = payload.context_window?.used_percentage;
-  const contextPercent = typeof ctxUsed === 'number' ? Math.round(ctxUsed) : null;
+  const contextPercent = typeof ctxUsed === 'number' ? Math.round(ctxUsed) : (existingSess?.contextPercent ?? null);
 
   const quotaFraction = payload.quota?.['gemini-5h']?.remaining_fraction ?? payload.quota?.['3p-5h']?.remaining_fraction;
-  const quotaPercent = typeof quotaFraction === 'number' ? Math.round(quotaFraction * 100) : null;
+  const quotaPercent = typeof quotaFraction === 'number' ? Math.round(quotaFraction * 100) : (existingSess?.quotaPercent ?? null);
+
+  const transcriptPath = payload.transcriptPath || existingSess?.transcriptPath || null;
+  let lastTranscriptMtime = existingSess?.lastTranscriptMtime || 0;
+  if (transcriptPath) {
+    try {
+      if (fs.existsSync(transcriptPath)) {
+        lastTranscriptMtime = fs.statSync(transcriptPath).mtimeMs;
+      }
+    } catch (e) {}
+  }
+
+  // Clean up older inactive/stale conversations belonging to the exact same project workspace
+  if (projectName) {
+    for (const [id, sess] of activeSessions.entries()) {
+      if (id !== sessionId && sess.project === projectName) {
+        const inactiveAge = now - (sess.lastActivityAt || sess.updatedAt || 0);
+        if (sess.state === 'idle' || sess.state === 'done' || inactiveAge > 45000) {
+          activeSessions.delete(id);
+        }
+      }
+    }
+  }
 
   activeSessions.set(sessionId, {
     id: sessionId,
-    project: projectName || 'Antigravity',
+    project: projectName || existingSess?.project || 'Antigravity',
     state,
     model: modelName,
     message: payload.message || null,
     toolName: payload.toolName || null,
-    transcriptPath: payload.transcriptPath || existingSess?.transcriptPath || null,
+    transcriptPath,
+    lastTranscriptMtime,
     quotaPercent,
     contextPercent,
-    updatedAt: Date.now()
+    updatedAt: now,
+    lastActivityAt: now
   });
 
   // Auto-expiry: Remove sessions that are idle/done and haven't updated for >5 minutes
-  const now = Date.now();
   for (const [id, sess] of activeSessions.entries()) {
-    if ((sess.state === 'done' || sess.state === 'idle') && (now - sess.updatedAt > 300000)) {
-      activeSessions.delete(id);
+    if ((sess.state === 'done' || sess.state === 'idle') && (now - sess.updatedAt > SESSION_EXPIRY_MS)) {
+      if (activeSessions.size > 1) {
+        activeSessions.delete(id);
+      }
     }
   }
 
-  if (state === 'thinking') {
-    clearTimeout(watchdogTimer);
-    watchdogTimer = setTimeout(() => {
-      if (lastState === 'thinking') {
-        lastState = 'idle';
-        if (activeSessions.has(sessionId)) {
-          activeSessions.get(sessionId).state = 'idle';
-        }
-        broadcastSessions(false);
-      }
-    }, 180000);
-  } else {
-    clearTimeout(watchdogTimer);
-    watchdogTimer = null;
-  }
-
-  broadcastSessions(isFreshCompletion);
+  broadcastSessions(isFreshCompletion, isFreshThinking, payload.expand, payload.wake);
 }
 
 function dismissSession(sessionId) {
-  if (sessionId && activeSessions.has(sessionId)) {
+  const now = Date.now();
+  if (sessionId === 'done') {
+    for (const sess of activeSessions.values()) {
+      if (sess.state === 'done') {
+        sess.state = 'idle';
+        sess.message = 'Ready & listening';
+        sess.updatedAt = now;
+      }
+    }
+  } else if (sessionId && activeSessions.has(sessionId)) {
     const sess = activeSessions.get(sessionId);
     sess.state = 'idle';
     sess.message = 'Acknowledged';
-    sess.updatedAt = Date.now();
+    sess.updatedAt = now;
   } else if (!sessionId) {
     for (const sess of activeSessions.values()) {
       sess.state = 'idle';
-      sess.updatedAt = Date.now();
+      sess.updatedAt = now;
     }
   }
 
-  broadcastSessions(false);
+  broadcastSessions(false, false);
+}
+
+function resetAllSessions() {
+  activeSessions.clear();
+  sendAgentUpdate({
+    state: 'idle',
+    project: 'Antigravity',
+    model: 'Antigravity',
+    plan: 'Google AI Pro',
+    message: 'Ready & listening',
+    sessions: [],
+    heroId: 'default',
+    expand: false
+  });
 }
 
 module.exports = {
   handleAgentEvent,
-  dismissSession
+  dismissSession,
+  resetAllSessions
 };
+
