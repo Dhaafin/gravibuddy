@@ -35,11 +35,37 @@ function startServer() {
       return;
     }
 
+    if (req.method === 'POST' && req.url === '/reset') {
+      const { resetAllSessions } = require('./session-manager');
+      resetAllSessions();
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ status: 'reset_ok' }));
+      return;
+    }
+
     if (req.method === 'GET' && req.url === '/ping') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ status: 'online', app: 'gravibuddy' }));
       return;
     }
+
+    if (req.method === 'GET' && req.url === '/screenshot') {
+      const { captureMainWindowScreenshot } = require('./windows');
+      captureMainWindowScreenshot().then(pngBuffer => {
+        if (pngBuffer) {
+          res.writeHead(200, { 'Content-Type': 'image/png' });
+          res.end(pngBuffer);
+        } else {
+          res.writeHead(503, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Window not ready' }));
+        }
+      }).catch(err => {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: err.message }));
+      });
+      return;
+    }
+
 
     res.writeHead(404);
     res.end();

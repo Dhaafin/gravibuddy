@@ -192,6 +192,12 @@ function isMainWindowReady() {
   return Boolean(mainWindow && !mainWindow.isDestroyed());
 }
 
+async function captureMainWindowScreenshot() {
+  if (!mainWindow || mainWindow.isDestroyed()) return null;
+  const image = await mainWindow.webContents.capturePage();
+  return image.toPNG();
+}
+
 module.exports = {
   createWindow,
   createSettingsWindow,
@@ -201,5 +207,7 @@ module.exports = {
   getConfigPayload,
   broadcastConfigChange,
   sendAgentUpdate,
-  isMainWindowReady
+  isMainWindowReady,
+  captureMainWindowScreenshot
 };
+
